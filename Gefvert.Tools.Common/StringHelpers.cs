@@ -7,7 +7,9 @@ namespace Gefvert.Tools.Common
   {
     public static string Left(this string value, int count)
     {
-      return string.IsNullOrEmpty(value) ? value : Mid(value, 0, count);
+      return string.IsNullOrEmpty(value) 
+        ? string.Empty
+        : Mid(value, 0, count);
     }
 
     public static bool Like(this string value, string compare)
@@ -18,7 +20,7 @@ namespace Gefvert.Tools.Common
     public static string Mid(this string value, int offset)
     {
       if (string.IsNullOrEmpty(value))
-        return value;
+        return string.Empty;
 
       return offset < value.Length ? value.Substring(offset) : string.Empty;
     }
@@ -26,14 +28,18 @@ namespace Gefvert.Tools.Common
     public static string Mid(this string value, int offset, int count)
     {
       if (string.IsNullOrEmpty(value))
-        return value;
+        return string.Empty;
+
+      if (offset < 0)
+        offset = 0;
 
       var len = value.Length;
       if (offset > len)
         return string.Empty;
 
-      if (count < len - offset)
-        count -= len - offset;
+      var maxLeft = len - offset;
+      if (count > maxLeft)
+        count = maxLeft;
 
       return count > 0 ? value.Substring(offset, count) : string.Empty;
     }
@@ -84,7 +90,9 @@ namespace Gefvert.Tools.Common
 
     public static string Right(this string value, int count)
     {
-      return string.IsNullOrEmpty(value) ? value : Mid(value, value.Length - count, count);
+      return string.IsNullOrEmpty(value) 
+        ? string.Empty
+        : Mid(value, value.Length - count, count);
     }
   }
 }

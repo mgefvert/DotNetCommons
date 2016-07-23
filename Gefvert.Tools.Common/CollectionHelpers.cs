@@ -55,14 +55,18 @@ namespace Gefvert.Tools.Common
       return dictionary.TryGetValue(key, out result) ? result : default(TValue);
     }
 
-    public static void Increase<TKey>(this IDictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
+    public static decimal Increase<TKey>(this IDictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
     {
-      dictionary[key] = GetOrDefault(dictionary, key) + value;
+      value += GetOrDefault(dictionary, key);
+      dictionary[key] = value;
+      return value;
     }
 
-    public static void Increase<TKey>(this IDictionary<TKey, int> dictionary, TKey key, int value = 1)
+    public static int Increase<TKey>(this IDictionary<TKey, int> dictionary, TKey key, int value = 1)
     {
-      dictionary[key] = GetOrDefault(dictionary, key) + value;
+      value += GetOrDefault(dictionary, key);
+      dictionary[key] = value;
+      return value;
     }
   }
 }
