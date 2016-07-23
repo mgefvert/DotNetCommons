@@ -15,7 +15,7 @@ namespace Gefvert.Tools.Common
         collection.Add(item);
     }
 
-    public static void AddIfNotNull<T>(this ICollection<T> collection, IEnumerable<T> items)
+    public static void AddRangeIfNotNull<T>(this ICollection<T> collection, IEnumerable<T> items)
     {
       if (collection == null || items == null)
         return;

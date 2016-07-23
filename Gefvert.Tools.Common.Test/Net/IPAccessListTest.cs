@@ -9,12 +9,14 @@ namespace Gefvert.Tools.Common.Test.Net
   public class IPAccessListTest
   {
     [TestMethod]
-    public void TestParse(string list)
+    public void TestParse()
     {
-      var al = IPAccessList.Parse("192.168.1.20, 192.168.2.20, 8.0.0.0/8");
+      var al = IPAccessList.Parse(" 192.168.1.20  ,, ,   192.168.2.20,8.0.0.0/8, google-dns.gefvert.org ,");
 
-      Assert.AreEqual(2, al.Addresses.Count);
+      Assert.AreEqual(4, al.Addresses.Count);
       Assert.AreEqual(1, al.Ranges.Count);
+
+      Assert.AreEqual("192.168.1.20, 192.168.2.20, 8.0.0.0/8, 8.8.4.4, 8.8.8.8", al.ToString());
     }
 
     [TestMethod]

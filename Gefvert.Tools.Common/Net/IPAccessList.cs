@@ -58,7 +58,7 @@ namespace Gefvert.Tools.Common.Net
         return;
       }
 
-      Addresses.AddIfNotNull(Dns.GetHostAddresses(address));
+      Addresses.AddRangeIfNotNull(Dns.GetHostAddresses(address));
     }
 
     public bool Contains(IPAddress address)

@@ -28,21 +28,21 @@ namespace Gefvert.Tools.Common.Test
 
       list.AddIfNotNull("hello");
       list.AddIfNotNull("");
-      list.AddIfNotNull((string)null);
+      list.AddIfNotNull(null);
 
       Assert.AreEqual(2, list.Count);
     }
 
     [TestMethod]
-    public void TestAddIfNotNullRange()
+    public void TestAddRangeIfNotNull()
     {
       var list = new List<string>();
 
-      ((List<string>)null).AddIfNotNull((List<string>)null);
-      ((List<string>)null).AddIfNotNull(list);
+      ((List<string>)null).AddRangeIfNotNull(null);
+      ((List<string>)null).AddRangeIfNotNull(list);
 
-      list.AddIfNotNull((List<string>)null);
-      list.AddIfNotNull(new[] { "hello", "", null });
+      list.AddRangeIfNotNull(null);
+      list.AddRangeIfNotNull(new[] { "hello", "", null });
 
       Assert.AreEqual(2, list.Count);
     }
