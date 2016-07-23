@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
+// Written by Mats Gefvert
+// Distributed under MIT License: https://opensource.org/licenses/MIT
+
 namespace Gefvert.Tools.Common
 {
   public class IndexedListItem<T>

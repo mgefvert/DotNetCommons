@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
+// Written by Mats Gefvert
+// Distributed under MIT License: https://opensource.org/licenses/MIT
+
 namespace Gefvert.Tools.Common
 {
   public static class TextTools

@@ -1,5 +1,8 @@
 ﻿using System;
 
+// Written by Mats Gefvert
+// Distributed under MIT License: https://opensource.org/licenses/MIT
+
 namespace Gefvert.Tools.Common
 {
   public static class DateTimeConverter
