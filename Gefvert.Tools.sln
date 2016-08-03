@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gefvert.Tools.Common", "Gef
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gefvert.Tools.Common.Test", "Gefvert.Tools.Common.Test\Gefvert.Tools.Common.Test.csproj", "{A0935A03-286E-4D7B-9985-38836B78C2ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gefvert.Tools.Scripting", "Gefvert.Tools.Scripting\Gefvert.Tools.Scripting.csproj", "{196D44A1-6A16-4222-8EA6-C206EFABBD11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gefvert.Tools.Scripting.Test", "Gefvert.Tools.Scripting.Test\Gefvert.Tools.Scripting.Test.csproj", "{074D8F2D-2CB2-4A4C-8291-2C76C2898A0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{A0935A03-286E-4D7B-9985-38836B78C2ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0935A03-286E-4D7B-9985-38836B78C2ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0935A03-286E-4D7B-9985-38836B78C2ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{196D44A1-6A16-4222-8EA6-C206EFABBD11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{196D44A1-6A16-4222-8EA6-C206EFABBD11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{196D44A1-6A16-4222-8EA6-C206EFABBD11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{196D44A1-6A16-4222-8EA6-C206EFABBD11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{074D8F2D-2CB2-4A4C-8291-2C76C2898A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{074D8F2D-2CB2-4A4C-8291-2C76C2898A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{074D8F2D-2CB2-4A4C-8291-2C76C2898A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{074D8F2D-2CB2-4A4C-8291-2C76C2898A0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
