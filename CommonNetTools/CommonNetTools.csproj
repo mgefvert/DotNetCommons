@@ -42,14 +42,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandLine.cs" />
-    <Compile Include="HashHelpers.cs" />
+    <Compile Include="HashExtensions.cs" />
     <Compile Include="Net\IPAccessList.cs" />
-    <Compile Include="Net\IPRange.cs" />
+    <Compile Include="Net\IPNetwork.cs" />
     <Compile Include="TextTools.cs" />
     <Compile Include="ServiceHelper.cs" />
-    <Compile Include="StringHelpers.cs" />
-    <Compile Include="DateTimeConverter.cs" />
-    <Compile Include="CollectionHelpers.cs" />
+    <Compile Include="StringExtensions.cs" />
+    <Compile Include="UnixTime.cs" />
+    <Compile Include="CollectionExtensions.cs" />
     <Compile Include="IndexedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
