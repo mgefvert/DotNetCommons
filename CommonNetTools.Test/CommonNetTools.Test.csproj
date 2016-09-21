@@ -53,7 +53,7 @@
   <ItemGroup>
     <Compile Include="CollectionExtensionsTest.cs" />
     <Compile Include="CommandLineTest.cs" />
-    <Compile Include="UnixTimeTest.cs" />
+    <Compile Include="DateTimeExtensionsTest.cs" />
     <Compile Include="HashExtensionsTest.cs" />
     <Compile Include="IndexedListTest.cs" />
     <Compile Include="Net\IPAccessListTest.cs" />
