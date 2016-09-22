@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonNetTools.Scripting.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonNetTools.WinForms", "CommonNetTools.WinForms\CommonNetTools.WinForms.csproj", "{716AE81D-1017-462D-A5CD-5C57A68D0C0C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonNetTools.IO", "CommonNetTools.IO\CommonNetTools.IO.csproj", "{8B046163-5672-4AB3-9A5C-2FBAF55C610F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonNetTools.IO.Test", "CommonNetTools.IO.Test\CommonNetTools.IO.Test.csproj", "{299ADFF2-A6B0-40A2-8374-979CF8FA7C8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{716AE81D-1017-462D-A5CD-5C57A68D0C0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{716AE81D-1017-462D-A5CD-5C57A68D0C0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{716AE81D-1017-462D-A5CD-5C57A68D0C0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B046163-5672-4AB3-9A5C-2FBAF55C610F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B046163-5672-4AB3-9A5C-2FBAF55C610F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B046163-5672-4AB3-9A5C-2FBAF55C610F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B046163-5672-4AB3-9A5C-2FBAF55C610F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{299ADFF2-A6B0-40A2-8374-979CF8FA7C8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{299ADFF2-A6B0-40A2-8374-979CF8FA7C8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{299ADFF2-A6B0-40A2-8374-979CF8FA7C8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{299ADFF2-A6B0-40A2-8374-979CF8FA7C8E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
