@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Net;
-using CommonNetTools.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace CommonNetTools.Test.Net
+namespace CommonNetTools.Net.Test
 {
     [TestClass]
     public class IPNetworkTest

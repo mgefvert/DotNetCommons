@@ -4,7 +4,7 @@ using System.Security.Principal;
 
 namespace CommonNetTools
 {
-    public static class FileInfoHelper
+    public static class FileInfoExtensions
     {
         public static string GetOwner(this FileInfo info)
         {

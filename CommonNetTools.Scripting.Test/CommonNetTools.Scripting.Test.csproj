@@ -57,7 +57,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CommonNetTools.Scripting\CommonNetTools.Scripting.csproj">
       <Project>{196D44A1-6A16-4222-8EA6-C206EFABBD11}</Project>
-      <Name>Gefvert.Tools.Scripting</Name>
+      <Name>CommonNetTools.Scripting</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

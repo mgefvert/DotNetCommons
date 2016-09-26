@@ -51,21 +51,19 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="CollectionExtensionsTest.cs" />
-    <Compile Include="CommandLineTest.cs" />
-    <Compile Include="DateTimeExtensionsTest.cs" />
-    <Compile Include="HashExtensionsTest.cs" />
+    <Compile Include="_Extensions\CollectionExtensionsTest.cs" />
+    <Compile Include="_CommandLine\CommandLineTest.cs" />
+    <Compile Include="_Extensions\DateTimeExtensionsTest.cs" />
+    <Compile Include="_Extensions\HashExtensionsTest.cs" />
     <Compile Include="IndexedListTest.cs" />
-    <Compile Include="Net\IPAccessListTest.cs" />
-    <Compile Include="Net\IPNetworkTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StringExtensionsTest.cs" />
+    <Compile Include="_Extensions\StringExtensionsTest.cs" />
     <Compile Include="TextToolsTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonNetTools\CommonNetTools.csproj">
       <Project>{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}</Project>
-      <Name>Gefvert.Tools</Name>
+      <Name>CommonNetTools</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

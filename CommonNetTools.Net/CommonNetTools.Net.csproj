@@ -4,16 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}</ProjectGuid>
+    <ProjectGuid>{68D88C44-C01F-4E2D-8CBA-15C5A206CD6A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CommonNetTools</RootNamespace>
-    <AssemblyName>CommonNetTools</AssemblyName>
+    <RootNamespace>CommonNetTools.Net</RootNamespace>
+    <AssemblyName>CommonNetTools.Net</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,12 +24,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -41,22 +46,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="_CommandLine\CommandLineDefinition.cs" />
-    <Compile Include="_CommandLine\CommandLineProcessor.cs" />
-    <Compile Include="_CommandLine\CommandLineAttributes.cs" />
-    <Compile Include="_CommandLine\CommandLineExceptions.cs" />
-    <Compile Include="_CommandLine\CommandLine.cs" />
-    <Compile Include="_Extensions\FileInfoExtensions.cs" />
-    <Compile Include="_Extensions\HashExtensions.cs" />
-    <Compile Include="TextTools.cs" />
-    <Compile Include="ServiceHelper.cs" />
-    <Compile Include="_Extensions\StringExtensions.cs" />
-    <Compile Include="_Extensions\DateTimeExtensions.cs" />
-    <Compile Include="_Extensions\CollectionExtensions.cs" />
-    <Compile Include="IndexedList.cs" />
+    <Compile Include="HtmlSoup\HtmlElement.cs" />
+    <Compile Include="HtmlSoup\HtmlParser.cs" />
+    <Compile Include="HtmlSoup\HtmlTag.cs" />
+    <Compile Include="HtmlSoup\HtmlTagContainer.cs" />
+    <Compile Include="HtmlSoup\HtmlText.cs" />
+    <Compile Include="HttpClient.cs" />
+    <Compile Include="HttpClientException.cs" />
+    <Compile Include="HttpResult.cs" />
+    <Compile Include="IPAccessList.cs" />
+    <Compile Include="IPNetwork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CommonNetTools\CommonNetTools.csproj">
+      <Project>{a86d8b8b-d601-4eb9-aa0a-e03372acc104}</Project>
+      <Name>CommonNetTools</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
