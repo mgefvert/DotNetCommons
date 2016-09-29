@@ -32,6 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -41,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Passwords.cs" />
     <Compile Include="_CommandLine\CommandLineDefinition.cs" />
     <Compile Include="_CommandLine\CommandLineProcessor.cs" />
     <Compile Include="_CommandLine\CommandLineAttributes.cs" />
@@ -50,11 +52,18 @@
     <Compile Include="_Extensions\HashExtensions.cs" />
     <Compile Include="TextTools.cs" />
     <Compile Include="ServiceHelper.cs" />
+    <Compile Include="_Extensions\ObjectExtensions.cs" />
     <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Extensions\DateTimeExtensions.cs" />
     <Compile Include="_Extensions\CollectionExtensions.cs" />
     <Compile Include="IndexedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="_Logger\LogConfig.cs" />
+    <Compile Include="_Logger\ILogFileNaming.cs" />
+    <Compile Include="_Logger\LogFileDaily.cs" />
+    <Compile Include="_Logger\LogFileMonthly.cs" />
+    <Compile Include="_Logger\LogFiles.cs" />
+    <Compile Include="_Logger\Logger.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
