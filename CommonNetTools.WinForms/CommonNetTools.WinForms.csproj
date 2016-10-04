@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CommonNetTools.WinForms</RootNamespace>
     <AssemblyName>CommonNetTools.WinForms</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +47,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="API.cs" />
+    <Compile Include="AppBar.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="BitmapBuffer.cs" />
     <Compile Include="ControlExtensions.cs" />
     <Compile Include="Hotkeys.cs" />

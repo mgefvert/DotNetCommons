@@ -41,7 +41,7 @@ namespace CommonNetTools
 
         public void LoadFromAppSettings()
         {
-            Directory = Environment.ExpandEnvironmentVariables(ConfigurationManager.AppSettings["LogPath"]);
+            Directory = Environment.ExpandEnvironmentVariables(ConfigurationManager.AppSettings["LogPath"] ?? "");
             if (string.IsNullOrWhiteSpace(Directory))
                 Directory = System.IO.Directory.GetCurrentDirectory();
 
