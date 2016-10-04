@@ -56,6 +56,11 @@
     <Compile Include="HttpResult.cs" />
     <Compile Include="IPAccessList.cs" />
     <Compile Include="IPNetwork.cs" />
+    <Compile Include="MicroWeb\MicroWebHandlerException.cs" />
+    <Compile Include="MicroWeb\MicroWebMethod.cs" />
+    <Compile Include="MicroWeb\MicroWebRequest.cs" />
+    <Compile Include="MicroWeb\MicroWebResponse.cs" />
+    <Compile Include="MicroWeb\MicroWebServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
