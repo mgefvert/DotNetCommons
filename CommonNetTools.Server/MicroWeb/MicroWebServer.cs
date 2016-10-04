@@ -37,6 +37,7 @@ namespace CommonNetTools.Server.MicroWeb
                 foreach (var prefix in Prefixes)
                     _listener.Prefixes.Add(prefix);
 
+                _listener.IgnoreWriteExceptions = true;
                 _listener.Start();
                 while (_listener.IsListening)
                 {
