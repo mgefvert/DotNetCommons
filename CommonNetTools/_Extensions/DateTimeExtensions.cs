@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -49,6 +50,11 @@ namespace CommonNetTools
         public static bool IsBetween(this DateTime datetime, DateTime? dateStart, DateTime? dateEnd)
         {
             return datetime >= (dateStart ?? DateTime.MinValue) && datetime < (dateEnd ?? DateTime.MaxValue);
+        }
+
+        public static int OADay(this DateTime datetime)
+        {
+            return (int)datetime.ToOADate();
         }
 
         public static DateTime StartOfMonth(this DateTime datetime)

@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CtrlBreak.cs" />
+    <Compile Include="DateRange.cs" />
     <Compile Include="Passwords.cs" />
     <Compile Include="_CommandLine\CommandLineDefinition.cs" />
     <Compile Include="_CommandLine\CommandLineProcessor.cs" />
