@@ -2,6 +2,14 @@
 
 namespace CommonNetTools
 {
+    public enum DateRangeBound
+    {
+        CompletelyInside,
+        PartiallyInside,
+        StartInside,
+        EndInside
+    }
+
     public enum DateRangeType
     {
         Undefined,
@@ -50,10 +58,22 @@ namespace CommonNetTools
         public DateRange BoundRange(DateTime? start, DateTime? end)
         {
             var result = (DateRange)MemberwiseClone();
-            if (start != null && result.Start < start.Value)
-                result.Start = start.Value;
-            if (end != null && result.End > end.Value)
-                result.End = end.Value;
+
+            if (start != null)
+            {
+                if (result.Start < start.Value)
+                    result.Start = start.Value;
+                if (result.End < start.Value)
+                    result.End = start.Value;
+            }
+
+            if (end != null)
+            {
+                if (result.Start > end.Value)
+                    result.Start = end.Value;
+                if (result.End > end.Value)
+                    result.End = end.Value;
+            }
 
             return result;
         }
@@ -158,6 +178,27 @@ namespace CommonNetTools
         {
             date = date.Date;
             return Start <= date && End >= date;
+        }
+
+        public bool InRange(DateRange range, DateRangeBound boundingMode)
+        {
+            switch (boundingMode)
+            {
+                case DateRangeBound.CompletelyInside:
+                    return range.InRange(Start) && range.InRange(End);
+
+                case DateRangeBound.PartiallyInside:
+                    return range.InRange(Start) || range.InRange(End);
+
+                case DateRangeBound.StartInside:
+                    return range.InRange(Start);
+
+                case DateRangeBound.EndInside:
+                    return range.InRange(End);
+
+                default:
+                    return false;
+            }
         }
 
         public DateRange Next()
