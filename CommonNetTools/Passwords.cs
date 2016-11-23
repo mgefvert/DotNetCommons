@@ -2,6 +2,9 @@
 using System.Security.Cryptography;
 using System.Text;
 
+// Written by Mats Gefvert
+// Distributed under MIT License: https://opensource.org/licenses/MIT
+
 namespace CommonNetTools
 {
     public static class Passwords

@@ -1,5 +1,8 @@
 ﻿using System;
 
+// Written by Mats Gefvert
+// Distributed under MIT License: https://opensource.org/licenses/MIT
+
 namespace CommonNetTools
 {
     public enum DateRangeBound

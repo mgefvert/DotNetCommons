@@ -44,7 +44,10 @@
   <ItemGroup>
     <Compile Include="CtrlBreak.cs" />
     <Compile Include="DateRange.cs" />
+    <Compile Include="IndexedTreeCollection.cs" />
     <Compile Include="Passwords.cs" />
+    <Compile Include="TreeCollection.cs" />
+    <Compile Include="TreeNode.cs" />
     <Compile Include="_CommandLine\CommandLineDefinition.cs" />
     <Compile Include="_CommandLine\CommandLineProcessor.cs" />
     <Compile Include="_CommandLine\CommandLineAttributes.cs" />

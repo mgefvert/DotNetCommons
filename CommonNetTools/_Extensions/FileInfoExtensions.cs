@@ -2,6 +2,9 @@
 using System.IO;
 using System.Security.Principal;
 
+// Written by Mats Gefvert
+// Distributed under MIT License: https://opensource.org/licenses/MIT
+
 namespace CommonNetTools
 {
     public static class FileInfoExtensions

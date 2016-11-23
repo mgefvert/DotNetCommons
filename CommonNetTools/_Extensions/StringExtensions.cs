@@ -15,6 +15,15 @@ namespace CommonNetTools
               : Mid(value, 0, count);
         }
 
+        public static string LeftEllipsis(this string value, int count)
+        {
+            var result = Left(value, count);
+            if (value != null && value.Length > count)
+                result += "…";
+
+            return result;
+        }
+
         public static bool Like(this string value, string compare)
         {
             return string.Equals(value, compare, StringComparison.CurrentCultureIgnoreCase);
