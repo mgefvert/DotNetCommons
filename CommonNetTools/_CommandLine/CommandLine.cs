@@ -9,25 +9,27 @@ using System.Text;
 
 namespace CommonNetTools
 {
-    public static class CommandLine<T> where T : class, new()
+    public static class CommandLine
     {
-        public static List<CommandLineDefinition> GetParameters()
+        public static bool DisplayHelpOnEmpty { get; set; }
+
+        public static List<CommandLineDefinition> GetParameters(Type type)
         {
-            return GetDefinitionList().Where(x => x.IsAttribute).ToList();
+            return GetDefinitionList(type).Where(x => x.IsAttribute).ToList();
         }
 
-        public static List<KeyValuePair<string, string>> GetHelpText()
+        public static List<KeyValuePair<string, string>> GetHelpText(Type type)
         {
-            return GetParameters()
+            return GetParameters(type)
               .Select(x => new KeyValuePair<string, string>(x.OptionString, x.Description))
               .ToList();
         }
 
-        public static string GetFormattedHelpText()
+        public static string GetFormattedHelpText(Type type)
         {
             var result = new StringBuilder();
 
-            var help = GetHelpText();
+            var help = GetHelpText(type);
             var keylen = help.Max(x => x.Key.Length);
 
             int consoleWidth;
@@ -46,8 +48,8 @@ namespace CommonNetTools
                 {
                     result.Append(item.Key);
                     foreach (var line in TextTools.WordWrap(item.Value, consoleWidth - 5))
-                        result.Append("   " + line);
-                    result.Append("");
+                        result.AppendLine("   " + line);
+                    result.AppendLine("");
                 }
             }
             else
@@ -57,26 +59,29 @@ namespace CommonNetTools
                     var key = item.Key;
                     foreach (var line in TextTools.WordWrap(item.Value, consoleWidth - keylen - 5))
                     {
-                        result.Append(key.PadRight(keylen) + "   " + line);
+                        result.AppendLine(key.PadRight(keylen) + "   " + line);
                         key = "";
                     }
                 }
             }
 
-            return string.Join("\r\n", result);
+            return result.ToString();
         }
 
-        public static T Parse()
+        public static T Parse<T>() where T : class, new()
         {
-            return Parse(Environment.GetCommandLineArgs());
+            return Parse<T>(Environment.GetCommandLineArgs().Skip(1).ToArray());
         }
 
-        public static T Parse(string[] args)
+        public static T Parse<T>(string[] args) where T : class, new()
         {
+            if (args.Length == 0 && DisplayHelpOnEmpty)
+                throw new CommandLineDisplayHelpException(typeof(T));    
+
             var processor = new CommandLineProcessor<T>
             {
                 Arguments = args.ToList(),
-                Definitions = GetDefinitionList(),
+                Definitions = GetDefinitionList(typeof(T)),
                 Result = new T()
             };
 
@@ -85,12 +90,12 @@ namespace CommonNetTools
             return processor.Result;
         }
 
-        private static List<CommandLineDefinition> GetDefinitionList()
+        private static List<CommandLineDefinition> GetDefinitionList(Type type)
         {
             try
             {
                 var result = new List<CommandLineDefinition>();
-                foreach (var property in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
                     var definition = new CommandLineDefinition();
 

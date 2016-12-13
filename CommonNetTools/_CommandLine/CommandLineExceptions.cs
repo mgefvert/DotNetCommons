@@ -16,6 +16,13 @@ namespace CommonNetTools
         }
     }
 
+    public class CommandLineDisplayHelpException : CommandLineException
+    {
+        public CommandLineDisplayHelpException(Type type) : base(CommandLine.GetFormattedHelpText(type))
+        {
+        }
+    }
+
     public enum CommandLineParameterError
     {
         UndefinedParameter,
