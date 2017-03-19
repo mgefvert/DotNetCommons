@@ -34,7 +34,7 @@ namespace CommonNetTools.WinForms
             {
                 var cp = base.CreateParams;
                 if (!DesignMode)
-                    cp.ExStyle |= API.WS_EX_LAYERED | API.WS_EX_TRANSPARENT;
+                    cp.ExStyle |= WinApi.WS_EX_LAYERED | WinApi.WS_EX_TRANSPARENT;
                 return cp;
             }
         }
@@ -80,16 +80,16 @@ namespace CommonNetTools.WinForms
 
         public void UpdateAlpha()
         {
-            var blend = new API.BLENDFUNCTION
+            var blend = new WinApi.BLENDFUNCTION
             {
-                BlendOp = API.AC_SRC_OVER,
+                BlendOp = WinApi.AC_SRC_OVER,
                 BlendFlags = 0,
                 SourceConstantAlpha = (byte)Alpha,
-                AlphaFormat = API.AC_SRC_ALPHA
+                AlphaFormat = WinApi.AC_SRC_ALPHA
             };
 
             var zero = IntPtr.Zero;
-            API.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, API.ULW_ALPHA);
+            WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA);
         }
 
         public bool UpdateImage()
@@ -104,12 +104,12 @@ namespace CommonNetTools.WinForms
             Left = area.Right - 7 * Width / 8;
             Top = area.Bottom - Height;
 
-            var screenDc = API.GetDC(IntPtr.Zero);
-            var memDc = API.CreateCompatibleDC(screenDc);
+            var screenDc = WinApi.GetDC(IntPtr.Zero);
+            var memDc = WinApi.CreateCompatibleDC(screenDc);
 
             // Display-image
             var hBitmap = CurrentBitmap.GetHbitmap(Color.FromArgb(0));  // Set the fact that background is transparent
-            var oldBitmap = API.SelectObject(memDc, hBitmap);
+            var oldBitmap = WinApi.SelectObject(memDc, hBitmap);
 
             // Display-rectangle
             var size = CurrentBitmap.Size;
@@ -117,25 +117,25 @@ namespace CommonNetTools.WinForms
             var topPos = new Point(Left, Top);
 
             // Set up blending options
-            var blend = new API.BLENDFUNCTION
+            var blend = new WinApi.BLENDFUNCTION
             {
-                BlendOp = API.AC_SRC_OVER,
+                BlendOp = WinApi.AC_SRC_OVER,
                 BlendFlags = 0,
                 SourceConstantAlpha = (byte)Alpha,
-                AlphaFormat = API.AC_SRC_ALPHA
+                AlphaFormat = WinApi.AC_SRC_ALPHA
             };
 
-            var result = API.UpdateLayeredWindow(Handle, screenDc, ref topPos, ref size, memDc, ref pointSource, 0, ref blend, API.ULW_ALPHA);
+            var result = WinApi.UpdateLayeredWindow(Handle, screenDc, ref topPos, ref size, memDc, ref pointSource, 0, ref blend, WinApi.ULW_ALPHA);
 
             // Clean-up
-            API.ReleaseDC(IntPtr.Zero, screenDc);
+            WinApi.ReleaseDC(IntPtr.Zero, screenDc);
             if (hBitmap != IntPtr.Zero)
             {
-                API.SelectObject(memDc, oldBitmap);
-                API.DeleteObject(hBitmap);
+                WinApi.SelectObject(memDc, oldBitmap);
+                WinApi.DeleteObject(hBitmap);
             }
 
-            API.DeleteDC(memDc);
+            WinApi.DeleteDC(memDc);
 
             return result;
         }

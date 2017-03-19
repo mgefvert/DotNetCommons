@@ -47,8 +47,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HtmlSoup\HtmlParserTest.cs" />
-    <Compile Include="HtmlSoup\HtmlTagTest.cs" />
     <Compile Include="IPAccessListTest.cs" />
     <Compile Include="IPNetworkTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

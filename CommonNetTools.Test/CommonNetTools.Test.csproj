@@ -51,6 +51,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="_CommandLine\Options.cs" />
     <Compile Include="_Extensions\CollectionExtensionsTest.cs" />
     <Compile Include="_CommandLine\CommandLineTest.cs" />
     <Compile Include="_Extensions\DateTimeExtensionsTest.cs" />

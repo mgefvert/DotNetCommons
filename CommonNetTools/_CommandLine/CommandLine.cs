@@ -11,7 +11,8 @@ namespace CommonNetTools
 {
     public static class CommandLine
     {
-        public static bool DisplayHelpOnEmpty { get; set; }
+        public static bool MultipleShortOptions { get; set; } = true;
+        public static bool DisplayHelpOnEmpty { get; set; } = true;
 
         public static List<CommandLineDefinition> GetParameters(Type type)
         {
@@ -46,7 +47,7 @@ namespace CommonNetTools
             {
                 foreach (var item in help)
                 {
-                    result.Append(item.Key);
+                    result.AppendLine(item.Key);
                     foreach (var line in TextTools.WordWrap(item.Value, consoleWidth - 5))
                         result.AppendLine("   " + line);
                     result.AppendLine("");
@@ -65,7 +66,7 @@ namespace CommonNetTools
                 }
             }
 
-            return result.ToString();
+            return string.Join("\r\n", result);
         }
 
         public static T Parse<T>() where T : class, new()

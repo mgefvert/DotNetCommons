@@ -35,6 +35,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CtrlBreak.cs" />
@@ -43,6 +44,13 @@
     <Compile Include="SetConsoleColor.cs" />
     <Compile Include="IndexedTreeCollection.cs" />
     <Compile Include="Passwords.cs" />
+    <Compile Include="StreamTools.cs" />
+    <Compile Include="WinApi.cs" />
+    <Compile Include="_Tokenizer\StringTokenizerException.cs" />
+    <Compile Include="_Tokenizer\TokenList.cs" />
+    <Compile Include="_Tokenizer\TokenDefinition.cs" />
+    <Compile Include="_Tokenizer\Token.cs" />
+    <Compile Include="_Tokenizer\StringTokenizer.cs" />
     <Compile Include="TreeCollection.cs" />
     <Compile Include="TreeNode.cs" />
     <Compile Include="_CommandLine\CommandLineDefinition.cs" />

@@ -46,16 +46,21 @@
     <Compile Include="AlphaForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="API.cs" />
     <Compile Include="AppBar.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BitmapBuffer.cs" />
+    <Compile Include="Graphics\BitmapBuffer.cs" />
     <Compile Include="ControlExtensions.cs" />
     <Compile Include="Hotkeys.cs" />
-    <Compile Include="ImageProcessor.cs" />
-    <Compile Include="PaintBrush.cs" />
+    <Compile Include="Graphics\ImageProcessor.cs" />
+    <Compile Include="Graphics\PaintBrush.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CommonNetTools\CommonNetTools.csproj">
+      <Project>{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}</Project>
+      <Name>CommonNetTools</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

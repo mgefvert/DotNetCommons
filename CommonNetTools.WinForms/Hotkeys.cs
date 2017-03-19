@@ -21,7 +21,7 @@ namespace CommonNetTools.WinForms
 
         public bool Add(uint modifiers, uint keycode, Action execute)
         {
-            var result = API.RegisterHotKey(_handle, _counter, modifiers, keycode);
+            var result = WinApi.RegisterHotKey(_handle, _counter, modifiers, keycode);
             if (result)
                 _hotkeys[_counter++] = execute;
 
@@ -38,7 +38,7 @@ namespace CommonNetTools.WinForms
         public void Clear()
         {
             foreach (var hotkey in _hotkeys.Keys)
-                API.UnregisterHotKey(_handle, hotkey);
+                WinApi.UnregisterHotKey(_handle, hotkey);
 
             _hotkeys.Clear();
         }
@@ -50,7 +50,7 @@ namespace CommonNetTools.WinForms
 
         public void Process(ref Message msg)
         {
-            if (msg.Msg != API.WM_HOTKEY)
+            if (msg.Msg != WinApi.WM_HOTKEY)
                 return;
 
             int hotkey = (int)msg.WParam;

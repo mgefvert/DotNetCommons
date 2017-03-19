@@ -9,6 +9,13 @@ namespace CommonNetTools
 {
     internal class CommandLineProcessor<T>
     {
+        private enum OptionType
+        {
+            None,
+            Short,
+            Long
+        }
+
         public List<string> Arguments;
         public List<CommandLineDefinition> Definitions;
         public T Result;
@@ -19,15 +26,16 @@ namespace CommonNetTools
             while (Arguments.Any())
             {
                 var arg = Arguments.ExtractFirst();
+                var type = FindOptionType(ref arg);
 
-                if (IsOption(ref arg))
-                    ProcessOption(arg);
-                else
+                if (type == OptionType.None)
                     ProcessPosition(arg);
+                else
+                    ProcessOption(arg, type);
             }
         }
 
-        private void ProcessOption(string arg)
+        private void ProcessOption(string arg, OptionType type)
         {
             string value = null;
 
@@ -36,6 +44,23 @@ namespace CommonNetTools
                 var items = arg.Split(new[] { '=' }, 2);
                 arg = items[0];
                 value = items[1];
+            }
+            else if (arg.Length >= 2 && type == OptionType.Short)
+            {
+                // More characters than we expected for a short option.
+                // This can be either like "-xzf" for multiple options at once, or
+                // "-uroot" for MySQL-like options; depending on MultipleShortOptions.
+
+                if (CommandLine.MultipleShortOptions)
+                {
+                    foreach (var ch in arg)
+                        ProcessOption(ch.ToString(), OptionType.Short);
+                    return;
+                }
+
+                // MySQL style
+                value = arg.Substring(1);
+                arg = arg.Substring(0, 1);
             }
 
             var definition = FindDefinition(arg);
@@ -59,7 +84,7 @@ namespace CommonNetTools
                     throw new CommandLineParameterException(arg, CommandLineParameterError.ValueRequired);
 
                 value = Arguments.ExtractFirst();
-                if (IsOption(ref value))
+                if (FindOptionType(ref value) != OptionType.None)
                     throw new CommandLineParameterException(arg, CommandLineParameterError.ValueRequired);
 
                 SetParameter(definition, value);
@@ -80,8 +105,11 @@ namespace CommonNetTools
             definition = FindRemainder();
             if (definition != null)
             {
+                    var remainder = definition.Property.GetValue(Result) as ICollection<string>;
+                    if (remainder == null)
+                        throw new CommandLineException("No CommandLineRemainder property found, or the designated property is not an ICollection<string>.");
 
-                SetParameter(definition, arg);
+                    remainder.Add(arg);
                 return;
             }
 
@@ -98,29 +126,29 @@ namespace CommonNetTools
             return Definitions.FirstOrDefault(x => x.Position == position);
         }
 
-        private CommandLineDefinition FindRemainder()
-        {
-            return Definitions.FirstOrDefault(x => x.Remainder);
-        }
-
-        private bool IsOption(ref string arg)
+        private OptionType FindOptionType(ref string arg)
         {
             if (string.IsNullOrEmpty(arg))
-                return false;
+                return OptionType.None;
 
             if (arg.StartsWith("--") && arg.Length > 2)
             {
                 arg = arg.Substring(2);
-                return true;
+                return OptionType.Long;
             }
 
             if ((arg.StartsWith("/") || arg.StartsWith("-")) && arg.Length > 1)
             {
                 arg = arg.Substring(1);
-                return true;
+                return OptionType.Short;
             }
 
-            return false;
+            return OptionType.None;
+        }
+
+        private CommandLineDefinition FindRemainder()
+        {
+            return Definitions.FirstOrDefault(x => x.Remainder);
         }
 
         private void SetParameter(CommandLineDefinition definition, object value)
