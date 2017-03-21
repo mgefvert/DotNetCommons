@@ -7,19 +7,51 @@ namespace CommonNetTools
 {
     public class StringTokenizer
     {
-        protected List<char> EscapeChars { get; }
-        protected List<TokenCharacterModeDefinition> Modes { get; }
-        protected ILookup<char, TokenStringDefinition> Strings { get; }
+        protected List<TokenDefinition> Definitions { get; } = new List<TokenDefinition>();
+        protected bool IsPrepared;
 
-        public StringTokenizer(ICollection<TokenDefinition> definitions)
+        protected List<TokenCharacterModeDefinition> Modes;
+        protected List<char> EscapeChars;
+        protected ILookup<char, TokenStringDefinition> Strings;
+
+        public StringTokenizer()
         {
-            EscapeChars = definitions.OfType<TokenEscapeDefinition>().Select(x => x.EscapeChar).ToList();
-            Modes = definitions.OfType<TokenCharacterModeDefinition>().OrderByDescending(x => x.Mode).ToList();
-            Strings = definitions.OfType<TokenStringDefinition>().OrderByDescending(x => x.Text.Length).ToLookup(x => x.Text[0]);
+        }
+
+        public StringTokenizer(IEnumerable<TokenDefinition> definitions)
+        {
+            foreach (var definition in definitions)
+                AddDefinition(definition);
+        }
+
+        public void AddDefinition(TokenDefinition definition)
+        {
+            Definitions.Add(definition);
+            IsPrepared = false;
+        }
+
+        public void ClearDefinitions()
+        {
+            Definitions.Clear();
+            Modes = null;
+            Strings = null;
+            EscapeChars = null;
+            IsPrepared = false;
+        }
+
+        protected void Prepare()
+        {
+            EscapeChars = Definitions.OfType<TokenEscapeDefinition>().Select(x => x.EscapeChar).ToList();
+            Modes = Definitions.OfType<TokenCharacterModeDefinition>().OrderByDescending(x => x.Mode).ToList();
+            Strings = Definitions.OfType<TokenStringDefinition>().OrderByDescending(x => x.Text.Length).ToLookup(x => x.Text[0]);
+            IsPrepared = true;
         }
 
         public TokenList Tokenize(string text)
         {
+            if (!IsPrepared)
+                Prepare();
+
             var position = 0;
             return DoTokenize(text, null, ref position);
         }

@@ -40,7 +40,7 @@ namespace CommonNetTools.IO.Test.Parsers
             var t0 = DateTime.Now;
 
             var c = 0;
-            for (int i = 0; i < 25000; i++)
+            for (int i = 0; i < 5000; i++)
             {
                 foreach (var line in _testData)
                 {

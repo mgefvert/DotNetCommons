@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CommonNetTools.IO.Parsers
 {
-    public static class CsvParser
+    public class CsvParser
     {
         private enum CsvToken
         {
@@ -11,13 +11,15 @@ namespace CommonNetTools.IO.Parsers
             Data,
             Comma,
             Quotation,
-            NewLine
+            Newline,
+            Linefeed
         }
 
         private static readonly TokenDefinition[] Definitions = {
             new TokenCharacterModeDefinition(TokenMode.Any, (int)CsvToken.Data, false), 
-            new TokenCharacterModeDefinition(TokenMode.Whitespace, (int)CsvToken.Whitespace, false), 
-            new TokenStringDefinition("\r\n", (int)CsvToken.NewLine, false), 
+            new TokenCharacterModeDefinition(TokenMode.Whitespace, (int)CsvToken.Whitespace, false),
+            new TokenStringDefinition("\r\n", (int)CsvToken.Newline, false),
+            new TokenStringDefinition("\n", (int)CsvToken.Linefeed, false), 
             new TokenStringDefinition(",", (int)CsvToken.Comma, false),
             new TokenSectionDefinition("\"", "\"", false, (int)CsvToken.Quotation, false),
             new TokenEscapeDefinition('\\')
@@ -25,11 +27,14 @@ namespace CommonNetTools.IO.Parsers
 
         private static readonly StringTokenizer Tokenizer = new StringTokenizer(Definitions);
 
-        public static List<List<string>> Parse(string text)
+        public List<List<string>> Parse(string text)
         {
             var tokens = Tokenizer.Tokenize(text);
 
-            var lines = tokens.Split((int)CsvToken.NewLine);
+            // Figure out line endings used
+            var newline = GuessLineEnding(tokens);
+
+            var lines = tokens.Split(newline);
             var result = new List<List<string>>();
             foreach (var line in lines)
             {
@@ -45,6 +50,25 @@ namespace CommonNetTools.IO.Parsers
             }
 
             return result;
+        }
+
+        private static int GuessLineEnding(TokenList tokens)
+        {
+            var crlf = 0;
+            var lf = 0;
+
+            foreach (var token in tokens)
+            {
+                if (token.Value == (int) CsvToken.Newline)
+                    crlf++;
+                else if (token.Value == (int) CsvToken.Linefeed)
+                    lf++;
+
+                if (crlf + lf > 100)
+                    break;
+            }
+
+            return crlf > lf ? (int) CsvToken.Newline : (int) CsvToken.Linefeed;
         }
     }
 }
