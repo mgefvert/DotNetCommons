@@ -52,6 +52,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Parsers\ApacheLogParserTest.cs" />
+    <Compile Include="Parsers\Name.cs" />
+    <Compile Include="Parsers\CsvParserOfTTest.cs" />
     <Compile Include="Parsers\CsvParserTest.cs" />
     <Compile Include="KeyValueStoreTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CommonNetTools.IO.Parsers
 {
     public class CsvParser
     {
-        private enum CsvToken
+        public enum CsvToken
         {
             Whitespace,
             Data,
@@ -27,32 +28,7 @@ namespace CommonNetTools.IO.Parsers
 
         private static readonly StringTokenizer Tokenizer = new StringTokenizer(Definitions);
 
-        public List<List<string>> Parse(string text)
-        {
-            var tokens = Tokenizer.Tokenize(text);
-
-            // Figure out line endings used
-            var newline = GuessLineEnding(tokens);
-
-            var lines = tokens.Split(newline);
-            var result = new List<List<string>>();
-            foreach (var line in lines)
-            {
-                var tokenFields = line.Split((int) CsvToken.Comma);
-                var stringFields = new List<string>();
-                foreach (var tokenField in tokenFields)
-                {
-                    tokenField.Trim((int)CsvToken.Whitespace);
-                    stringFields.Add(tokenField.ToString());
-                }
-
-                result.Add(stringFields);
-            }
-
-            return result;
-        }
-
-        private static int GuessLineEnding(TokenList tokens)
+        public static CsvToken GuessLineEnding(TokenList tokens)
         {
             var crlf = 0;
             var lf = 0;
@@ -68,7 +44,37 @@ namespace CommonNetTools.IO.Parsers
                     break;
             }
 
-            return crlf > lf ? (int) CsvToken.Newline : (int) CsvToken.Linefeed;
+            return crlf > lf ? CsvToken.Newline : CsvToken.Linefeed;
+        }
+
+        public List<string> ParseRow(string text)
+        {
+            return TokensToLine(Tokenizer.Tokenize(text));
+        }
+
+        public List<List<string>> ParseRows(string text)
+        {
+            var tokens = Tokenizer.Tokenize(text);
+            var newline = (int)GuessLineEnding(tokens);
+
+            return tokens
+                .Split(newline)
+                .Select(TokensToLine)
+                .ToList();
+        }
+
+        internal List<string> TokensToLine(TokenList tokens)
+        {
+            var tokenFields = tokens.Split((int)CsvToken.Comma);
+            var result = new List<string>();
+
+            foreach (var tokenField in tokenFields)
+            {
+                tokenField.Trim((int)CsvToken.Whitespace);
+                result.Add(tokenField.ToString());
+            }
+
+            return result;
         }
     }
 }

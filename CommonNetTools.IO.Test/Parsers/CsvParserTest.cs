@@ -24,7 +24,7 @@ namespace CommonNetTools.IO.Test.Parsers
         {
             const string src = @",1, 2, abc, 'hello world',3,  'hello\' again' , 1  2 3";
 
-            var result = _parser.Parse(Cvt(src));
+            var result = _parser.ParseRows(Cvt(src));
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual(",1,2,abc,hello world,3,hello\" again,1  2 3", string.Join(",", result[0]));
         }
@@ -32,7 +32,7 @@ namespace CommonNetTools.IO.Test.Parsers
         [TestMethod]
         public void TestEscape()
         {
-            var result = _parser.Parse(Cvt(@"'\''"));
+            var result = _parser.ParseRow(Cvt(@"'\''"));
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("\"", string.Join(",", result[0]));
         }
@@ -51,7 +51,7 @@ namespace CommonNetTools.IO.Test.Parsers
                 var text = reader.ReadToEnd();
 
                 var t0 = DateTime.Now;
-                var csv = _parser.Parse(text);
+                var csv = _parser.ParseRows(text);
                 Console.WriteLine((int)(DateTime.Now - t0).TotalMilliseconds + " ms");
 
                 Assert.AreEqual(10002, csv.Count);

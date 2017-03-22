@@ -46,6 +46,7 @@
     <Compile Include="Passwords.cs" />
     <Compile Include="StreamTools.cs" />
     <Compile Include="WinApi.cs" />
+    <Compile Include="_Extensions\TypeExtensions.cs" />
     <Compile Include="_Tokenizer\StringTokenizerException.cs" />
     <Compile Include="_Tokenizer\TokenList.cs" />
     <Compile Include="_Tokenizer\TokenDefinition.cs" />
