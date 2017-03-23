@@ -1,2 +1,2 @@
-# CommonNetTools
-Common library for make benefit glorious language of C#
+# DotNetCommons
+DotNetCommons library for make benefit glorious language of C#
