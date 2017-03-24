@@ -18,7 +18,7 @@ namespace DotNetCommons.IO.Parsers
         }
     }
 
-    internal class CsvFieldDefinition
+    public class CsvFieldDefinition
     {
         public CsvFieldAttribute Attribute { get; }
         public int FieldNo { get; set; }
@@ -32,19 +32,19 @@ namespace DotNetCommons.IO.Parsers
         }
     }
 
-    public enum CsvParserInvalidDataReason
+    public enum InvalidDataReason
     {
         RequiredValueMissing,
         ConversionFailed
     }
 
-    public class CsvParserInvalidDataArgs : EventArgs
+    public class InvalidDataArgs : EventArgs
     {
         public Exception Exception { get; }
         public int? LineNo { get; }
-        public CsvParserInvalidDataReason Reason { get; }
+        public InvalidDataReason Reason { get; }
 
-        public CsvParserInvalidDataArgs(int? lineNo, CsvParserInvalidDataReason reason, Exception exception)
+        public InvalidDataArgs(int? lineNo, InvalidDataReason reason, Exception exception)
         {
             LineNo = lineNo;
             Reason = reason;
@@ -52,23 +52,97 @@ namespace DotNetCommons.IO.Parsers
         }
     }
 
+    public class PreProcessFieldArgs : EventArgs
+    {
+        public string Data { get; set; }
+        public bool Discard { get; set; }
+        public PropertyInfo Property { get; }
+
+        public PreProcessFieldArgs(PropertyInfo property, string data)
+        {
+            Property = property;
+            Data = data;
+        }
+    }
+
+    public class PreProcessRowArgs : EventArgs
+    {
+        public bool Discard { get; set; }
+        public List<string> Fields { get; set; }
+
+        public PreProcessRowArgs(List<string> fields)
+        {
+            Fields = fields;
+        }
+    }
+
+    public class PostProcessObjectArgs<T> : EventArgs
+    {
+        public bool Discard { get; set; }
+        public T Object { get; set; }
+
+        public PostProcessObjectArgs(T obj)
+        {
+            Object = obj;
+        }
+    }
+
+    public delegate void InvalidDataDelegate(object sender, InvalidDataArgs args);
+    public delegate void PreProcessFieldDelegate(object sender, PreProcessFieldArgs args);
+    public delegate void PreProcessRowDelegate(object sender, PreProcessRowArgs args);
+    public delegate void PostProcessObjectDelegate<T>(object sender, PostProcessObjectArgs<T> args);
+
     public class CsvParser<T> where T : class, new()
     {
-        public delegate void CsvParserInvalidDataDelegate(object sender, CsvParserInvalidDataArgs args);
-
-        private readonly List<CsvFieldDefinition> _definitions = new List<CsvFieldDefinition>();
+        protected readonly List<CsvFieldDefinition> Definitions = new List<CsvFieldDefinition>();
         private bool _gotHeaders;
         public CsvParser Parser { get; } = new CsvParser();
-        public event CsvParserInvalidDataDelegate InvalidData;
+
+        public event InvalidDataDelegate InvalidData;
+        public event PreProcessFieldDelegate PreProcessField;
+        public event PreProcessRowDelegate PreProcessRow;
+        public event PostProcessObjectDelegate<T> PostProcessObject;
 
         public CsvParser()
         {
-            _definitions.AddRange(ProcessClass(typeof(T)));
+            Definitions.AddRange(ProcessClass(typeof(T)));
         }
 
-        protected void FireInvalidData(int? lineNo, CsvParserInvalidDataReason reason, Exception exception)
+        protected void FireInvalidData(int? lineNo, InvalidDataReason reason, Exception exception)
         {
-            InvalidData?.Invoke(this, new CsvParserInvalidDataArgs(lineNo, reason, exception));
+            InvalidData?.Invoke(this, new InvalidDataArgs(lineNo, reason, exception));
+        }
+
+        protected bool FirePreProcessField(CsvFieldDefinition definition, ref string data)
+        {
+            if (PreProcessField == null)
+                return false;
+
+            var args = new PreProcessFieldArgs(definition.Property, data);
+            PreProcessField(this, args);
+
+            data = args.Data;
+            return args.Discard;
+        }
+
+        protected bool FirePreProcessRow(List<string> fields)
+        {
+            if (PreProcessRow == null)
+                return false;
+
+            var args = new PreProcessRowArgs(fields);
+            PreProcessRow(this, args);
+            return args.Discard;
+        }
+
+        protected bool FirePostProcessRow(T obj)
+        {
+            if (PostProcessObject == null)
+                return false;
+
+            var args = new PostProcessObjectArgs<T>(obj);
+            PostProcessObject(this, args);
+            return args.Discard;
         }
 
         internal static IEnumerable<CsvFieldDefinition> ProcessClass(Type type)
@@ -86,7 +160,7 @@ namespace DotNetCommons.IO.Parsers
             for (int i = 0; i < fields.Count; i++)
                 lookup[fields[i].ToLower()] = i;
 
-            foreach (var definition in _definitions)
+            foreach (var definition in Definitions)
             {
                 var name = definition.Attribute.Name.ToLower();
                 int value;
@@ -94,7 +168,7 @@ namespace DotNetCommons.IO.Parsers
                     definition.FieldNo = value;
             }
 
-            var missing = _definitions.Where(x => x.Attribute.Required && x.FieldNo == -1).ToList();
+            var missing = Definitions.Where(x => x.Attribute.Required && x.FieldNo == -1).ToList();
             if (missing.Any())
                 throw new CsvException("Missing fields in CSV header: " + string.Join(", ", missing));
 
@@ -138,16 +212,22 @@ namespace DotNetCommons.IO.Parsers
             if (string.IsNullOrEmpty(string.Join("", strings).Trim()))
                 return null;
 
+            if (FirePreProcessRow(strings))
+                return null;
+
             var obj = new T();
-            foreach (var definition in _definitions)
+            foreach (var definition in Definitions)
             {
                 if (definition.FieldNo == -1)
                     continue;
 
                 var value = strings.ElementAtOrDefault(definition.FieldNo);
+                if (FirePreProcessField(definition, ref value))
+                    continue;
+
                 if (definition.Attribute.Required && string.IsNullOrWhiteSpace(value))
                 {
-                    FireInvalidData(lineNo, CsvParserInvalidDataReason.RequiredValueMissing, null);
+                    FireInvalidData(lineNo, InvalidDataReason.RequiredValueMissing, null);
                     continue;
                 }
 
@@ -157,11 +237,11 @@ namespace DotNetCommons.IO.Parsers
                 }
                 catch (Exception ex)
                 {
-                    FireInvalidData(lineNo, CsvParserInvalidDataReason.ConversionFailed, ex);
+                    FireInvalidData(lineNo, InvalidDataReason.ConversionFailed, ex);
                 }
             }
 
-            return obj;
+            return FirePostProcessRow(obj) ? null : obj;
         }
     }
 }
