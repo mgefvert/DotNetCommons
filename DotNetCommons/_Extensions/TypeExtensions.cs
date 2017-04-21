@@ -11,5 +11,10 @@ namespace DotNetCommons
         {
             return type == testAgainst || type.IsSubclassOf(testAgainst);
         }
+
+        public static bool IsNullable(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && type != typeof(string);
+        }
     }
 }

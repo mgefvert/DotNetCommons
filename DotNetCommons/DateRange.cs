@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -50,6 +52,33 @@ namespace DotNetCommons
         {
             Start = start.Date;
             End = end.Date;
+        }
+
+        public static DateRange FromMinMax<T>(IEnumerable<T> collection, Func<T, DateTime> selector)
+        {
+            var first = true;
+            long min = 0, max = 0;
+
+            foreach (var date in collection.Select(selector).Select(x => x.Ticks))
+            {
+                if (first)
+                {
+                    min = max = date;
+                    first = false;
+                }
+                else
+                {
+                    if (date < min)
+                        min = date;
+                    if (date > max)
+                        max = date;
+                }
+            }
+
+            if (first)
+                throw new InvalidOperationException("No data in array - at least one item is required.");
+
+            return new DateRange(new DateTime(min), new DateTime(max));
         }
 
         protected void AssertDateRangeTypeIsSet()

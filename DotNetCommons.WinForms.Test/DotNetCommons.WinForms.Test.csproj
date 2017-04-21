@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A0935A03-286E-4D7B-9985-38836B78C2ED}</ProjectGuid>
+    <ProjectGuid>{CCEE6F42-209D-4E50-8DC1-9767622AD431}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DotNetCommons.Test</RootNamespace>
-    <AssemblyName>DotNetCommons.Test</AssemblyName>
+    <RootNamespace>DotNetCommons.WinForms.Test</RootNamespace>
+    <AssemblyName>DotNetCommons.WinForms.Test</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -16,7 +16,6 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -51,24 +51,18 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="PasswordsTest.cs" />
-    <Compile Include="_CommandLine\Options.cs" />
-    <Compile Include="_Extensions\CollectionExtensionsTest.cs" />
-    <Compile Include="_CommandLine\CommandLineTest.cs" />
-    <Compile Include="_Extensions\DateTimeExtensionsTest.cs" />
-    <Compile Include="_Extensions\HashExtensionsTest.cs" />
-    <Compile Include="IndexedListTest.cs" />
+    <Compile Include="Graphics\ImageProcessorTest.cs" />
+    <Compile Include="Graphics\ExifImageTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="_Extensions\StringExtensionsTest.cs" />
-    <Compile Include="TextToolsTest.cs" />
-    <Compile Include="_Logger\LogFileNamingTest.cs" />
-    <Compile Include="_Logger\LogFilesTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
-      <Project>{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}</Project>
-      <Name>DotNetCommons</Name>
+    <ProjectReference Include="..\DotNetCommons.WinForms\DotNetCommons.WinForms.csproj">
+      <Project>{716AE81D-1017-462D-A5CD-5C57A68D0C0C}</Project>
+      <Name>DotNetCommons.WinForms</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Graphics\test.jpg" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

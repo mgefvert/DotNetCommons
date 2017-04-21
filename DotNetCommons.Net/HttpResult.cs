@@ -7,7 +7,7 @@ namespace DotNetCommons.Net
     public class HttpResult
     {
         public bool Success { get; set; }
-        public HttpStatusCode StatusCode { get; set; }
+        public HttpStatusCode? StatusCode { get; set; }
         public string StatusDescription { get; set; }
         public string ContentEncoding { get; set; }
         public string CharacterSet { get; set; }

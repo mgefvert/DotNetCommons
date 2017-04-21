@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -153,6 +154,22 @@ namespace DotNetCommons
 
         private void SetParameter(CommandLineDefinition definition, object value)
         {
+            var type = definition.Property.PropertyType;
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                // Add the value onto a list instead of just setting the property
+                var list = definition.Property.GetValue(Result) as IList;
+                if (list == null)
+                    throw new CommandLineException("Property " + definition.Property.Name + " has not been initialized.");
+
+                var subtype = type.GetGenericArguments().Single();
+                if (subtype != value.GetType())
+                    value = Convert.ChangeType(value, subtype);
+
+                list.Add(value);
+                return;
+            }
+
             if (definition.Property.PropertyType != value.GetType())
                 value = Convert.ChangeType(value, definition.Property.PropertyType);
 

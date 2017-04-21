@@ -113,6 +113,18 @@ namespace DotNetCommons
             return value;
         }
 
+        public static DateTime Min<T>(this IEnumerable<T> list, Func<T, DateTime> selector)
+        {
+            var ticks = list.Select(selector).Select(x => x.Ticks).Min();
+            return new DateTime(ticks);
+        }
+
+        public static DateTime Max<T>(this IEnumerable<T> list, Func<T, DateTime> selector)
+        {
+            var ticks = list.Select(selector).Select(x => x.Ticks).Max();
+            return new DateTime(ticks);
+        }
+
         public static bool Swap<T>(this IList<T> list, int pos1, int pos2)
         {
             if (pos1 < 0 || pos2 < 0 || pos1 >= list.Count || pos2 >= list.Count)

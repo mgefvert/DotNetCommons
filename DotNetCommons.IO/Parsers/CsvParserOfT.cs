@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -97,6 +99,7 @@ namespace DotNetCommons.IO.Parsers
         protected readonly List<CsvFieldDefinition> Definitions = new List<CsvFieldDefinition>();
         private bool _gotHeaders;
         public CsvParser Parser { get; } = new CsvParser();
+        public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
 
         public event InvalidDataDelegate InvalidData;
         public event PreProcessFieldDelegate PreProcessField;
@@ -110,7 +113,10 @@ namespace DotNetCommons.IO.Parsers
 
         protected void FireInvalidData(int? lineNo, InvalidDataReason reason, Exception exception)
         {
-            InvalidData?.Invoke(this, new InvalidDataArgs(lineNo, reason, exception));
+            if (InvalidData != null)
+                InvalidData(this, new InvalidDataArgs(lineNo, reason, exception));
+            else
+                throw new InvalidDataException($"Invalid data in CSV parsing ({reason}) on line {lineNo}: {exception.Message}");
         }
 
         protected bool FirePreProcessField(CsvFieldDefinition definition, ref string data)
@@ -233,7 +239,7 @@ namespace DotNetCommons.IO.Parsers
 
                 try
                 {
-                    obj.SetPropertyValue(definition.Property, value);
+                    obj.SetPropertyValue(definition.Property, value, Culture);
                 }
                 catch (Exception ex)
                 {

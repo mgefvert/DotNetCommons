@@ -23,6 +23,7 @@ namespace DotNetCommons.WinForms.Graphics
         public int Height => _bitmap.Height;
         public int Width => _bitmap.Width;
         public InterpolationMode InterpolationMode { get; set; }
+        public Size Size => new Size(_bitmap.Width, _bitmap.Height);
 
         public ImageProcessor(Image image)
         {
@@ -256,57 +257,59 @@ namespace DotNetCommons.WinForms.Graphics
             _bitmap = newBitmap;
         }
 
-        public void ScaleMax(int maxWidth, int maxHeight)
+        public void ScaleMax(Size bounds)
         {
-            double w = Width;
-            double h = Height;
+            var newsize = ScaleMax(Size, bounds);
+            if (newsize == Size)
+                return;
 
-            var grow = (int)Math.Max(Math.Ceiling(maxWidth / w), Math.Ceiling(maxHeight / h));
-            w *= grow;
-            h *= grow;
-
-            if (h > maxHeight)
-            {
-                w = w * maxHeight / h;
-                h = maxHeight;
-            }
-
-            if (w > maxWidth)
-            {
-                h = h * maxWidth / w;
-                w = maxWidth;
-            }
-
-            Resample((int)Math.Round(w), (int)Math.Round(h));
+            Resample(newsize.Width, newsize.Height);
         }
 
-        public void ScaleMin(int minWidth, int minHeight)
+        public void ScaleMin(Size bounds)
         {
-            double w = Width;
-            double h = Height;
+            var newsize = ScaleMin(Size, bounds);
+            if (newsize == Size)
+                return;
 
-            var grow = (int)Math.Max(Math.Ceiling(minWidth / w), Math.Ceiling(minHeight / h));
-            w *= grow;
-            h *= grow;
-
-            if (h < minHeight)
-            {
-                w = w * minHeight / h;
-                h = minHeight;
-            }
-
-            if (w > minWidth)
-            {
-                h = h * minWidth / w;
-                w = minWidth;
-            }
-
-            Resample((int)Math.Round(w), (int)Math.Round(h));
+            Resample(newsize.Width, newsize.Height);
         }
 
         private int Similarity(Color color1, Color color2)
         {
             return Math.Abs(((color1.R - color2.R) + (color1.G - color2.G) + (color1.B - color2.B)) / 3);
+        }
+
+        public static Size ScaleMax(Size original, Size bounds)
+        {
+            var dx = (double)bounds.Width / original.Width;
+            var dy = (double)bounds.Height / original.Height;
+
+            var delta = Math.Min(dx, dy);
+
+            var result = new Size((int)Math.Round(original.Width * delta), (int)Math.Round(original.Height * delta));
+            return result;
+        }
+
+        public static Size ScaleMin(Size original, Size bounds)
+        {
+            var dx = (double)bounds.Width / original.Width;
+            var dy = (double)bounds.Height / original.Height;
+
+            var delta = Math.Max(dx, dy);
+
+            var result = new Size((int)Math.Round(original.Width * delta), (int)Math.Round(original.Height * delta));
+            return result;
+        }
+
+        public void Crop(RectangleF rect)
+        {
+            var bitmap = new Bitmap((int)rect.Width, (int)rect.Height, _bitmap.PixelFormat);
+            using (var g = System.Drawing.Graphics.FromImage(bitmap))
+                g.DrawImage(_bitmap, 0, 0, rect, GraphicsUnit.Pixel);
+
+            _bitmap.Dispose();
+            _bitmap = bitmap;
         }
     }
 }

@@ -34,7 +34,7 @@ namespace DotNetCommons
             var propertyType = property.PropertyType;
 
             // Check to see if we have a nullable type
-            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>) && propertyType != typeof(string))
+            if (propertyType.IsNullable())
             {
                 // Null value, set property quite simply to null
                 if (ValueIsNull(value))
@@ -53,7 +53,7 @@ namespace DotNetCommons
                 if (propertyType.IsEnum)
                 {
                     value = !ValueIsNull(value)
-                        ? Enum.Parse(propertyType, Convert.ToString(value))
+                        ? Enum.Parse(propertyType, Convert.ToString(value), true)
                         : Enum.GetValues(propertyType).GetValue(0);
                 }
                 else if (propertyType == typeof(DateTime))
@@ -63,7 +63,7 @@ namespace DotNetCommons
                 else if (propertyType == typeof(Guid))
                     value = !ValueIsNull(value) ? Guid.Parse(value.ToString()) : Guid.Empty;
                 else
-                    value = Convert.ChangeType(value, propertyType);
+                    value = Convert.ChangeType(value, propertyType, culture);
             }
 
             property.SetValue(obj, value);

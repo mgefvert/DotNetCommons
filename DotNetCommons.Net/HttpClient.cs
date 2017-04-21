@@ -119,17 +119,17 @@ namespace DotNetCommons.Net
             catch (WebException ex)
             {
                 using (var response = (HttpWebResponse)ex.Response)
-                using (var stream = response.GetResponseStream())
+                using (var stream = response?.GetResponseStream())
                 {
                     var result = new HttpResult
                     {
                         Success = false,
-                        CharacterSet = response.CharacterSet,
-                        ContentEncoding = response.ContentEncoding,
-                        ContentType = response.ContentType,
-                        Headers = response.Headers,
-                        StatusCode = response.StatusCode,
-                        StatusDescription = response.StatusDescription,
+                        CharacterSet = response?.CharacterSet,
+                        ContentEncoding = response?.ContentEncoding,
+                        ContentType = response?.ContentType,
+                        Headers = response?.Headers,
+                        StatusCode = response?.StatusCode,
+                        StatusDescription = response?.StatusDescription,
                         Data = stream != null ? ReadResponseStream(stream) : new byte[0]
                     };
 

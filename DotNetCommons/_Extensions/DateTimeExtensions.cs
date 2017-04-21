@@ -94,5 +94,10 @@ namespace DotNetCommons
         {
             return (long)(datetime - UnixEpochOffset).TotalMilliseconds;
         }
+
+        public static string ToISO8601String(this DateTime datetime)
+        {
+            return datetime.ToString("yyyy-MM-dd'T'HH:mm:ssK");
+        }
     }
 }
