@@ -162,6 +162,7 @@ namespace DotNetCommons.WinForms
         public const int ULW_COLORKEY = 1;
         public const int ULW_OPAQUE = 4;
         public const int WM_ACTIVATE = 0x0006;
+        public const int WM_POWERBROADCAST = 0x0218;
         public const int WM_HOTKEY = 0x0312;
         public const int WS_EX_LAYERED = 0x00080000;
         public const int WS_EX_TRANSPARENT = 0x00000020;
@@ -206,6 +207,9 @@ namespace DotNetCommons.WinForms
 
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
+
+        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern ulong GetTickCount64();
 
         [DllImport("user32.dll")]
         public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
