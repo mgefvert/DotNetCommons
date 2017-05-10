@@ -38,6 +38,7 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Crypt.cs" />
     <Compile Include="CtrlBreak.cs" />
     <Compile Include="DateRange.cs" />
     <Compile Include="PrecisionTimer.cs" />
