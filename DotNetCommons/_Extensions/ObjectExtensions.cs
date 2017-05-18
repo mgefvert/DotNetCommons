@@ -52,9 +52,13 @@ namespace DotNetCommons
             {
                 if (propertyType.IsEnum)
                 {
-                    value = !ValueIsNull(value)
-                        ? Enum.Parse(propertyType, Convert.ToString(value), true)
-                        : Enum.GetValues(propertyType).GetValue(0);
+                    if (ValueIsNull(value))
+                        value = Enum.GetValues(propertyType).GetValue(0);
+                    else
+                    {
+                        var str = Convert.ToString(value).Replace("-", "");
+                        value = Enum.Parse(propertyType, str, true);
+                    }
                 }
                 else if (propertyType == typeof(DateTime))
                     value = !ValueIsNull(value) ? DateTime.Parse(value.ToString(), culture) : DateTime.MinValue;

@@ -12,8 +12,8 @@ namespace DotNetCommons
     public enum LogSeverity
     {
         Debug,
-        Notice,
         Normal,
+        Notice,
         Warning,
         Error
     }
