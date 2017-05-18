@@ -43,6 +43,11 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HtmlSoup\HtmlElement.cs" />
+    <Compile Include="HtmlSoup\HtmlParser.cs" />
+    <Compile Include="HtmlSoup\HtmlTag.cs" />
+    <Compile Include="HtmlSoup\HtmlTagContainer.cs" />
+    <Compile Include="HtmlSoup\HtmlText.cs" />
     <Compile Include="HttpClient.cs" />
     <Compile Include="HttpClientException.cs" />
     <Compile Include="HttpResult.cs" />
