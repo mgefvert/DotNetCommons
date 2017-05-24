@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -105,6 +107,13 @@ namespace DotNetCommons
             return string.IsNullOrEmpty(value)
               ? string.Empty
               : Mid(value, value.Length - count, count);
+        }
+
+        public static IEnumerable<string> TrimAndFilter(this IEnumerable<string> strings)
+        {
+            return strings
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrEmpty(x));
         }
     }
 }

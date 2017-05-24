@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -27,8 +28,8 @@ namespace DotNetCommons
     {
         public static LogConfig Configuration { get; } = new LogConfig();
         public static event LogEvent LogEvent;
-        private static readonly LogFiles LogFiles;
 
+        private static readonly LogFiles LogFiles;
         private static readonly ConsoleColor DefaultColor;
         private static readonly object LockFile = new object();
         private static readonly object LockConsole = new object();
@@ -36,6 +37,7 @@ namespace DotNetCommons
         private static Stream _logFile;
         private static DateTime _logDate;
         private static readonly int MainThreadId;
+        private static readonly Dictionary<int, int> ThreadLevels = new Dictionary<int, int>();
 
         static Logger()
         {
@@ -62,11 +64,46 @@ namespace DotNetCommons
         }
 
         /// <summary>
+        /// Enter a function, causing messages after this (on the same thread) to be written indented.
+        /// The function can be called as many times as needed, each time indenting one further step.
+        /// </summary>
+        /// <param name="message">Message to write.</param>
+        /// <param name="severity">Severity to use for the message.</param>
+        public static void Enter(string message, LogSeverity severity = LogSeverity.Normal)
+        {
+            if (severity < Configuration.Severity)
+                return;
+
+            Write(message, severity);
+            ThreadLevels.Increase(Thread.CurrentThread.ManagedThreadId);
+        }
+
+        /// <summary>
+        /// Leave a function, causing messages after this (on the same thread) to be unindented.
+        /// The function can be called as many times as needed, each time indenting one further step.
+        /// </summary>
+        /// <param name="message">Message to write.</param>
+        /// <param name="severity">Severity to use for the message.</param>
+        public static void Leave(string message = null, LogSeverity severity = LogSeverity.Normal)
+        {
+            if (severity < Configuration.Severity)
+                return;
+
+            var threadId = Thread.CurrentThread.ManagedThreadId;
+            ThreadLevels.Increase(threadId, -1);
+            if (ThreadLevels[threadId] < 0)
+                ThreadLevels[threadId] = 0;
+
+            if (message != null)
+                Write(message, severity);
+        }
+
+        /// <summary>
         /// Write new log data.
         /// </summary>
         /// <param name="severity">Severity for the log line.</param>
         /// <param name="text">Log text.</param>
-        public static void Write(LogSeverity severity, string text)
+        public static void Write(string text, LogSeverity severity)
         {
             if (severity < Configuration.Severity)
                 return;
@@ -75,7 +112,13 @@ namespace DotNetCommons
                 text = "[" + Thread.CurrentThread.ManagedThreadId + "] " + text;
 
             if (severity == LogSeverity.Debug)
-                text = " - " + text;
+                text = "- " + text;
+
+            if (ThreadLevels.TryGetValue(Thread.CurrentThread.ManagedThreadId, out var level))
+            {
+                while (level-- > 0)
+                    text = "|   " + text;
+            }
 
             LogEvent?.Invoke(severity, text);
 
@@ -133,7 +176,7 @@ namespace DotNetCommons
         /// </summary>
         public static void Err(Exception ex)
         {
-            Write(LogSeverity.Error, ex.GetType().Name + ": " + ex.Message);
+            Write(ex.GetType().Name + ": " + ex.Message, LogSeverity.Error);
         }
 
         /// <summary>
@@ -141,7 +184,7 @@ namespace DotNetCommons
         /// </summary>
         public static void Err(string text)
         {
-            Write(LogSeverity.Error, text);
+            Write(text, LogSeverity.Error);
         }
 
         /// <summary>
@@ -149,7 +192,7 @@ namespace DotNetCommons
         /// </summary>
         public static void Warn(string text)
         {
-            Write(LogSeverity.Warning, text);
+            Write(text, LogSeverity.Warning);
         }
 
         /// <summary>
@@ -157,7 +200,7 @@ namespace DotNetCommons
         /// </summary>
         public static void Notice(string text)
         {
-            Write(LogSeverity.Notice, text);
+            Write(text, LogSeverity.Notice);
         }
 
         /// <summary>
@@ -165,7 +208,7 @@ namespace DotNetCommons
         /// </summary>
         public static void Log(string text)
         {
-            Write(LogSeverity.Normal, text);
+            Write(text, LogSeverity.Normal);
         }
 
         /// <summary>
@@ -174,7 +217,36 @@ namespace DotNetCommons
         public static void Debug(string text)
         {
             if (Configuration.Severity <= LogSeverity.Debug)
-                Write(LogSeverity.Debug, text);
+                Write(text, LogSeverity.Debug);
+        }
+
+        /// <summary>
+        /// Wrap a particular action in a try/catch block, automatically logging the exception
+        /// as an Error condition to the log output and returning true/false for success.
+        /// </summary>
+        /// <param name="enterMessage">Log message upon entering the function.</param>
+        /// <param name="action">Action to execute.</param>
+        /// <param name="leaveMessage">Log message upon leaving the function</param>
+        /// <param name="severity">Severity for the log messages.</param>
+        /// <returns>True if the action succeeded, false if an error was caught.</returns>
+        [DebuggerStepThrough]
+        public static bool Catch(string enterMessage, Action action, string leaveMessage = null, LogSeverity severity = LogSeverity.Normal)
+        {
+            Enter(enterMessage, severity);
+            try
+            {
+                action();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Err(ex);
+                return false;
+            }
+            finally
+            {
+                Leave(leaveMessage, severity);
+            }
         }
 
         /// <summary>

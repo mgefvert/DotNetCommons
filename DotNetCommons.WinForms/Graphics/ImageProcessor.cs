@@ -22,8 +22,9 @@ namespace DotNetCommons.WinForms.Graphics
         public Bitmap Bitmap => _bitmap;
         public int Height => _bitmap.Height;
         public int Width => _bitmap.Width;
-        public InterpolationMode InterpolationMode { get; set; }
+        public int PixelCount => Height * Width;
         public Size Size => new Size(_bitmap.Width, _bitmap.Height);
+        public InterpolationMode InterpolationMode { get; set; }
 
         public ImageProcessor(Image image)
         {
@@ -36,26 +37,14 @@ namespace DotNetCommons.WinForms.Graphics
             ConvertToFormat(convertTo);
         }
 
-        public Stream AsBmp()
-        {
-            var result = new MemoryStream();
-            _bitmap.Save(result, ImageFormat.Bmp);
-            result.Position = 0;
-            return result;
-        }
+        public Stream AsBmp() => AsStream(ImageFormat.Bmp);
+        public Stream AsJpeg() => AsStream(ImageFormat.Jpeg);
+        public Stream AsPng() => AsStream(ImageFormat.Png);
 
-        public Stream AsJpeg()
+        public Stream AsStream(ImageFormat format)
         {
             var result = new MemoryStream();
-            _bitmap.Save(result, ImageFormat.Jpeg);
-            result.Position = 0;
-            return result;
-        }
-
-        public Stream AsPng()
-        {
-            var result = new MemoryStream();
-            _bitmap.Save(result, ImageFormat.Png);
+            _bitmap.Save(result, format);
             result.Position = 0;
             return result;
         }
