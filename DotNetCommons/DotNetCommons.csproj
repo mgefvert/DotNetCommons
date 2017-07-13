@@ -72,15 +72,19 @@
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Crypt.cs" />
+    <Compile Include="Configuration\LocalConfigFile.cs" />
+    <Compile Include="_Security\Crc32.cs" />
+    <Compile Include="_Security\Crypt.cs" />
     <Compile Include="CtrlBreak.cs" />
     <Compile Include="DateRange.cs" />
     <Compile Include="PrecisionTimer.cs" />
     <Compile Include="SetConsoleColor.cs" />
     <Compile Include="IndexedTreeCollection.cs" />
-    <Compile Include="Passwords.cs" />
+    <Compile Include="_Security\Passwords.cs" />
     <Compile Include="Spawn.cs" />
     <Compile Include="StreamTools.cs" />
     <Compile Include="_Extensions\TypeExtensions.cs" />

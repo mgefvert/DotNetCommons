@@ -112,7 +112,7 @@ namespace DotNetCommons
         public static IEnumerable<string> TrimAndFilter(this IEnumerable<string> strings)
         {
             return strings
-                .Select(x => x.Trim())
+                .Select(x => x?.Trim())
                 .Where(x => !string.IsNullOrEmpty(x));
         }
     }

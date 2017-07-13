@@ -18,7 +18,7 @@ namespace DotNetCommons
 
         public bool Enabled
         {
-            get { return WaitThread != null; }
+            get => WaitThread != null;
             set
             {
                 if (value)

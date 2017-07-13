@@ -27,37 +27,35 @@ namespace DotNetCommons.WinForms.Graphics
 
         public string Comments
         {
-            get { return ReadString(ExifTags.XpComment, Encoding.Unicode); }
-            set { Write(ExifTags.XpComment, value, Encoding.Unicode); }
+            get => ReadString(ExifTags.XpComment, Encoding.Unicode);
+            set => Write(ExifTags.XpComment, value, Encoding.Unicode);
         }
 
         public short? Rating
         {
-            get { return ReadInt16(ExifTags.Rating); }
-            set { Write(ExifTags.Rating, value); }
+            get => ReadInt16(ExifTags.Rating);
+            set => Write(ExifTags.Rating, value);
         }
 
         public string Subject
         {
-            get { return ReadString(ExifTags.XpSubject, Encoding.Unicode); }
-            set { Write(ExifTags.XpSubject, value, Encoding.Unicode); }
+            get => ReadString(ExifTags.XpSubject, Encoding.Unicode);
+            set => Write(ExifTags.XpSubject, value, Encoding.Unicode);
         }
 
         public string[] Tags
         {
-            get { return ReadStrings(ExifTags.XpKeywords, Encoding.Unicode); }
-            set { Write(ExifTags.XpKeywords, value, Encoding.Unicode); }
+            get => ReadStrings(ExifTags.XpKeywords, Encoding.Unicode);
+            set => Write(ExifTags.XpKeywords, value, Encoding.Unicode);
         }
 
         public string TagAsText => string.Join("; ", Tags);
 
         public string Title
         {
-            get { return ReadString(ExifTags.XpTitle, Encoding.Unicode); }
-            set { Write(ExifTags.XpTitle, value, Encoding.Unicode);}
+            get => ReadString(ExifTags.XpTitle, Encoding.Unicode);
+            set => Write(ExifTags.XpTitle, value, Encoding.Unicode);
         }
-
-        //Rating { get; private set; }
 
         public ExifImage(string filename) : this(new FileStream(filename, FileMode.Open, FileAccess.ReadWrite))
         {

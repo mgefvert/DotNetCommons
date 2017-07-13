@@ -167,6 +167,20 @@ namespace DotNetCommons.WinForms
         public const int WS_EX_LAYERED = 0x00080000;
         public const int WS_EX_TRANSPARENT = 0x00000020;
 
+        public enum SPI
+        {
+            GETSCREENSAVEACTIVE = 0x0010
+        }
+
+        [Flags]
+        public enum SPIF
+        {
+            None = 0x00,
+            SPIF_UPDATEINIFILE = 0x01,
+            SPIF_SENDCHANGE = 0x02,
+            SPIF_SENDWININICHANGE = 0x02
+        }
+
         public static class SWP
         {
             public static readonly uint
@@ -208,9 +222,12 @@ namespace DotNetCommons.WinForms
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
         [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern ulong GetTickCount64();
-
+		
         [DllImport("user32.dll")]
         public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
 
@@ -222,6 +239,10 @@ namespace DotNetCommons.WinForms
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SystemParametersInfo(SPI uiAction, uint uiParam, IntPtr pvParam, SPIF fWinIni);
 
         [DllImport("user32.dll")]
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
