@@ -54,7 +54,7 @@ namespace DotNetCommons.WinForms.Graphics
             if (image is Bitmap && image.PixelFormat == format)
                 return (Bitmap)image;
 
-            var bitmap = new Bitmap(image.Width, image.Height, format);
+            var bitmap = CreateNewBitmap(image, format, image.Size);
             using (var g = System.Drawing.Graphics.FromImage(bitmap))
                 g.DrawImage(image, 0, 0);
 
@@ -69,6 +69,14 @@ namespace DotNetCommons.WinForms.Graphics
 
             _bitmap.Dispose();
             _bitmap = newBitmap;
+        }
+
+        public static Bitmap CreateNewBitmap(Image original, PixelFormat pixelFormat, Size size)
+        {
+            var result = new Bitmap(size.Width, size.Height, pixelFormat);
+            foreach (var id in original.PropertyIdList)
+                result.SetPropertyItem(original.GetPropertyItem(id));
+            return result;
         }
 
         public void FadeEdges(int percent, Edges edges)
@@ -233,7 +241,7 @@ namespace DotNetCommons.WinForms.Graphics
 
         public void Resample(int width, int height)
         {
-            var newBitmap = new Bitmap(width, height, _bitmap.PixelFormat);
+            var newBitmap = CreateNewBitmap(_bitmap, _bitmap.PixelFormat, new Size(width, height));
 
             using (var g = System.Drawing.Graphics.FromImage(newBitmap))
             {
@@ -293,7 +301,7 @@ namespace DotNetCommons.WinForms.Graphics
 
         public void Crop(RectangleF rect)
         {
-            var bitmap = new Bitmap((int)rect.Width, (int)rect.Height, _bitmap.PixelFormat);
+            var bitmap = CreateNewBitmap(_bitmap, _bitmap.PixelFormat, rect.Size.ToSize());
             using (var g = System.Drawing.Graphics.FromImage(bitmap))
                 g.DrawImage(_bitmap, 0, 0, rect, GraphicsUnit.Pixel);
 

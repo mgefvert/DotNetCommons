@@ -86,6 +86,9 @@ namespace DotNetCommons
 
         private TokenList DoTokenize(string source, string endtext, ref int position)
         {
+            if (source == null)
+                return null;
+
             var result = new TokenList();
             var sb = new StringBuilder();
             Token current = null;
