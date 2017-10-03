@@ -2,10 +2,18 @@
 
 namespace DotNetCommons.Logger
 {
+    [Serializable]
     public class LogEntryDuration : LogEntry, IDisposable
     {
+        [NonSerialized]
         private readonly DateTime _start = DateTime.Now;
+
+        [NonSerialized]
         private readonly LogChannel _logger;
+
+        public LogEntryDuration()
+        {
+        }
 
         public LogEntryDuration(LogChannel logger)
         {

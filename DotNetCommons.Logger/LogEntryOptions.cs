@@ -3,6 +3,7 @@ using System.Net;
 
 namespace DotNetCommons.Logger
 {
+    [Serializable]
     public class LogEntryOptions
     {
         public LogEntryOptions(IPAddress address = null, string user = null)
