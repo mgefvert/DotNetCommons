@@ -61,8 +61,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="_Extensions\StringExtensionsTest.cs" />
     <Compile Include="TextToolsTest.cs" />
-    <Compile Include="_Logger\LogFileNamingTest.cs" />
-    <Compile Include="_Logger\LogFilesTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">

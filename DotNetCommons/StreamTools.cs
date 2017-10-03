@@ -11,6 +11,21 @@ namespace DotNetCommons
 
     public static class StreamTools
     {
+        public static byte[] ReadToEnd(Stream stream)
+        {
+            var result = new MemoryStream();
+            var buffer = new byte[16384];
+
+            for (;;)
+            {
+                var len = stream.Read(buffer, 0, 16384);
+                if (len == 0)
+                    return result.ToArray();
+
+                result.Write(buffer, 0, len);
+            }
+        }
+
         public static MemoryStream LoadFileIntoMemory(string filename)
         {
             var result = new MemoryStream();

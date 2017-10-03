@@ -44,15 +44,13 @@ namespace DotNetCommons.Net
 
         public void Add(string address)
         {
-            IPAddress ip;
-            if (IPAddress.TryParse(address, out ip))
+            if (IPAddress.TryParse(address, out var ip))
             {
                 Add(ip);
                 return;
             }
 
-            IPNetwork range;
-            if (IPNetwork.TryParse(address, out range))
+            if (IPNetwork.TryParse(address, out var range))
             {
                 Add(range);
                 return;

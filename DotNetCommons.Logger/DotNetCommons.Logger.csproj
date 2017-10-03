@@ -1,20 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{68D88C44-C01F-4E2D-8CBA-15C5A206CD6A}</ProjectGuid>
+    <ProjectGuid>{119BC413-9C40-4ECB-ADD4-A04DF7261B85}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DotNetCommons.Net</RootNamespace>
-    <AssemblyName>DotNetCommons.Net</AssemblyName>
+    <RootNamespace>DotNetCommons.Logger</RootNamespace>
+    <AssemblyName>DotNetCommons.Logger</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -32,31 +29,33 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonWebClient.cs" />
-    <Compile Include="HtmlSoup\HtmlElement.cs" />
-    <Compile Include="HtmlSoup\HtmlParser.cs" />
-    <Compile Include="HtmlSoup\HtmlTag.cs" />
-    <Compile Include="HtmlSoup\HtmlTagContainer.cs" />
-    <Compile Include="HtmlSoup\HtmlText.cs" />
-    <Compile Include="CommonWebException.cs" />
-    <Compile Include="CommonWebResult.cs" />
-    <Compile Include="IPAccessList.cs" />
-    <Compile Include="IPNetwork.cs" />
+    <Compile Include="LogChain.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="LogEntryOptions.cs" />
+    <Compile Include="LogEntryDuration.cs" />
+    <Compile Include="LogEntry.cs" />
+    <Compile Include="LogConfiguration.cs" />
+    <Compile Include="ILogMethod.cs" />
+    <Compile Include="LogMethods\BufferLogger.cs" />
+    <Compile Include="LogMethods\ConsoleLogger.cs" />
+    <Compile Include="LogMethods\LimitSeverityLogger.cs" />
+    <Compile Include="LogSeverity.cs" />
+    <Compile Include="LogSystem.cs" />
+    <Compile Include="LogChannel.cs" />
+    <Compile Include="LogMethods\FileLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
@@ -64,13 +63,5 @@
       <Name>DotNetCommons</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

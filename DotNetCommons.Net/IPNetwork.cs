@@ -48,8 +48,7 @@ namespace DotNetCommons.Net
 
         public static IPNetwork Parse(string network)
         {
-            IPNetwork range;
-            if (TryParse(network, out range))
+            if (TryParse(network, out var range))
                 return range;
 
             throw new ArgumentException("Invalid IP network: " + network, nameof(network));

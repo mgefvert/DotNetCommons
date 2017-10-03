@@ -39,13 +39,14 @@ namespace DotNetCommons.IO
                     var bptr = (byte*)ptr;
                     var c = 0;
 
-                    for (int i = 0; i < Key.Length; i++)
+                    for (var i = 0; i < Key.Length; i++)
                     {
                         *bptr = (byte) (*bptr ^ iv[c]);
                         if (++c >= iv.Length)
                             c = 0;
                     }
 
+                    // ReSharper disable once AssignNullToNotNullAttribute
                     using (var stream = new UnmanagedMemoryStream(bptr, Key.Length))
                         return new SHA256Managed().ComputeHash(stream);
                 }
