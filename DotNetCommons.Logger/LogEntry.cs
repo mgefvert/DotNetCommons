@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Linq;
 
 namespace DotNetCommons.Logger
 {
@@ -35,8 +37,31 @@ namespace DotNetCommons.Logger
         /// <summary>Managed thread ID</summary>
         public int? ThreadId { get; set; }
 
-        /// <summary>Optional information</summary>
-        public LogEntryOptions Options { get; set; }
+        /// <summary>Optional other parameters</summary>
+        public ListDictionary Parameters { get; } = new ListDictionary();
+
+        public void Add(string key, object value)
+        {
+            Parameters[key] = value;
+        }
+
+        public T Get<T>(string parameter)
+        {
+            return Parameters.Contains(parameter) 
+                ? (T) Parameters[parameter] 
+                : default(T);
+        }
+
+        public string GetParametersAsText(string separator, params string[] excludeKeys)
+        {
+            var data = Parameters.Keys
+                .Cast<string>()
+                .Where(x => !excludeKeys.Contains(x))
+                .Select(x => x + "=" + Parameters[x])
+                .ToList();
+
+            return data.Any() ? string.Join(separator, data).Left(255) : null;
+        }
 
         public override string ToString()
         {
@@ -49,11 +74,11 @@ namespace DotNetCommons.Logger
             {
                 _renderDate = Time.ToString("yyyy-MM-dd") + " ";
                 _render =
-                    Time.ToString("HH:mm:ss.fff") + " " +
+                    (Time.ToString("HH:mm:ss.fff") + " " +
                     LogChannel.SeverityToText(Severity) + " " +
                     (Severity <= LogSeverity.Debug ? "- " : null) +
                     (ThreadId != null ? $"[{ThreadId}] " : null) +
-                    Message;
+                    Message + "  " + GetParametersAsText(", ")).Trim();
             }
 
             return (format == LogFormat.Long ? _renderDate : null) + _render;

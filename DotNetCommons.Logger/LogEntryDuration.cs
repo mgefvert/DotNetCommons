@@ -22,7 +22,7 @@ namespace DotNetCommons.Logger
 
         public void Dispose()
         {
-            (Options ?? (Options = new LogEntryOptions())).Duration = DateTime.Now - _start;
+            Parameters["duration"] = DateTime.Now - _start;
             _logger?.Write(this);
         }
     }

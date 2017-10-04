@@ -43,12 +43,12 @@
   <ItemGroup>
     <Compile Include="LogChain.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="LogEntryOptions.cs" />
     <Compile Include="LogEntryDuration.cs" />
     <Compile Include="LogEntry.cs" />
     <Compile Include="LogConfiguration.cs" />
     <Compile Include="ILogMethod.cs" />
     <Compile Include="LogMethods\BufferLogger.cs" />
+    <Compile Include="LogMethods\TapLogger.cs" />
     <Compile Include="LogMethods\ConsoleLogger.cs" />
     <Compile Include="LogMethods\LimitSeverityLogger.cs" />
     <Compile Include="LogPacker.cs" />

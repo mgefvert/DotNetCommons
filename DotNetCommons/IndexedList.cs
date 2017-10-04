@@ -21,8 +21,7 @@ namespace DotNetCommons
         {
             var key = _accessor(item);
 
-            List<T> index;
-            if (!_index.TryGetValue(key, out index) && create)
+            if (!_index.TryGetValue(key, out var index) && create)
             {
                 index = new List<T>();
                 _index[key] = index;
@@ -43,8 +42,7 @@ namespace DotNetCommons
 
         internal List<T> Lookup(object value)
         {
-            List<T> result;
-            return _index.TryGetValue(value, out result)
+            return _index.TryGetValue(value, out var result)
               ? result
               : new List<T>();
         }
@@ -81,8 +79,7 @@ namespace DotNetCommons
 
         public List<T> Lookup(string indexName, object key)
         {
-            IndexedListItem<T> index;
-            if (!_indexes.TryGetValue(indexName, out index))
+            if (!_indexes.TryGetValue(indexName, out var index))
                 throw new ArgumentException("Index '" + indexName + "' is not defined", nameof(indexName));
 
             return index.Lookup(key);
@@ -160,7 +157,7 @@ namespace DotNetCommons
 
         public T this[int index]
         {
-            get { return _list[index]; }
+            get => _list[index];
             set
             {
                 RemoveFromIndex(_list[index]);

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web;
 
 namespace DotNetCommons.Net
 {
@@ -95,15 +97,38 @@ namespace DotNetCommons.Net
 
         protected string AddParametersToQueryString(Uri source, Dictionary<string, string> parameters)
         {
-            var query = parameters != null && parameters.Any()
-                ? string.Join("&", parameters.Select(x => x.Key + "=" + WebUtility.UrlEncode(x.Value)))
-                : null;
-
+            var query = BuildQuery(parameters);
             if (source == null)
                 return query;
 
             var s = source.ToString();
             return s + (s.Contains("?") ? "&" : "?") + query;
+        }
+
+        public static string BuildQuery(object parameters)
+        {
+            Dictionary<string, string> result;
+
+            switch (parameters)
+            {
+                case null:
+                    return null;
+
+                case IDictionary pdict:
+                    result = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+                    foreach (DictionaryEntry item in pdict)
+                        result[item.Key.ToString()] = item.Value?.ToString();
+                    break;
+
+                default:
+                    result = parameters.GetType().GetProperties()
+                        .ToDictionary(p => p.Name, p => (p.GetValue(parameters) ?? "").ToString());
+                    break;
+            }
+
+            return result.Any()
+                ? string.Join("&", result.Select(x => x.Key + "=" + HttpUtility.UrlEncode(x.Value?.ToString())))
+                : null;
         }
 
         // DELETE

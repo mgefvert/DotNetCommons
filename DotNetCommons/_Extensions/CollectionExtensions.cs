@@ -95,8 +95,14 @@ namespace DotNetCommons
 
         public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         {
-            TValue result;
-            return dictionary.TryGetValue(key, out result) ? result : default(TValue);
+            return dictionary.TryGetValue(key, out var result) ? result : default(TValue);
+        }
+
+        public static string GetStringOrNull<TKey>(this IDictionary<TKey, string> dictionary, TKey key)
+        {
+            return dictionary.IsSet(key)
+                ? dictionary[key]
+                : null;
         }
 
         public static decimal Increase<TKey>(this IDictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
@@ -113,6 +119,11 @@ namespace DotNetCommons
             return value;
         }
 
+        public static bool IsSet<TKey>(this IDictionary<TKey, string> dictionary, TKey key)
+        {
+            return !string.IsNullOrWhiteSpace(dictionary.GetOrDefault(key));
+        }
+
         public static DateTime Min<T>(this IEnumerable<T> list, Func<T, DateTime> selector)
         {
             var ticks = list.Select(selector).Select(x => x.Ticks).Min();
@@ -123,6 +134,13 @@ namespace DotNetCommons
         {
             var ticks = list.Select(selector).Select(x => x.Ticks).Max();
             return new DateTime(ticks);
+        }
+
+        public static IEnumerable<T> Repeat<T>(this ICollection<T> collection, int times = 2)
+        {
+            for (var i = 0; i < times; i++)
+                foreach (var item in collection)
+                    yield return item;
         }
 
         public static bool Swap<T>(this IList<T> list, int pos1, int pos2)

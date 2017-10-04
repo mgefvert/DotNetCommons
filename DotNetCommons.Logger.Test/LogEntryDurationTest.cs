@@ -12,10 +12,11 @@ namespace DotNetCommons.Logger.Test
         [TestMethod]
         public void Test()
         {
-            var logsystem = new LogSystem();
             var mock = new MockLogger();
-            var logger = logsystem.CreateLogger(null, false);
-            logger.LogChains.Add(new LogChain(mock));
+            var logger = LogSystem.CreateLogger(null, false);
+            var chain = new LogChain("mock");
+            chain.Push(mock);
+            logger.LogChains.Add(chain);
 
             using (new LogEntryDuration(logger))
             {
@@ -23,9 +24,10 @@ namespace DotNetCommons.Logger.Test
             }
 
             Assert.AreEqual(1, mock.Entries.Count);
-            Assert.IsNotNull(mock.Entries.Single().Options);
-            Assert.IsNotNull(mock.Entries.Single().Options.Duration);
-            Assert.IsTrue((mock.Entries.Single().Options.Duration?.TotalMilliseconds ?? 0) >= 100);
+            Assert.IsNotNull(mock.Entries.Single().Parameters);
+
+            var ts = (TimeSpan) mock.Entries.Single().Parameters["duration"];
+            Assert.IsTrue(ts.TotalMilliseconds >= 100);
         }
     }
 }

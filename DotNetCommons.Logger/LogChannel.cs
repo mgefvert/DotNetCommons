@@ -11,11 +11,11 @@ namespace DotNetCommons.Logger
         private LogSeverity ActualSeverity => Severity ?? LogSystem.Configuration.Severity;
 
         public LogSeverity? Severity = null;
-        public string Channel { get; }
-        public LogSystem LogSystem { get; }
+        public string Channel { get; set; }
 
         public void Trace(string text, params object[] parameters) => Write(LogSeverity.Trace, text, parameters);
         public void Debug(string text, params object[] parameters) => Write(LogSeverity.Debug, text, parameters);
+        public void Log(string text, params object[] parameters) => Write(LogSeverity.Normal, text, parameters);
         public void Normal(string text, params object[] parameters) => Write(LogSeverity.Normal, text, parameters);
         public void Api(string text, params object[] parameters) => Write(LogSeverity.Api, text, parameters);
         public void Notice(string text, params object[] parameters) => Write(LogSeverity.Notice, text, parameters);
@@ -26,13 +26,12 @@ namespace DotNetCommons.Logger
 
         public List<LogChain> LogChains { get; } = new List<LogChain>();
 
-        internal LogChannel(LogSystem logSystem, string channel, bool copyChains)
+        internal LogChannel(string channel, bool copyChains)
         {
-            LogSystem = logSystem;
             Channel = channel;
 
             if (copyChains)
-                foreach (var chain in logSystem.LogChains)
+                foreach (var chain in LogSystem.LogChains)
                     LogChains.Add(new LogChain(chain));
         }
 
@@ -86,24 +85,14 @@ namespace DotNetCommons.Logger
             Write(new List<LogEntry> { entry });
         }
 
-        public void Write(LogSeverity severity, string text, object[] parameters = null, LogEntryOptions options = null)
+        public void Write(LogSeverity severity, string text, object[] parameters = null, IDictionary<string, object> options = null)
         {
             if (severity < ActualSeverity)
                 return;
 
             try
             {
-                Write(new LogEntry
-                {
-                    Time = DateTime.UtcNow,
-                    Channel = Channel,
-                    Message = parameters != null ? string.Format(text, parameters) : text,
-                    MachineName = LogSystem.MachineName,
-                    ProcessName = LogSystem.ProcessName,
-                    Severity = severity,
-                    ThreadId = Thread.CurrentThread.ManagedThreadId,
-                    Options = options
-                });
+                Write(MakeEntry<LogEntry>(severity, text, parameters, options));
             }
             catch (Exception ex)
             {
@@ -111,14 +100,19 @@ namespace DotNetCommons.Logger
             }
         }
 
-        public LogEntryDuration Time(LogSeverity severity, string text, object[] parameters = null, LogEntryOptions options = null)
+        public LogEntryDuration Time(LogSeverity severity, string text, object[] parameters = null, IDictionary<string, object> options = null)
         {
             if (severity < ActualSeverity)
                 return new LogEntryDuration(null);
 
-            var thread = Thread.CurrentThread.ManagedThreadId;
+            return MakeEntry<LogEntryDuration>(severity, text, parameters, options);
+        }
 
-            return new LogEntryDuration(this)
+        protected T MakeEntry<T>(LogSeverity severity, string text, object[] parameters, IDictionary<string, object> options)
+            where T : LogEntry, new()
+        {
+            var threadId = Thread.CurrentThread.ManagedThreadId;
+            var entry = new T
             {
                 Time = DateTime.UtcNow,
                 Channel = Channel,
@@ -126,9 +120,14 @@ namespace DotNetCommons.Logger
                 MachineName = LogSystem.MachineName,
                 ProcessName = LogSystem.ProcessName,
                 Severity = severity,
-                ThreadId = thread != LogSystem.MainThreadId ? (int?)thread : null,
-                Options = options
+                ThreadId = threadId != LogSystem.MainThreadId ? (int?)threadId : null
             };
+
+            if (options != null)
+                foreach (var item in options)
+                    entry.Add(item.Key, item.Value);
+
+            return entry;
         }
 
         /// <summary>
@@ -158,7 +157,7 @@ namespace DotNetCommons.Logger
             LogChains.Clear();
         }
 
-        private void Flush()
+        public void Flush()
         {
             var empty = new List<LogEntry>();
             foreach (var chain in LogChains)

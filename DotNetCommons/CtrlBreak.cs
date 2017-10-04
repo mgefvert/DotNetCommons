@@ -10,6 +10,7 @@ namespace DotNetCommons
     {
         private static readonly ManualResetEvent Event = new ManualResetEvent(false);
         private static Action _hook;
+        private static bool _hooked;
 
         private static void CancelKeypress(object sender, ConsoleCancelEventArgs args)
         {
@@ -21,19 +22,27 @@ namespace DotNetCommons
         public static void Hook(Action action)
         {
             _hook = action;
+            _hooked = true;
             Console.CancelKeyPress += CancelKeypress;
         }
 
         public static void Release()
         {
             Console.CancelKeyPress -= CancelKeypress;
+            _hooked = false;
             _hook = null;
         }
 
         public static void WaitFor()
         {
+            if (!_hooked)
+                Console.CancelKeyPress += CancelKeypress;
+
             Event.Reset();
             Event.WaitOne();
+
+            if (!_hooked)
+                Console.CancelKeyPress -= CancelKeypress;
         }
     }
 }

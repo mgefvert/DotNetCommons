@@ -14,8 +14,8 @@ namespace DotNetCommons.Logger.Test
             var entries = new List<LogEntry>
             {
                 new LogEntry { Channel = "test", Message = "Hello, world!" },
-                new LogEntry { Channel = "test", Message = "Hello, world!", Options = new LogEntryOptions { User = "local\\user" }},
-                new LogEntryDuration { Channel = "test", Message = "Hello, world!", Options = new LogEntryOptions { Duration = TimeSpan.FromMinutes(1.5) }}
+                new LogEntry { Channel = "test", Message = "Hello, world!", Parameters = { ["user"] = "local\\user" }},
+                new LogEntryDuration { Channel = "test", Message = "Hello, world!", Parameters = { ["duration"] = TimeSpan.FromMinutes(1.5) }}
             };
 
             var buffer = LogPacker.Pack(entries);

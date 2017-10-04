@@ -167,6 +167,7 @@ namespace DotNetCommons.Logger.LogMethods
         {
             if (_lastDate != DateTime.Today)
             {
+                _lastDate = DateTime.Today;
                 _stream?.Dispose();
                 Rotate();
                 _stream = OpenCurrent();

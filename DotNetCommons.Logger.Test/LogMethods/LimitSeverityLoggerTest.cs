@@ -11,7 +11,7 @@ namespace DotNetCommons.Logger.Test.LogMethods
         [TestMethod]
         public void Test()
         {
-            var logger = new LimitSeverityLogger(LogSeverity.Critical, LogSeverity.Api);
+            var logger = new LimitSeverityLogger(new [] { LogSeverity.Critical, LogSeverity.Api });
 
             var list = new List<LogEntry>
             {

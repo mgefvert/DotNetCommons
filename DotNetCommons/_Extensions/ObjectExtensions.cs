@@ -24,6 +24,48 @@ namespace DotNetCommons
             }
         }
 
+        public static dynamic DeepCopy(dynamic obj)
+        {
+            using (var stream = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(stream, obj);
+                stream.Position = 0;
+
+                return formatter.Deserialize(stream);
+            }
+        }
+
+        public static void Copy(object source, object target)
+        {
+            if (source == null || target == null)
+                return;
+
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+            var sourceProps = source.GetType().GetProperties(flags);
+            var targetProps = target.GetType().GetProperties(flags);
+
+            foreach (var targetProp in targetProps.Where(x => x.CanWrite))
+            {
+                var sourceProp = sourceProps.FirstOrDefault(p => p.Name == targetProp.Name && p.PropertyType == targetProp.PropertyType);
+                if (sourceProp != null)
+                {
+                    var value = sourceProp.GetValue(source);
+                    targetProp.SetValue(target, value);
+                }
+            }
+        }
+
+        public static T Copy<T>(object source) where T : class, new()
+        {
+            if (source == null)
+                return null;
+
+            var result = new T();
+            Copy(source, result);
+            return result;
+        }
+
         public static void SetPropertyValue(this object obj, PropertyInfo property, object value)
         {
             SetPropertyValue(obj, property, value, CultureInfo.CurrentCulture);

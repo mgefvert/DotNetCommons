@@ -6,17 +6,15 @@ namespace DotNetCommons.Logger
 {
     public class LogChain : Stack<ILogMethod>
     {
-        public LogChain()
-        {
-        }
+        public string Name { get; }
 
-        public LogChain(params ILogMethod[] methods)
+        public LogChain(string name)
         {
-            foreach (var link in methods)
-                Push(link);
+            Name = name;
         }
 
         public LogChain(LogChain chain)
+            : this(chain.Name)
         {
             foreach(var link in chain.Reverse())
                 Push(link);

@@ -8,7 +8,6 @@ namespace DotNetCommons
     public static class DateTimeExtensions
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
         private static readonly DateTimeOffset UnixEpochOffset = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         public static DateTime EndOfMonth(this DateTime datetime)

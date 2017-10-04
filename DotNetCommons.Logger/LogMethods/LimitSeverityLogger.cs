@@ -8,7 +8,15 @@ namespace DotNetCommons.Logger.LogMethods
     {
         private readonly LogSeverity[] _allowed;
 
-        public LimitSeverityLogger(params LogSeverity[] allowed)
+        public LimitSeverityLogger(LogSeverity minSeverity)
+        {
+            _allowed = Enum.GetValues(typeof(LogSeverity))
+                .Cast<LogSeverity>()
+                .Where(item => item >= minSeverity)
+                .ToArray();
+        }
+
+        public LimitSeverityLogger(LogSeverity[] allowed)
         {
             _allowed = allowed;
         }

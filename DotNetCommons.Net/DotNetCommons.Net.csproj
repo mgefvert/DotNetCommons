@@ -56,9 +56,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
       <Project>{a86d8b8b-d601-4eb9-aa0a-e03372acc104}</Project>
       <Name>DotNetCommons</Name>

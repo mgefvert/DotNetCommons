@@ -29,8 +29,7 @@ namespace DotNetCommons
 
         public TreeNode<T> Find(TKey key)
         {
-            TreeNode<T> node;
-            return _index.TryGetValue(key, out node) ? node : null;
+            return _index.TryGetValue(key, out var node) ? node : null;
         }
 
         internal override void NotifyAdd(TreeNode<T> node)
