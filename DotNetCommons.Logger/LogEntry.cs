@@ -48,7 +48,7 @@ namespace DotNetCommons.Logger
         public T Get<T>(string parameter)
         {
             return Parameters.Contains(parameter) 
-                ? (T) Parameters[parameter] 
+                ? (T)Convert.ChangeType(Parameters[parameter], typeof(T))
                 : default(T);
         }
 

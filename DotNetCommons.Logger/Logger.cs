@@ -37,9 +37,12 @@ namespace DotNetCommons.Logger
             set => LogChannel.Channel = value;
         }
 
+        public static void Write(LogSeverity severity, string text, object[] parameters = null, object options = null)
+            => LogChannel.Write(severity, text, parameters, options);
+
         public static void Error(Exception ex)
         {
-            Error(ex.GetType().Name + ": " + ex.Message, LogSeverity.Error);
+            Error(ex.GetType().Name + ": " + ex.Message);
         }
 
         /// <summary>

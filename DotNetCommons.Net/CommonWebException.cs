@@ -5,7 +5,7 @@ namespace DotNetCommons.Net
 {
     public class CommonWebException : Exception
     {
-        public CommonHttpResponse Result { get; }
+        public CommonWebResult Result { get; }
 
         public byte[] ResponseData => Result.Data;
         public string ResponseText => Result.Text;
@@ -18,7 +18,7 @@ namespace DotNetCommons.Net
         {
         }
 
-        public CommonWebException(CommonHttpResponse result, Exception innerException) 
+        public CommonWebException(CommonWebResult result, Exception innerException) 
             : base((int)result.StatusCode + " " + result.StatusDescription, innerException)
         {
             Result = result;

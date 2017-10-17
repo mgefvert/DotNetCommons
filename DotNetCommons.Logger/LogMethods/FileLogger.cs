@@ -9,6 +9,7 @@ namespace DotNetCommons.Logger.LogMethods
 {
     public class FileLogger : ILogMethod
     {
+        private readonly object _lock = new object();
         private readonly ILogFileNaming _provider;
         private readonly string _logName;
         private readonly string _extension;
@@ -144,11 +145,14 @@ namespace DotNetCommons.Logger.LogMethods
         {
             var fileSpec = _provider.GetFileSpec(_logName, _extension);
             var allowedFiles = _provider.GetAllowedFiles(_logName, _extension, _maxRotations).ToList();
+            var currentFile = _provider.GetCurrentFileName(_logName, _extension);
 
             var oldFiles =
                 _directory.EnumerateFiles(fileSpec)
                 .Concat(_directory.EnumerateFiles(fileSpec + ".gz"))
                 .ToList();
+
+            oldFiles.RemoveAll(x => x.Name.Like(currentFile));
 
             // Delete old log files
             var toDelete = oldFiles.ExtractAll(f => !allowedFiles.Contains(f.Name));
@@ -165,31 +169,38 @@ namespace DotNetCommons.Logger.LogMethods
 
         public List<LogEntry> Handle(List<LogEntry> entries, bool flush)
         {
-            if (_lastDate != DateTime.Today)
-            {
-                _lastDate = DateTime.Today;
-                _stream?.Dispose();
-                Rotate();
-                _stream = OpenCurrent();
-            }
+            var rotate = false;
 
-            var encoding = Encoding.UTF8;
-            using (var mem = new MemoryStream())
+            lock (_lock)
             {
-                foreach (var entry in entries)
+                if (_lastDate != DateTime.Today)
                 {
-                    var buffer = encoding.GetBytes(entry.ToString(LogFormat.Long));
-                    mem.Write(buffer, 0, buffer.Length);
-                    mem.WriteByte(13);
-                    mem.WriteByte(10);
+                    _lastDate = DateTime.Today;
+                    _stream?.Dispose();
+                    rotate = true;
+                    _stream = OpenCurrent();
                 }
 
-                mem.Position = 0;
-                mem.CopyTo(_stream);
+                var encoding = Encoding.UTF8;
+                using (var mem = new MemoryStream())
+                {
+                    foreach (var entry in entries)
+                    {
+                        var buffer = encoding.GetBytes(entry.ToString(LogFormat.Long));
+                        mem.Write(buffer, 0, buffer.Length);
+                        mem.WriteByte(13);
+                        mem.WriteByte(10);
+                    }
+
+                    mem.Position = 0;
+                    mem.CopyTo(_stream);
+                }
+
+                _stream.Flush();
             }
 
-            if (flush)
-                _stream.Flush();
+            if (rotate)
+                Rotate();
 
             return entries;
         }

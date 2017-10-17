@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
+using DotNetCommons.Logger.LogMethods;
 
 namespace DotNetCommons.Logger
 {
@@ -25,6 +27,7 @@ namespace DotNetCommons.Logger
         public void Fatal(string text, params object[] parameters) => Write(LogSeverity.Fatal, text, parameters);
 
         public List<LogChain> LogChains { get; } = new List<LogChain>();
+        protected ConsoleLogger ConsoleLogger = new ConsoleLogger();
 
         internal LogChannel(string channel, bool copyChains)
         {
@@ -73,6 +76,9 @@ namespace DotNetCommons.Logger
 
                 foreach (var chain in LogChains)
                     chain.Process(entries.ToList(), false);
+
+                if (LogSystem.Configuration.EchoToConsole)
+                    ConsoleLogger.Handle(entries, false);
             }
             catch (Exception ex)
             {
@@ -85,14 +91,16 @@ namespace DotNetCommons.Logger
             Write(new List<LogEntry> { entry });
         }
 
-        public void Write(LogSeverity severity, string text, object[] parameters = null, IDictionary<string, object> options = null)
+        public void Write(LogSeverity severity, string text, object[] parameters = null, object options = null)
         {
             if (severity < ActualSeverity)
                 return;
 
             try
             {
-                Write(MakeEntry<LogEntry>(severity, text, parameters, options));
+                var entry = new LogEntry();
+                PopulateEntry(entry, severity, text, parameters, ObjectToDictionary(options));
+                Write(entry);
             }
             catch (Exception ex)
             {
@@ -100,34 +108,51 @@ namespace DotNetCommons.Logger
             }
         }
 
-        public LogEntryDuration Time(LogSeverity severity, string text, object[] parameters = null, IDictionary<string, object> options = null)
+        public LogEntryDuration Time(LogSeverity severity, string text, object[] parameters = null, object options = null)
         {
             if (severity < ActualSeverity)
                 return new LogEntryDuration(null);
 
-            return MakeEntry<LogEntryDuration>(severity, text, parameters, options);
+            var entry = new LogEntryDuration(this);
+            PopulateEntry(entry, severity, text, parameters, ObjectToDictionary(options));
+            return entry;
         }
 
-        protected T MakeEntry<T>(LogSeverity severity, string text, object[] parameters, IDictionary<string, object> options)
-            where T : LogEntry, new()
+        private static IDictionary<string, object> ObjectToDictionary(object options)
+        {
+            switch (options)
+            {
+                case null:
+                    return null;
+
+                case string _:
+                    return new Dictionary<string, object> { [""] = options };
+
+                case IDictionary<string, object> dict:
+                    return dict;
+
+                default:
+                    return options.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                        .ToDictionary(p => p.Name, p => p.GetValue(options));
+            }
+        }
+
+        protected void PopulateEntry(LogEntry entry, LogSeverity severity, string text, object[] parameters, IDictionary<string, object> options)
         {
             var threadId = Thread.CurrentThread.ManagedThreadId;
-            var entry = new T
-            {
-                Time = DateTime.UtcNow,
-                Channel = Channel,
-                Message = parameters != null ? string.Format(text, parameters) : text,
-                MachineName = LogSystem.MachineName,
-                ProcessName = LogSystem.ProcessName,
-                Severity = severity,
-                ThreadId = threadId != LogSystem.MainThreadId ? (int?)threadId : null
-            };
+            entry.Time = DateTime.Now;
+            entry.Channel = Channel;
+            entry.Message = parameters != null ? string.Format(text, parameters) : text;
+            entry.MachineName = LogSystem.MachineName;
+            entry.ProcessName = LogSystem.ProcessName;
+            entry.Severity = severity;
+            entry.ThreadId = threadId != LogSystem.MainThreadId ? (int?) threadId : null;
 
-            if (options != null)
-                foreach (var item in options)
-                    entry.Add(item.Key, item.Value);
+            if (options == null)
+                return;
 
-            return entry;
+            foreach (var item in options)
+                entry.Add(item.Key, item.Value);
         }
 
         /// <summary>

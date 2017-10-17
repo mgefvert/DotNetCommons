@@ -4,7 +4,8 @@ using System.Text;
 
 namespace DotNetCommons.Net
 {
-    public class CommonHttpResponse
+    [Serializable]
+    public class CommonWebResult
     {
         public bool Success { get; set; }
         public HttpStatusCode StatusCode { get; set; }

@@ -51,7 +51,6 @@
     <Compile Include="LogMethods\TapLogger.cs" />
     <Compile Include="LogMethods\ConsoleLogger.cs" />
     <Compile Include="LogMethods\LimitSeverityLogger.cs" />
-    <Compile Include="LogPacker.cs" />
     <Compile Include="LogSeverity.cs" />
     <Compile Include="LogSystem.cs" />
     <Compile Include="LogChannel.cs" />
