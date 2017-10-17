@@ -27,6 +27,12 @@ namespace DotNetCommons
             Index = new ReadOnlyDictionary<TKey, TreeNode<T>>(_index);
         }
 
+        public TreeNode<T> FindParentAndAdd(TKey parent, T item)
+        {
+            var node = Find(parent);
+            return node == null ? AddRoot(item) : node.AddChild(item);
+        }
+
         public TreeNode<T> Find(TKey key)
         {
             return _index.TryGetValue(key, out var node) ? node : null;
