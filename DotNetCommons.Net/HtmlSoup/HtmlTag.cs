@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DotNetCommons.MicroWeb.HtmlSoup
+namespace DotNetCommons.Net.HtmlSoup
 {
     public class HtmlTag : HtmlElement
     {
         public string Tag { get; set; }
         public bool Closing { get; set; }
-        public Dictionary<string, string> Attributes { get; private set; }
+        public Dictionary<string, string> Attributes { get; } = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
         public HtmlTag()
         {
-            Attributes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         }
 
-        public HtmlTag(string text) : this()
+        public HtmlTag(string text)
         {
             text = (text ?? "").Trim().TrimStart('<').TrimEnd('>').Trim();
             if (text == "")
@@ -47,8 +46,7 @@ namespace DotNetCommons.MicroWeb.HtmlSoup
 
         public string GetAttribute(string attribute)
         {
-            string value;
-            return Attributes.TryGetValue(attribute, out value) ? value : null;
+            return Attributes.TryGetValue(attribute, out var value) ? value : null;
         }
 
         private static string ExtractString(ref string tag)
@@ -58,7 +56,6 @@ namespace DotNetCommons.MicroWeb.HtmlSoup
 
             // Determine what type we're looking for here
             var c = tag[0];
-
             if (c == '"' || c == '\'')
                 return ExtractQuotedString(ref tag, c);
 

@@ -77,7 +77,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\LocalConfigFile.cs" />
-    <Compile Include="DateTimeTools.cs" />
+    <Compile Include="IoC\MicroContainer.cs" />
+    <Compile Include="_Tools\DateTimeTools.cs" />
     <Compile Include="_Extensions\ConsoleExtensions.cs" />
     <Compile Include="_Extensions\StructExtensions.cs" />
     <Compile Include="_Security\Crc32.cs" />
@@ -86,18 +87,18 @@
     <Compile Include="DateRange.cs" />
     <Compile Include="PrecisionTimer.cs" />
     <Compile Include="SetConsoleColor.cs" />
-    <Compile Include="IndexedTreeCollection.cs" />
+    <Compile Include="Collections\IndexedTreeCollection.cs" />
     <Compile Include="_Security\Passwords.cs" />
     <Compile Include="Spawn.cs" />
-    <Compile Include="StreamTools.cs" />
+    <Compile Include="_Tools\StreamTools.cs" />
     <Compile Include="_Extensions\TypeExtensions.cs" />
     <Compile Include="_Tokenizer\StringTokenizerException.cs" />
     <Compile Include="_Tokenizer\TokenList.cs" />
     <Compile Include="_Tokenizer\TokenDefinition.cs" />
     <Compile Include="_Tokenizer\Token.cs" />
     <Compile Include="_Tokenizer\StringTokenizer.cs" />
-    <Compile Include="TreeCollection.cs" />
-    <Compile Include="TreeNode.cs" />
+    <Compile Include="Collections\TreeCollection.cs" />
+    <Compile Include="Collections\TreeNode.cs" />
     <Compile Include="_CommandLine\CommandLineDefinition.cs" />
     <Compile Include="_CommandLine\CommandLineProcessor.cs" />
     <Compile Include="_CommandLine\CommandLineAttributes.cs" />
@@ -105,12 +106,12 @@
     <Compile Include="_CommandLine\CommandLine.cs" />
     <Compile Include="_Extensions\FileInfoExtensions.cs" />
     <Compile Include="_Extensions\HashExtensions.cs" />
-    <Compile Include="TextTools.cs" />
+    <Compile Include="_Tools\TextTools.cs" />
     <Compile Include="_Extensions\ObjectExtensions.cs" />
     <Compile Include="_Extensions\StringExtensions.cs" />
     <Compile Include="_Extensions\DateTimeExtensions.cs" />
     <Compile Include="_Extensions\CollectionExtensions.cs" />
-    <Compile Include="IndexedList.cs" />
+    <Compile Include="Collections\IndexedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

@@ -16,6 +16,9 @@ namespace DotNetCommons.Logger
         internal static readonly string MachineName = Environment.MachineName;
         internal static readonly string ProcessName = Process.GetCurrentProcess().ProcessName;
         private static bool _initialized;
+        private static LogChannel _defaultLogger;
+
+        public static LogChannel DefaultLogger => _defaultLogger ?? (_defaultLogger = CreateLogger("", true));
 
         public static LogChannel CreateLogger(string channel, bool defaultChains)
         {

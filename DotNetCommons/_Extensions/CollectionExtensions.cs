@@ -98,6 +98,13 @@ namespace DotNetCommons
             return dictionary.TryGetValue(key, out var result) ? result : default(TValue);
         }
 
+        public static string GetStringOrNull<TKey>(this IDictionary<TKey, string> dictionary, TKey key)
+        {
+            return dictionary.IsSet(key)
+                ? dictionary[key]
+                : null;
+        }
+
         public static decimal Increase<TKey>(this IDictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
         {
             value += GetOrDefault(dictionary, key);
@@ -110,6 +117,11 @@ namespace DotNetCommons
             value += GetOrDefault(dictionary, key);
             dictionary[key] = value;
             return value;
+        }
+
+        public static bool IsSet<TKey>(this IDictionary<TKey, string> dictionary, TKey key)
+        {
+            return !string.IsNullOrWhiteSpace(dictionary.GetOrDefault(key));
         }
 
         public static DateTime Min<T>(this IEnumerable<T> list, Func<T, DateTime> selector)

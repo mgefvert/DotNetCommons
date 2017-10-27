@@ -8,9 +8,7 @@ namespace DotNetCommons.Logger
     {
         public static LogSeverity? Severity = null;
         public static LogConfiguration Configuration => LogSystem.Configuration;
-
-        private static LogChannel _channel;
-        public static LogChannel LogChannel => _channel ?? (_channel = LogSystem.CreateLogger("", true));
+        public static LogChannel LogChannel => LogSystem.DefaultLogger;
         public static List<LogChain> LogChains => LogChannel.LogChains;
             
         [Obsolete]
@@ -68,7 +66,7 @@ namespace DotNetCommons.Logger
 
         public static void Flush()
         {
-            _channel?.Flush();
+            LogChannel.Flush();
         }
     }
 }

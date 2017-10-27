@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DotNetCommons.MicroWeb.HtmlSoup
+namespace DotNetCommons.Net.HtmlSoup
 {
     public class HtmlElement
     {

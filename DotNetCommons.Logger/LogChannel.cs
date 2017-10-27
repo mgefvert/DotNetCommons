@@ -142,7 +142,7 @@ namespace DotNetCommons.Logger
             var threadId = Thread.CurrentThread.ManagedThreadId;
             entry.Time = DateTime.Now;
             entry.Channel = Channel;
-            entry.Message = parameters != null ? string.Format(text, parameters) : text;
+            entry.Message = parameters != null && parameters.Length > 0 ? string.Format(text, parameters) : text;
             entry.MachineName = LogSystem.MachineName;
             entry.ProcessName = LogSystem.ProcessName;
             entry.Severity = severity;

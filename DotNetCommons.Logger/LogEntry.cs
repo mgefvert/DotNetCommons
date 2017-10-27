@@ -78,6 +78,7 @@ namespace DotNetCommons.Logger
                     LogChannel.SeverityToText(Severity) + " " +
                     (Severity <= LogSeverity.Debug ? "- " : null) +
                     (ThreadId != null ? $"[{ThreadId}] " : null) +
+                    (!string.IsNullOrEmpty(Channel) ? "@" + Channel + " " : "") +
                     Message + "  " + GetParametersAsText(", ")).Trim();
             }
 

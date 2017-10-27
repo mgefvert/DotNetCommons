@@ -51,6 +51,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="IoC\SubclassedContainerTest.cs" />
+    <Compile Include="IoC\MicroContainerTest.cs" />
     <Compile Include="PasswordsTest.cs" />
     <Compile Include="_CommandLine\Options.cs" />
     <Compile Include="_Extensions\CollectionExtensionsTest.cs" />

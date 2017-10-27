@@ -121,15 +121,20 @@ namespace DotNetCommons.Net
                 return new CommonWebResult
                 {
                     Success = success,
-                    CharacterSet = response.CharacterSet,
-                    ContentEncoding = response.ContentEncoding,
-                    ContentType = response.ContentType,
+                    CharacterSet = NullIfEmpty(response.CharacterSet),
+                    ContentEncoding = NullIfEmpty(response.ContentEncoding),
+                    ContentType = NullIfEmpty(response.ContentType),
                     Headers = response.Headers,
                     StatusCode = response.StatusCode,
                     StatusDescription = response.StatusDescription,
                     Data = ReadToEnd(stream, uri, response.ContentLength)
                 };
             }
+        }
+
+        private string NullIfEmpty(string s)
+        {
+            return string.IsNullOrWhiteSpace(s) ? null : s;
         }
 
         public byte[] ReadToEnd(Stream stream, Uri uri, long length)

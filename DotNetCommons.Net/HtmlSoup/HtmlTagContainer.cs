@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DotNetCommons.MicroWeb.HtmlSoup
+namespace DotNetCommons.Net.HtmlSoup
 {
     public class HtmlTagContainer : HtmlTag
     {
-        public List<HtmlElement> Children { get; private set; }
+        public List<HtmlElement> Children { get; } = new List<HtmlElement>();
 
         public HtmlTagContainer()
         {
-            Children = new List<HtmlElement>();
         }
 
         public HtmlTagContainer(HtmlTag source) : this()

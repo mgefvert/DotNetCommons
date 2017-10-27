@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DotNetCommons.MicroWeb.HtmlSoup
+namespace DotNetCommons.Net.HtmlSoup
 {
     public class HtmlText : HtmlElement
     {
@@ -10,7 +10,7 @@ namespace DotNetCommons.MicroWeb.HtmlSoup
         {
         }
 
-        public HtmlText(string text) : this()
+        public HtmlText(string text)
         {
             Text = (text ?? "").Trim();
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DotNetCommons.MicroWeb.HtmlSoup
+namespace DotNetCommons.Net.HtmlSoup
 {
     public static class HtmlParser
     {
@@ -58,8 +58,7 @@ namespace DotNetCommons.MicroWeb.HtmlSoup
 
         private static bool IsTag(HtmlElement element, string name)
         {
-            var tag = element as HtmlTag;
-            if (tag == null)
+            if (!(element is HtmlTag tag))
                 return false;
 
             if (string.IsNullOrEmpty(name))
@@ -70,8 +69,7 @@ namespace DotNetCommons.MicroWeb.HtmlSoup
 
         private static bool IsAttribute(HtmlElement element, string attribute, string value)
         {
-            var tag = element as HtmlTag;
-            if (tag == null)
+            if (!(element is HtmlTag tag))
                 return false;
 
             if (string.IsNullOrEmpty(attribute) || value == null)
@@ -97,10 +95,8 @@ namespace DotNetCommons.MicroWeb.HtmlSoup
 
             foreach (var x in soup)
             {
-                var xtag = x as HtmlTag;
-
                 // If we have an HtmlTag and it matches the tag we're looking for
-                if (xtag != null && IsTag(xtag, tag))
+                if (x is HtmlTag xtag && IsTag(xtag, tag))
                 {
                     // Increase or decrease the limiter
                     if (xtag.Closing)
@@ -130,8 +126,7 @@ namespace DotNetCommons.MicroWeb.HtmlSoup
                 }
 
                 // If we have an existing search, just keep adding
-                if (result != null)
-                    result.Children.Add(x);
+                result?.Children.Add(x);
             }
 
             if (result != null)

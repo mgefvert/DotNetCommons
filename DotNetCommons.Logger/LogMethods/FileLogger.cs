@@ -136,7 +136,13 @@ namespace DotNetCommons.Logger.LogMethods
 
         public Stream OpenCurrent()
         {
-            var stream = GetCurrentLogfile().Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            var filename = GetCurrentLogfile();
+
+            var dir = filename.Directory;
+            if (dir != null && !dir.Exists)
+                dir.Create();
+
+            var stream = filename.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
             stream.Seek(0, SeekOrigin.End);
             return stream;
         }
@@ -173,13 +179,16 @@ namespace DotNetCommons.Logger.LogMethods
 
             lock (_lock)
             {
-                if (_lastDate != DateTime.Today)
+                if (_lastDate != DateTime.Today || _stream == null)
                 {
                     _lastDate = DateTime.Today;
                     _stream?.Dispose();
                     rotate = true;
                     _stream = OpenCurrent();
                 }
+
+                if (_stream == null)
+                    return entries;
 
                 var encoding = Encoding.UTF8;
                 using (var mem = new MemoryStream())

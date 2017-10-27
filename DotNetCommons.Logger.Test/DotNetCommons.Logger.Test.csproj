@@ -50,7 +50,6 @@
   <ItemGroup>
     <Compile Include="LogEntryDurationTest.cs" />
     <Compile Include="LogChainTest.cs" />
-    <Compile Include="LogPackerTest.cs" />
     <Compile Include="LoggerTest.cs" />
     <Compile Include="LogEntryTest.cs" />
     <Compile Include="LogMethods\FileLoggerTest.cs" />
