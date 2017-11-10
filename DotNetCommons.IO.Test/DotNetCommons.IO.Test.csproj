@@ -58,6 +58,7 @@
     <Compile Include="KeyValueStoreTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtectedStorageTest.cs" />
+    <Compile Include="YanArchive\Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetCommons.IO\DotNetCommons.IO.csproj">

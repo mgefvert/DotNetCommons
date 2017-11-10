@@ -169,7 +169,9 @@ namespace DotNetCommons.WinForms
 
         public enum SPI
         {
-            GETSCREENSAVEACTIVE = 0x0010
+            GETSCREENSAVEACTIVE = 0x0010,
+            SETDESKWALLPAPER = 0x0014,
+            GETDESKWALLPAPER = 0x0073
         }
 
         [Flags]
@@ -241,8 +243,13 @@ namespace DotNetCommons.WinForms
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SystemParametersInfo(SPI uiAction, uint uiParam, IntPtr pvParam, SPIF fWinIni);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SystemParametersInfo(SPI uiAction, uint uiParam, string pvParam, SPIF fWinIni);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SystemParametersInfo(SPI uiAction, uint uiParam, byte[] pvParam, SPIF fWinIni);
 
         [DllImport("user32.dll")]
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
