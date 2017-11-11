@@ -8,6 +8,8 @@ using DotNetCommons.Logger.LogMethods;
 
 namespace DotNetCommons.Logger
 {
+    public delegate void LogEvent(object sender, LogEntry entry);
+
     public class LogChannel : IDisposable
     {
         private LogSeverity ActualSeverity => Severity ?? LogSystem.Configuration.Severity;
@@ -26,8 +28,12 @@ namespace DotNetCommons.Logger
         public void Critical(string text, params object[] parameters) => Write(LogSeverity.Critical, text, parameters);
         public void Fatal(string text, params object[] parameters) => Write(LogSeverity.Fatal, text, parameters);
 
+        public event LogEvent LogEvent;
+
         public List<LogChain> LogChains { get; } = new List<LogChain>();
         protected ConsoleLogger ConsoleLogger = new ConsoleLogger();
+
+        private int _level;
 
         internal LogChannel(string channel, bool copyChains)
         {
@@ -74,6 +80,10 @@ namespace DotNetCommons.Logger
                 if (!entries.Any())
                     return;
 
+                if (LogEvent != null)
+                    foreach (var entry in entries)
+                        LogEvent?.Invoke(this, entry);
+
                 foreach (var chain in LogChains)
                     chain.Process(entries.ToList(), false);
 
@@ -99,7 +109,7 @@ namespace DotNetCommons.Logger
             try
             {
                 var entry = new LogEntry();
-                PopulateEntry(entry, severity, text, parameters, ObjectToDictionary(options));
+                PopulateEntry(entry, _level, severity, text, parameters, ObjectToDictionary(options));
                 Write(entry);
             }
             catch (Exception ex)
@@ -114,7 +124,7 @@ namespace DotNetCommons.Logger
                 return new LogEntryDuration(null);
 
             var entry = new LogEntryDuration(this);
-            PopulateEntry(entry, severity, text, parameters, ObjectToDictionary(options));
+            PopulateEntry(entry, _level, severity, text, parameters, ObjectToDictionary(options));
             return entry;
         }
 
@@ -137,9 +147,10 @@ namespace DotNetCommons.Logger
             }
         }
 
-        protected void PopulateEntry(LogEntry entry, LogSeverity severity, string text, object[] parameters, IDictionary<string, object> options)
+        protected void PopulateEntry(LogEntry entry, int level, LogSeverity severity, string text, object[] parameters, IDictionary<string, object> options)
         {
             var threadId = Thread.CurrentThread.ManagedThreadId;
+            entry.Level = level;
             entry.Time = DateTime.Now;
             entry.Channel = Channel;
             entry.Message = parameters != null && parameters.Length > 0 ? string.Format(text, parameters) : text;
@@ -153,6 +164,35 @@ namespace DotNetCommons.Logger
 
             foreach (var item in options)
                 entry.Add(item.Key, item.Value);
+        }
+
+        public void Enter(string message, object[] parameters = null, object options = null)
+        {
+            Enter(LogSeverity.Normal, message, parameters, options);
+        }
+
+        public void Enter(LogSeverity severity, string message, object[] parameters = null, object options = null)
+        {
+            Write(severity, message, parameters, options);
+            _level++;
+        }
+
+        public void Leave()
+        {
+            if (_level > 0)
+                _level--;
+        }
+
+        public void Leave(string message, object[] parameters = null, object options = null)
+        {
+            Leave(LogSeverity.Normal, message, parameters, options);
+        }
+
+        public void Leave(LogSeverity severity, string message, object[] parameters = null, object options = null)
+        {
+            if (_level > 0)
+                _level--;
+            Write(severity, message, parameters, options);
         }
 
         /// <summary>

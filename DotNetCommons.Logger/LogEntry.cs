@@ -40,6 +40,9 @@ namespace DotNetCommons.Logger
         /// <summary>Optional other parameters</summary>
         public ListDictionary Parameters { get; } = new ListDictionary();
 
+        /// <summary>Indentation level</summary>
+        public int Level { get; set; }
+
         public void Add(string key, object value)
         {
             Parameters[key] = value;
@@ -76,6 +79,7 @@ namespace DotNetCommons.Logger
                 _render =
                     (Time.ToString("HH:mm:ss.fff") + " " +
                     LogChannel.SeverityToText(Severity) + " " +
+                    new string(' ', Level * 4) +
                     (Severity <= LogSeverity.Debug ? "- " : null) +
                     (ThreadId != null ? $"[{ThreadId}] " : null) +
                     (!string.IsNullOrEmpty(Channel) ? "@" + Channel + " " : "") +

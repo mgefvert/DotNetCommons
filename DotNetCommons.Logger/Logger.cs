@@ -29,6 +29,12 @@ namespace DotNetCommons.Logger
         public static void Critical(string text, params object[] parameters) => LogChannel.Write(LogSeverity.Critical, text, parameters);
         public static void Fatal(string text, params object[] parameters) => LogChannel.Write(LogSeverity.Fatal, text, parameters);
 
+        public static void Enter(string message, object[] parameters = null, object options = null) => LogChannel.Enter(message, parameters, options);
+        public static void Enter(LogSeverity severity, string message, object[] parameters = null, object options = null) => LogChannel.Enter(severity, message, parameters, options);
+        public static void Leave() => LogChannel.Leave();
+        public static void Leave(string message, object[] parameters = null, object options = null) => LogChannel.Leave(message, parameters, options);
+        public static void Leave(LogSeverity severity, string message, object[] parameters = null, object options = null) => LogChannel.Leave(severity, message, parameters, options);
+
         public static string Channel
         {
             get => LogChannel.Channel;
@@ -61,6 +67,25 @@ namespace DotNetCommons.Logger
             {
                 Error(ex);
                 return false;
+            }
+        }
+
+        public static bool Catch(string enterMessage, Action action, string leaveMessage, LogSeverity severity = LogSeverity.Normal)
+        {
+            Enter(severity, enterMessage);
+            try
+            {
+                action();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+                return false;
+            }
+            finally
+            {
+                Leave(severity, leaveMessage);
             }
         }
 
