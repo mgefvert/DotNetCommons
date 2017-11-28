@@ -46,7 +46,7 @@ namespace DotNetCommons.Logger
 
         public static void Error(Exception ex)
         {
-            Error(ex.GetType().Name + ": " + ex.Message);
+            Error(ex.GetDetailedInformation());
         }
 
         /// <summary>

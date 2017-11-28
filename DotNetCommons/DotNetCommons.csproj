@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="Configuration\LocalConfigFile.cs" />
     <Compile Include="IoC\MicroContainer.cs" />
+    <Compile Include="_Extensions\ExceptionExtensions.cs" />
     <Compile Include="_Tools\DateTimeTools.cs" />
     <Compile Include="_Extensions\ConsoleExtensions.cs" />
     <Compile Include="_Extensions\StructExtensions.cs" />
