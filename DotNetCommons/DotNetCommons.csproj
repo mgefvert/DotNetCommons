@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\LocalConfigFile.cs" />
+    <Compile Include="Holiday.cs" />
     <Compile Include="IoC\MicroContainer.cs" />
     <Compile Include="_Extensions\ExceptionExtensions.cs" />
     <Compile Include="_Tools\DateTimeTools.cs" />

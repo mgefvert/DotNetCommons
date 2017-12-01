@@ -77,7 +77,11 @@ namespace DotNetCommons.IoC
         {
             var entry = Map.GetOrDefault(type);
             if (entry == null)
-                throw new ArgumentException($"Type {type} is not registered.");
+                return CreateNew(new Entry
+                {
+                    ImplementationType = type,
+                    Mode = CreationMode.Create
+                });
 
             if (entry.Instance != null)
                 return entry.Instance;
@@ -129,6 +133,29 @@ namespace DotNetCommons.IoC
             }
         }
 
+        public void Clear()
+        {
+            Dispose();
+            Map.Clear();
+        }
+
+        public void Clear<T>()
+        {
+            Clear(typeof(T));
+        }
+
+        protected void Clear(Type type)
+        {
+            var entry = Map.GetOrDefault(type);
+            if (entry == null)
+                return;
+
+            if (entry.Instance is IDisposable disposable)
+                disposable.Dispose();
+
+            Map.Remove(type);
+        }
+
         public MicroContainer Local()
         {
             var result = new MicroContainer();
@@ -144,9 +171,7 @@ namespace DotNetCommons.IoC
 
         protected Entry NewEntry(Type type, CreationMode mode)
         {
-            if (Map.ContainsKey(type))
-                throw new ArgumentException($"Type {type.Name} is already registered.");
-
+            Clear(type);
             ClearResolved();
 
             var result = new Entry { ImplementationType = type, Mode = mode };
