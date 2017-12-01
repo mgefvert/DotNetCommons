@@ -12,6 +12,9 @@ namespace DotNetCommons
         Easter = 4
     }
 
+    /// <summary>
+    /// Contains the most common U.S. Federal Holidays and a few more.
+    /// </summary>
     public static class CommonHolidays
     {
         private static readonly Holiday[] Cache = new Holiday[14];
@@ -32,16 +35,26 @@ namespace DotNetCommons
         public static Holiday NewYearsEve     => Cache[13] ?? (Cache[13] = Holiday.CreateSpecificDate(12, 31, "New Year's Eve"));
     }
 
+    /// <summary>
+    /// Contains a list of common holidays.
+    /// </summary>
     public static class Holidays
     {
         private static List<Holiday> _list;
 
+        /// <summary>
+        /// Return a collection of all registered holidays.
+        /// </summary>
+        /// <returns></returns>
         public static ICollection<Holiday> All()
         {
             Initialize();
             return _list.AsReadOnly();
         }
 
+        /// <summary>
+        /// Clear the list of predefined holidays.
+        /// </summary>
         public static void Clear()
         {
             _list = new List<Holiday>();
@@ -61,28 +74,58 @@ namespace DotNetCommons
             });
         }
 
+        /// <summary>
+        /// Tests whether a particular day is a holiday.
+        /// </summary>
+        /// <param name="date">Date to test against. Can be any particular year.</param>
+        /// <returns>The given holiday if this date falls on a holiday, otherwise NULL.</returns>
+        public static Holiday IsHoliday(DateTime date)
+        {
+            Initialize();
+            return _list.FirstOrDefault(x => x.IsHoliday(date));
+        }
+
+        /// <summary>
+        /// Register a new holiday.
+        /// </summary>
+        /// <param name="holiday"></param>
         public static void Register(params Holiday[] holiday)
         {
             Initialize();
             _list.AddRange(holiday);
         }
 
+        /// <summary>
+        /// Remove a particular holiday.
+        /// </summary>
+        /// <param name="holiday"></param>
         public static void Remove(Holiday holiday)
         {
             Initialize();
             _list.Remove(holiday);
         }
 
-        public static bool IsHoliday(DateTime date)
+        /// <summary>
+        /// Remove a particular holiday by name.
+        /// </summary>
+        /// <param name="name">Name to remove, case insensitive.</param>
+        public static void Remove(string name)
         {
             Initialize();
-            return _list.Any(x => x.IsHoliday(date));
+            _list.RemoveAll(x => x.Name.Like(name));
         }
     }
 
+    /// <summary>
+    /// Class that encapsulates functionality for a particular holiday.
+    /// </summary>
     public class Holiday
     {
         private DateTime _nextDate = DateTime.MinValue;
+
+        /// <summary>
+        /// When the next holiday occurs.
+        /// </summary>
         public DateTime NextDate
         {
             get
@@ -94,25 +137,63 @@ namespace DotNetCommons
             }
         }
 
+        /// <summary>
+        /// Holiday definition type (how it's calculcated).
+        /// </summary>
         public HolidayType HolidayType { get; private set; }
 
+        /// <summary>
+        /// Name of the holiday.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// What month it occurs in.
+        /// </summary>
         public int CalcMonth { get; private set; }
+
+        /// <summary>
+        /// What week, if any, it occurs in.
+        /// </summary>
         public int CalcWeek { get; private set; }
+
+        /// <summary>
+        /// What day of the month it occurs in, if given.
+        /// </summary>
         public int CalcDay { get; private set; }
+
+        /// <summary>
+        /// What day of the week this holiday occurs on, if any.
+        /// </summary>
         public DayOfWeek CalcDayOfWeek { get; private set; }
+
+        /// <summary>
+        /// Any days to add or subtract to the calculation.
+        /// </summary>
         public int CalcAddDays { get; private set; }
 
+        /// <summary>
+        /// Get a definition for the holiday that can be persisted and given to new instances.
+        /// </summary>
+        /// <returns>A string representation of the holiday definition.</returns>
         public string GetDefinition()
         {
             return "[" + string.Join(",", HolidayType.ToString(), Name, CalcMonth, CalcWeek, CalcDay, (int)CalcDayOfWeek, CalcAddDays) + "]";
         }
 
+        /// <summary>
+        /// A string representation on the format "Holiday: Date".
+        /// </summary>
+        /// <returns>String containing the name of the holiday and date it occurs on.</returns>
         public override string ToString()
         {
             return (Name != null ? Name + ": " : "") + NextDate.ToShortDateString();
         }
 
+        /// <summary>
+        /// Create a new holiday according to a given definition.
+        /// </summary>
+        /// <param name="definition">Definition in a persisted format.</param>
         public Holiday(string definition = null)
         {
             if (string.IsNullOrEmpty(definition))
@@ -132,6 +213,11 @@ namespace DotNetCommons
             CalcAddDays = int.Parse(items[6]);
         }
 
+        /// <summary>
+        /// Create a new holiday with the easter formula calculation.
+        /// </summary>
+        /// <param name="name">Name of the holiday.</param>
+        /// <returns>A new holiday object.</returns>
         public static Holiday CreateEaster(string name = null) 
             => new Holiday
             {
@@ -139,6 +225,13 @@ namespace DotNetCommons
                 Name = name
             };
 
+        /// <summary>
+        /// Create a new holiday with a specific date of the year.
+        /// </summary>
+        /// <param name="month">Month it occurs in.</param>
+        /// <param name="day">Day of the month.</param>
+        /// <param name="name">Optional holiday name.</param>
+        /// <returns>A new holiday object.</returns>
         public static Holiday CreateSpecificDate(int month, int day, string name = null) 
             => new Holiday
             {
@@ -148,6 +241,15 @@ namespace DotNetCommons
                 Name = name
             };
 
+        /// <summary>
+        /// Create a new holiday that occurs in the Nth week of a given month (e.g. first Sunday of the August).
+        /// </summary>
+        /// <param name="month">Month it occurs in.</param>
+        /// <param name="week">Week number (starting with 1).</param>
+        /// <param name="day">Which day of the week.</param>
+        /// <param name="dayOffset">Any days added or subtracted to the given weekday.</param>
+        /// <param name="name">Optional holiday name.</param>
+        /// <returns>A new holiday object.</returns>
         public static Holiday CreateDayInNthWeek(int month, int week, DayOfWeek day, int dayOffset = 0, string name = null) 
             => new Holiday
             {
@@ -159,6 +261,14 @@ namespace DotNetCommons
                 Name = name
             };
 
+        /// <summary>
+        /// Create a new holiday that occurs in the last week of a given month (e.g. last Tuesday in April)
+        /// </summary>
+        /// <param name="month">Month it occurs in.</param>
+        /// <param name="day">Which day of the week.</param>
+        /// <param name="dayOffset">Any days added or subtracted to the given weekday.</param>
+        /// <param name="name">Optional holiday name.</param>
+        /// <returns>A new holiday object.</returns>
         public static Holiday CreateDayInLastWeek(int month, DayOfWeek day, int dayOffset = 0, string name = null)
             => new Holiday
             {
@@ -169,6 +279,11 @@ namespace DotNetCommons
                 Name = name
             };
 
+        /// <summary>
+        /// Number of business days (Mondays - Fridays) left until the holiday. Does not include the
+        /// holiday itself, nor any other holidays.
+        /// </summary>
+        /// <returns>Business days left.</returns>
         public int BusinessDaysLeft()
         {
             var result = 0;
@@ -186,6 +301,11 @@ namespace DotNetCommons
             return result;
         }
 
+        /// <summary>
+        /// Calculate the date of this holiday for a given year.
+        /// </summary>
+        /// <param name="year">Year.</param>
+        /// <returns>The date on which this holiday occurred that year.</returns>
         public DateTime CalculateDate(int year)
         {
             switch (HolidayType)
@@ -193,17 +313,26 @@ namespace DotNetCommons
                 case HolidayType.Date:
                     return new DateTime(year, CalcMonth, CalcDay);
                 case HolidayType.Easter:
-                    return CalcEasterSunday(year);
+                    return GetEasterSundayDate(year);
                 case HolidayType.LastWeek:
-                    return CalcDayInLastWeek(year, CalcMonth, CalcDayOfWeek).AddDays(CalcAddDays);
+                    return GetDayInLastWeekOfMonth(year, CalcMonth, CalcDayOfWeek).AddDays(CalcAddDays);
                 case HolidayType.NthWeek:
-                    return CalcDayInNthWeek(year, CalcMonth, CalcWeek, CalcDayOfWeek).AddDays(CalcAddDays);
+                    return GetDayInNthWeekOfMonth(year, CalcMonth, CalcWeek, CalcDayOfWeek).AddDays(CalcAddDays);
                 default:
                     throw new InvalidOperationException("Unrecognized holiday type " + HolidayType);
             }
         }
 
-        public static DateTime CalcDayInLastWeek(int year, int month, DayOfWeek day)
+        /// <summary>
+        /// Number of whole days left until the holiday. Does not include the holiday itself.
+        /// </summary>
+        /// <returns>Days left.</returns>
+        public int DaysLeft()
+        {
+            return (int) (NextDate - DateTime.Today).TotalDays;
+        }
+
+        public static DateTime GetDayInLastWeekOfMonth(int year, int month, DayOfWeek day)
         {
             var result = new DateTime(year, month, 1).AddMonths(1).AddDays(-1);
             while (result.DayOfWeek != day)
@@ -212,7 +341,7 @@ namespace DotNetCommons
             return result;
         }
 
-        public static DateTime CalcDayInNthWeek(int year, int month, int week, DayOfWeek day)
+        public static DateTime GetDayInNthWeekOfMonth(int year, int month, int week, DayOfWeek day)
         {
             if (week < 1)
                 week = 1;
@@ -226,7 +355,7 @@ namespace DotNetCommons
             return result.AddDays((week - 1) * 7);
         }
 
-        public static DateTime CalcEasterSunday(int year)
+        public static DateTime GetEasterSundayDate(int year)
         {
             var a = year % 19;
             var b = year / 100;
@@ -246,11 +375,11 @@ namespace DotNetCommons
             return new DateTime(year, n, p + 1);
         }
 
-        public int DaysLeft()
-        {
-            return (int) (NextDate - DateTime.Today).TotalDays;
-        }
-
+        /// <summary>
+        /// Determine whether the given date falls on this holiday.
+        /// </summary>
+        /// <param name="date">Date to test.</param>
+        /// <returns>True if the date is the holiday for that year.</returns>
         public bool IsHoliday(DateTime date)
         {
             return date.Date == CalculateDate(date.Year);

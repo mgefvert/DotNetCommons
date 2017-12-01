@@ -38,10 +38,10 @@ namespace DotNetCommons.Test
         [TestMethod]
         public void TestHolidays()
         {
-            Assert.IsTrue(Holidays.IsHoliday(new DateTime(2017, 1, 1)));
-            Assert.IsFalse(Holidays.IsHoliday(new DateTime(2017, 1, 3)));
-            Assert.IsTrue(Holidays.IsHoliday(new DateTime(2017, 12, 25)));
-            Assert.IsFalse(Holidays.IsHoliday(new DateTime(2017, 12, 30)));
+            Assert.IsNotNull(Holidays.IsHoliday(new DateTime(2017, 1, 1)));
+            Assert.IsNull(Holidays.IsHoliday(new DateTime(2017, 1, 3)));
+            Assert.IsNotNull(Holidays.IsHoliday(new DateTime(2017, 12, 25)));
+            Assert.IsNull(Holidays.IsHoliday(new DateTime(2017, 12, 30)));
         }
 
         [TestMethod]
@@ -83,17 +83,17 @@ namespace DotNetCommons.Test
         [TestMethod]
         public void TestEaster()
         {
-            Assert.AreEqual("1995-04-16", Holiday.CalcEasterSunday(1995).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("1996-04-07", Holiday.CalcEasterSunday(1996).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("1997-03-30", Holiday.CalcEasterSunday(1997).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2006-04-16", Holiday.CalcEasterSunday(2006).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2007-04-08", Holiday.CalcEasterSunday(2007).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2008-03-23", Holiday.CalcEasterSunday(2008).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2015-04-05", Holiday.CalcEasterSunday(2015).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2016-03-27", Holiday.CalcEasterSunday(2016).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2017-04-16", Holiday.CalcEasterSunday(2017).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2031-04-13", Holiday.CalcEasterSunday(2031).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2032-03-28", Holiday.CalcEasterSunday(2032).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("1995-04-16", Holiday.GetEasterSundayDate(1995).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("1996-04-07", Holiday.GetEasterSundayDate(1996).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("1997-03-30", Holiday.GetEasterSundayDate(1997).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2006-04-16", Holiday.GetEasterSundayDate(2006).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2007-04-08", Holiday.GetEasterSundayDate(2007).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2008-03-23", Holiday.GetEasterSundayDate(2008).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2015-04-05", Holiday.GetEasterSundayDate(2015).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2016-03-27", Holiday.GetEasterSundayDate(2016).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2017-04-16", Holiday.GetEasterSundayDate(2017).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2031-04-13", Holiday.GetEasterSundayDate(2031).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2032-03-28", Holiday.GetEasterSundayDate(2032).ToString("yyyy-MM-dd"));
         }
 
         [TestMethod]
@@ -108,17 +108,17 @@ namespace DotNetCommons.Test
         [TestMethod]
         public void TestLastWeek()
         {
-            Assert.AreEqual("2017-12-29", Holiday.CalcDayInLastWeek(2017, 12, DayOfWeek.Friday).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2017-04-30", Holiday.CalcDayInLastWeek(2017, 4, DayOfWeek.Sunday).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2017-12-29", Holiday.GetDayInLastWeekOfMonth(2017, 12, DayOfWeek.Friday).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2017-04-30", Holiday.GetDayInLastWeekOfMonth(2017, 4, DayOfWeek.Sunday).ToString("yyyy-MM-dd"));
         }
 
         [TestMethod]
         public void TestNthWeek()
         {
-            Assert.AreEqual("2017-12-06", Holiday.CalcDayInNthWeek(2017, 12, 1, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2017-12-13", Holiday.CalcDayInNthWeek(2017, 12, 2, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2017-12-20", Holiday.CalcDayInNthWeek(2017, 12, 3, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
-            Assert.AreEqual("2017-12-27", Holiday.CalcDayInNthWeek(2017, 12, 4, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2017-12-06", Holiday.GetDayInNthWeekOfMonth(2017, 12, 1, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2017-12-13", Holiday.GetDayInNthWeekOfMonth(2017, 12, 2, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2017-12-20", Holiday.GetDayInNthWeekOfMonth(2017, 12, 3, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
+            Assert.AreEqual("2017-12-27", Holiday.GetDayInNthWeekOfMonth(2017, 12, 4, DayOfWeek.Wednesday).ToString("yyyy-MM-dd"));
         }
     }
 }
