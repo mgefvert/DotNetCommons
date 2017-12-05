@@ -10,7 +10,7 @@ namespace DotNetCommons.IO.YanArchive
 {
     public static class YanFileSystemIO
     {
-        internal static Stream BlockRead(Stream stream, Guid id, YanFileFlags flags, int position, int size, byte[] password)
+        internal static MemoryStream BlockRead(Stream stream, Guid id, YanFileFlags flags, int position, int size, byte[] password)
         {
             var buffer = new byte[size];
             stream.Position = position;

@@ -119,6 +119,16 @@ namespace DotNetCommons.IO.YanArchive
             File.Delete(_filename);
         }
 
+        public bool Exists(Guid id)
+        {
+            return _index.Find(id) != null;
+        }
+
+        public bool Exists(string filename)
+        {
+            return _index.Find(filename) != null;
+        }
+
         protected void FlushIndex()
         {
             if (_readOnly)
@@ -140,7 +150,7 @@ namespace DotNetCommons.IO.YanArchive
             stream.SetLength(header.IndexPosition + len);
         }
 
-        public Stream Load(Guid id)
+        public MemoryStream Load(Guid id)
         {
             if (_stream == null)
                 throw new ObjectDisposedException(ErrorAlreadyDisposed);
@@ -149,7 +159,7 @@ namespace DotNetCommons.IO.YanArchive
             return YanFileSystemIO.BlockRead(_stream, id, f.Flags, f.Position, f.Size, _password);
         }
 
-        public Stream Load(string filename)
+        public MemoryStream Load(string filename)
         {
             if (_stream == null)
                 throw new ObjectDisposedException(ErrorAlreadyDisposed);
