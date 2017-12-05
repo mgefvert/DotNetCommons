@@ -98,7 +98,10 @@
     <Compile Include="NaturalStringComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceHelper.cs" />
-    <Compile Include="WinApi.cs" />
+    <Compile Include="WinApiConstants.cs" />
+    <Compile Include="WinApiFunctions.cs" />
+    <Compile Include="WinApiStructs.cs" />
+    <Compile Include="WinApiEnums.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
