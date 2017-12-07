@@ -22,7 +22,7 @@ namespace DotNetCommons.Logger
 
         public void Dispose()
         {
-            Parameters["duration"] = DateTime.Now - _start;
+            ExtraValues["duration"] = ((long)(DateTime.Now - _start).TotalMilliseconds).ToString();
             _logger?.Write(this);
         }
     }

@@ -7,6 +7,7 @@ namespace DotNetCommons.Logger
         Trace,         // Low-level diagnostic debugging
         Debug,         // Debug information for examining what a program does
         Normal,        // Default message
+        Info,          // Informational message, same as Normal but triggers possible extra forwarding
         Api,           // API entry/exit
         Notice,        // Normal but significant conditions (program start, job start etc)
         Warning,       // Warning conditions

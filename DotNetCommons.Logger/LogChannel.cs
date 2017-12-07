@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using DotNetCommons.Logger.LogMethods;
 
@@ -10,43 +9,68 @@ namespace DotNetCommons.Logger
 {
     public delegate void LogEvent(object sender, LogEntry entry);
 
+    public enum LogChannelChainMode
+    {
+        Clear,
+        CopyDefault,
+        UseDefault
+    }
+
     public class LogChannel : IDisposable
     {
-        private LogSeverity ActualSeverity => Severity ?? LogSystem.Configuration.Severity;
+        internal LogSeverity ActualSeverity => Severity ?? LogSystem.Configuration.Severity;
 
         public LogSeverity? Severity = null;
         public string Channel { get; set; }
 
-        public void Trace(string text, params object[] parameters) => Write(LogSeverity.Trace, text, parameters);
-        public void Debug(string text, params object[] parameters) => Write(LogSeverity.Debug, text, parameters);
-        public void Log(string text, params object[] parameters) => Write(LogSeverity.Normal, text, parameters);
-        public void Normal(string text, params object[] parameters) => Write(LogSeverity.Normal, text, parameters);
-        public void Api(string text, params object[] parameters) => Write(LogSeverity.Api, text, parameters);
-        public void Notice(string text, params object[] parameters) => Write(LogSeverity.Notice, text, parameters);
-        public void Warning(string text, params object[] parameters) => Write(LogSeverity.Warning, text, parameters);
-        public void Error(string text, params object[] parameters) => Write(LogSeverity.Error, text, parameters);
-        public void Critical(string text, params object[] parameters) => Write(LogSeverity.Critical, text, parameters);
-        public void Fatal(string text, params object[] parameters) => Write(LogSeverity.Fatal, text, parameters);
+        public void Trace(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Trace, text, extraValues);
+        public void Debug(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Debug, text, extraValues);
+        public void Log(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Normal, text, extraValues);
+        public void Normal(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Normal, text, extraValues);
+        public void Api(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Api, text, extraValues);
+        public void Notice(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Notice, text, extraValues);
+        public void Warning(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Warning, text, extraValues);
+        public void Error(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Error, text, extraValues);
+        public void Critical(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Critical, text, extraValues);
+        public void Fatal(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Fatal, text, extraValues);
 
         public event LogEvent LogEvent;
 
-        public List<LogChain> LogChains { get; } = new List<LogChain>();
+        public List<LogChain> LogChains { get; }
         protected ConsoleLogger ConsoleLogger = new ConsoleLogger();
 
         private int _level;
 
-        internal LogChannel(string channel, bool copyChains)
+        internal LogChannel(string channel, LogChannelChainMode chainMode)
         {
             Channel = channel;
 
-            if (copyChains)
-                foreach (var chain in LogSystem.LogChains)
-                    LogChains.Add(new LogChain(chain));
+            switch (chainMode)
+            {
+                case LogChannelChainMode.Clear:
+                    LogChains = new List<LogChain>();
+                    break;
+
+                case LogChannelChainMode.CopyDefault:
+                    LogChains = new List<LogChain>();
+                    foreach (var chain in LogSystem.LogChains)
+                        LogChains.Add(new LogChain(chain));
+                    break;
+
+                case LogChannelChainMode.UseDefault:
+                    LogChains = LogSystem.LogChains;
+                    break;
+            }
         }
 
         public void Error(Exception ex)
         {
-            Error(ex.GetType().Name + ": " + ex.Message, LogSeverity.Error);
+            Error(ex.GetType().Name + ": " + ex.Message);
+        }
+
+        public bool IsLoggingFor(LogSeverity severity)
+        {
+            return severity >= ActualSeverity;
         }
 
         public static string SeverityToText(LogSeverity severity)
@@ -101,7 +125,7 @@ namespace DotNetCommons.Logger
             Write(new List<LogEntry> { entry });
         }
 
-        public void Write(LogSeverity severity, string text, object[] parameters = null, object options = null)
+        public void Write(LogSeverity severity, string text, Dictionary<string, string> extraValues = null)
         {
             if (severity < ActualSeverity)
                 return;
@@ -109,7 +133,7 @@ namespace DotNetCommons.Logger
             try
             {
                 var entry = new LogEntry();
-                PopulateEntry(entry, _level, severity, text, parameters, ObjectToDictionary(options));
+                PopulateEntry(entry, _level, severity, text, extraValues);
                 Write(entry);
             }
             catch (Exception ex)
@@ -118,62 +142,41 @@ namespace DotNetCommons.Logger
             }
         }
 
-        public LogEntryDuration Time(LogSeverity severity, string text, object[] parameters = null, object options = null)
+        public LogEntryDuration Time(LogSeverity severity, string text, Dictionary<string, string> extraValues = null)
         {
             if (severity < ActualSeverity)
                 return new LogEntryDuration(null);
 
             var entry = new LogEntryDuration(this);
-            PopulateEntry(entry, _level, severity, text, parameters, ObjectToDictionary(options));
+            PopulateEntry(entry, _level, severity, text, extraValues);
             return entry;
         }
 
-        private static IDictionary<string, object> ObjectToDictionary(object options)
-        {
-            switch (options)
-            {
-                case null:
-                    return null;
-
-                case string _:
-                    return new Dictionary<string, object> { [""] = options };
-
-                case IDictionary<string, object> dict:
-                    return dict;
-
-                default:
-                    return options.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                        .ToDictionary(p => p.Name, p => p.GetValue(options));
-            }
-        }
-
-        protected void PopulateEntry(LogEntry entry, int level, LogSeverity severity, string text, object[] parameters, IDictionary<string, object> options)
+        protected void PopulateEntry(LogEntry entry, int level, LogSeverity severity, string text, Dictionary<string, string> extraValues)
         {
             var threadId = Thread.CurrentThread.ManagedThreadId;
             entry.Level = level;
             entry.Time = DateTime.Now;
             entry.Channel = Channel;
-            entry.Message = parameters != null && parameters.Length > 0 ? string.Format(text, parameters) : text;
+            entry.Message = text;
             entry.MachineName = LogSystem.MachineName;
             entry.ProcessName = LogSystem.ProcessName;
             entry.Severity = severity;
             entry.ThreadId = threadId != LogSystem.MainThreadId ? (int?) threadId : null;
 
-            if (options == null)
-                return;
-
-            foreach (var item in options)
-                entry.Add(item.Key, item.Value);
+            if (extraValues != null)
+                foreach (var item in extraValues)
+                    entry.ExtraValues[item.Key] = item.Value;
         }
 
-        public void Enter(string message, object[] parameters = null, object options = null)
+        public void Enter(string message, Dictionary<string, string> extraValues = null)
         {
-            Enter(LogSeverity.Normal, message, parameters, options);
+            Enter(LogSeverity.Normal, message, extraValues);
         }
 
-        public void Enter(LogSeverity severity, string message, object[] parameters = null, object options = null)
+        public void Enter(LogSeverity severity, string message, Dictionary<string, string> extraValues = null)
         {
-            Write(severity, message, parameters, options);
+            Write(severity, message, extraValues);
             _level++;
         }
 
@@ -183,16 +186,16 @@ namespace DotNetCommons.Logger
                 _level--;
         }
 
-        public void Leave(string message, object[] parameters = null, object options = null)
+        public void Leave(string message, Dictionary<string, string> extraValues = null)
         {
-            Leave(LogSeverity.Normal, message, parameters, options);
+            Leave(LogSeverity.Normal, message, extraValues);
         }
 
-        public void Leave(LogSeverity severity, string message, object[] parameters = null, object options = null)
+        public void Leave(LogSeverity severity, string message, Dictionary<string, string> extraValues = null)
         {
             if (_level > 0)
                 _level--;
-            Write(severity, message, parameters, options);
+            Write(severity, message, extraValues);
         }
 
         /// <summary>

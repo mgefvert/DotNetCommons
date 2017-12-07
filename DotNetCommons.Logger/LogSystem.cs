@@ -18,31 +18,34 @@ namespace DotNetCommons.Logger
         private static bool _initialized;
         private static LogChannel _defaultLogger;
 
-        public static LogChannel DefaultLogger => _defaultLogger ?? (_defaultLogger = CreateLogger("", true));
+        public static LogChannel DefaultLogger => _defaultLogger ?? (_defaultLogger = CreateLogger("", LogChannelChainMode.UseDefault));
 
-        public static LogChannel CreateLogger(string channel, bool defaultChains)
+        public static LogChannel CreateLogger(string channel, LogChannelChainMode mode)
         {
             if (!_initialized)
+                InitializeLogSystem();
+
+            return new LogChannel(channel, mode);
+        }
+
+        private static void InitializeLogSystem()
+        {
+            Configuration.LoadFromAppSettings();
+
+            var chain = new LogChain("default");
+            if (Configuration.UseErrorLog)
             {
-                Configuration.LoadFromAppSettings();
-
-                var chain = new LogChain("default");
-                if (Configuration.UseErrorLog)
-                {
-                    chain.Push(new FileLogger(Configuration.Rotation, Configuration.Directory,
-                        Configuration.Name, ".err", Configuration.MaxRotations, Configuration.CompressOnRotate));
-                    chain.Push(new LimitSeverityLogger(LogSeverity.Warning));
-                }
-
                 chain.Push(new FileLogger(Configuration.Rotation, Configuration.Directory,
-                    Configuration.Name, ".log", Configuration.MaxRotations, Configuration.CompressOnRotate));
-
-                LogChains.Add(chain);
-
-                _initialized = true;
+                    Configuration.Name, ".err", Configuration.MaxRotations, Configuration.CompressOnRotate));
+                chain.Push(new LimitSeverityLogger(LogSeverity.Warning));
             }
 
-            return new LogChannel(channel, defaultChains);
+            chain.Push(new FileLogger(Configuration.Rotation, Configuration.Directory,
+                Configuration.Name, ".log", Configuration.MaxRotations, Configuration.CompressOnRotate));
+
+            LogChains.Add(chain);
+
+            _initialized = true;
         }
     }
 }

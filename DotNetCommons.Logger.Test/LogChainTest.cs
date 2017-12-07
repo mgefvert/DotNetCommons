@@ -12,7 +12,7 @@ namespace DotNetCommons.Logger.Test
         [TestMethod]
         public void TestDefaultChains()
         {
-            var logger = LogSystem.CreateLogger("test", true);
+            var logger = LogSystem.CreateLogger("test", LogChannelChainMode.CopyDefault);
 
             Assert.AreEqual("test", logger.Channel);
             Assert.IsTrue(logger.LogChains.Count >= 1);
@@ -24,7 +24,7 @@ namespace DotNetCommons.Logger.Test
         [TestMethod]
         public void TestCustomChains()
         {
-            var logger = LogSystem.CreateLogger("test", false);
+            var logger = LogSystem.CreateLogger("test", LogChannelChainMode.Clear);
             var chain = new LogChain("test");
             var mock = new MockLogger();
             chain.Push(mock);

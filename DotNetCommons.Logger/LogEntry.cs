@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DotNetCommons.Logger
@@ -38,29 +38,26 @@ namespace DotNetCommons.Logger
         public int? ThreadId { get; set; }
 
         /// <summary>Optional other parameters</summary>
-        public ListDictionary Parameters { get; } = new ListDictionary();
+        public Dictionary<string, string> ExtraValues { get; } = new Dictionary<string, string>();
 
         /// <summary>Indentation level</summary>
         public int Level { get; set; }
 
-        public void Add(string key, object value)
+        public void Add(string key, string value)
         {
-            Parameters[key] = value;
+            ExtraValues[key] = value;
         }
 
-        public T Get<T>(string parameter)
+        public string Get(string parameter)
         {
-            return Parameters.Contains(parameter) 
-                ? (T)Convert.ChangeType(Parameters[parameter], typeof(T))
-                : default(T);
+            return ExtraValues.GetOrDefault(parameter);
         }
 
         public string GetParametersAsText(string separator, params string[] excludeKeys)
         {
-            var data = Parameters.Keys
-                .Cast<string>()
+            var data = ExtraValues.Keys
                 .Where(x => !excludeKeys.Contains(x))
-                .Select(x => x + "=" + Parameters[x])
+                .Select(x => x + "=" + ExtraValues[x])
                 .ToList();
 
             return data.Any() ? string.Join(separator, data).Left(255) : null;

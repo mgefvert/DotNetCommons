@@ -13,7 +13,7 @@ namespace DotNetCommons.Logger.Test
         public void Test()
         {
             var mock = new MockLogger();
-            var logger = LogSystem.CreateLogger(null, false);
+            var logger = LogSystem.CreateLogger(null, LogChannelChainMode.Clear);
             var chain = new LogChain("mock");
             chain.Push(mock);
             logger.LogChains.Add(chain);
@@ -24,9 +24,9 @@ namespace DotNetCommons.Logger.Test
             }
 
             Assert.AreEqual(1, mock.Entries.Count);
-            Assert.IsNotNull(mock.Entries.Single().Parameters);
+            Assert.IsNotNull(mock.Entries.Single().ExtraValues);
 
-            var ts = (TimeSpan) mock.Entries.Single().Parameters["duration"];
+            var ts = TimeSpan.FromMilliseconds(long.Parse(mock.Entries.Single().ExtraValues["duration"]));
             Assert.IsTrue(ts.TotalMilliseconds >= 100);
         }
     }
