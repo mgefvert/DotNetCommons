@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace DotNetCommons.IO.YanArchive
 {
     public class YanFileSystem : IDisposable
     {
+        private readonly ReaderWriterLock _lock = new ReaderWriterLock();
+
         private const string ErrorArchiveIsReadonly = "Archive is readonly.";
         private const string ErrorAlreadyDisposed = "File stream is already disposed.";
 
@@ -14,10 +17,11 @@ namespace DotNetCommons.IO.YanArchive
         private YanHeader _header;
         private List<YanFile> _index;
         private readonly byte[] _password;
-        private FileStream _stream;
         private readonly bool _readOnly;
+        private volatile FileStream _stream;
 
         public IReadOnlyList<YanFile> Files => _index.AsReadOnly();
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 
         public YanFileSystem(string filename, bool readOnly, byte[] password = null)
         {
@@ -25,16 +29,24 @@ namespace DotNetCommons.IO.YanArchive
             _password = password;
             _readOnly = readOnly;
 
-            if (!File.Exists(filename))
+            _lock.AcquireWriterLock(Timeout);
+            try
             {
-                if (_readOnly)
-                    throw new IOException("Archive does not exist.");
+                if (!File.Exists(filename))
+                {
+                    if (_readOnly)
+                        throw new IOException("Archive does not exist.");
 
-                var flags = password != null ? YanHeaderFlags.Encrypted : YanHeaderFlags.None;
-                YanFileSystemIO.Create(filename, flags, password);
+                    var flags = password != null ? YanHeaderFlags.Encrypted : YanHeaderFlags.None;
+                    YanFileSystemIO.Create(filename, flags, password);
+                }
+
+                OpenStream();
             }
-
-            OpenStream();
+            finally
+            {
+                _lock.ReleaseWriterLock();
+            }
         }
 
         public YanFileSystem(string filename, byte[] password = null) : this(filename, false, password)
@@ -43,8 +55,16 @@ namespace DotNetCommons.IO.YanArchive
 
         public void Dispose()
         {
-            _stream?.Dispose();
-            _stream = null;
+            _lock.AcquireWriterLock(Timeout);
+            try
+            {
+                _stream?.Dispose();
+                _stream = null;
+            }
+            finally
+            {
+                _lock.ReleaseWriterLock();
+            }
         }
 
         public void Add(string filename, byte[] data, YanFileFlags flags = YanFileFlags.None)
@@ -60,21 +80,29 @@ namespace DotNetCommons.IO.YanArchive
             if (_readOnly)
                 throw new IOException(ErrorArchiveIsReadonly);
 
-            Delete(filename);
-
-            var record = new YanFile
+            _lock.AcquireWriterLock(Timeout);
+            try
             {
-                Id = Guid.NewGuid(),
-                Name = filename,
-                Flags = flags,
-                Position = _index.InsertPosition(),
-                Size = (int)(data.Length - data.Position)
-            };
+                Delete(filename);
 
-            record.SizeOnDisk = YanFileSystemIO.BlockWrite(_stream, record.Id, flags, record.Position, _password, data);
-            _index.Add(record);
+                var record = new YanFile
+                {
+                    Id = Guid.NewGuid(),
+                    Name = filename,
+                    Flags = flags,
+                    Position = _index.InsertPosition(),
+                    Size = (int)(data.Length - data.Position)
+                };
 
-            FlushIndex();
+                record.SizeOnDisk = YanFileSystemIO.BlockWrite(_stream, record.Id, flags, record.Position, _password, data);
+                _index.Add(record);
+
+                FlushIndex();
+            }
+            finally
+            {
+                _lock.ReleaseWriterLock();
+            }
         }
 
         public void Delete(Guid id)
@@ -84,15 +112,23 @@ namespace DotNetCommons.IO.YanArchive
             if (_readOnly)
                 throw new IOException(ErrorArchiveIsReadonly);
 
-            var deleted = false;
-            foreach (var f in _index.FindAll(id))
+            _lock.AcquireWriterLock(Timeout);
+            try
             {
-                deleted = true;
-                f.Flags |= YanFileFlags.Deleted;
-            }
+                var deleted = false;
+                foreach (var f in _index.FindAll(id))
+                {
+                    deleted = true;
+                    f.Flags |= YanFileFlags.Deleted;
+                }
 
-            if (deleted)
-                FlushIndex();
+                if (deleted)
+                    FlushIndex();
+            }
+            finally
+            {
+                _lock.ReleaseWriterLock();
+            }
         }
 
         public void Delete(string filename)
@@ -102,31 +138,63 @@ namespace DotNetCommons.IO.YanArchive
             if (_readOnly)
                 throw new IOException(ErrorArchiveIsReadonly);
 
-            var deleted = false;
-            foreach (var f in _index.FindAll(filename))
+            _lock.AcquireWriterLock(Timeout);
+            try
             {
-                deleted = true;
-                f.Flags |= YanFileFlags.Deleted;
-            }
+                var deleted = false;
+                foreach (var f in _index.FindAll(filename))
+                {
+                    deleted = true;
+                    f.Flags |= YanFileFlags.Deleted;
+                }
 
-            if (deleted)
-                FlushIndex();
+                if (deleted)
+                    FlushIndex();
+            }
+            finally
+            {
+                _lock.ReleaseWriterLock();
+            }
         }
 
         public void DeleteArchive()
         {
-            Dispose();
-            File.Delete(_filename);
+            _lock.AcquireWriterLock(Timeout);
+            try
+            {
+                Dispose();
+                File.Delete(_filename);
+            }
+            finally
+            {
+                _lock.ReleaseWriterLock();
+            }
         }
 
         public bool Exists(Guid id)
         {
-            return _index.Find(id) != null;
+            _lock.AcquireReaderLock(Timeout);
+            try
+            {
+                return _index.Find(id) != null;
+            }
+            finally
+            {
+                _lock.ReleaseReaderLock();
+            }
         }
 
         public bool Exists(string filename)
         {
-            return _index.Find(filename) != null;
+            _lock.AcquireReaderLock(Timeout);
+            try
+            {
+                return _index.Find(filename) != null;
+            }
+            finally
+            {
+                _lock.ReleaseReaderLock();
+            }
         }
 
         protected void FlushIndex()
@@ -152,20 +220,36 @@ namespace DotNetCommons.IO.YanArchive
 
         public MemoryStream Load(Guid id)
         {
-            if (_stream == null)
-                throw new ObjectDisposedException(ErrorAlreadyDisposed);
+            _lock.AcquireReaderLock(Timeout);
+            try
+            {
+                if (_stream == null)
+                    throw new ObjectDisposedException(ErrorAlreadyDisposed);
 
-            var f = _index.Find(id) ?? throw new IOException($"File {id} does not exist in archive.");
-            return YanFileSystemIO.BlockRead(_stream, id, f.Flags, f.Position, f.Size, _password);
+                var f = _index.Find(id) ?? throw new IOException($"File {id} does not exist in archive.");
+                return YanFileSystemIO.BlockRead(_stream, id, f.Flags, f.Position, f.Size, _password);
+            }
+            finally
+            {
+                _lock.ReleaseReaderLock();
+            }
         }
 
         public MemoryStream Load(string filename)
         {
-            if (_stream == null)
-                throw new ObjectDisposedException(ErrorAlreadyDisposed);
+            _lock.AcquireReaderLock(Timeout);
+            try
+            {
+                if (_stream == null)
+                    throw new ObjectDisposedException(ErrorAlreadyDisposed);
 
-            var f = _index.Find(filename) ?? throw new IOException($"File {filename} does not exist in archive.");
-            return YanFileSystemIO.BlockRead(_stream, f.Id, f.Flags, f.Position, f.SizeOnDisk, _password);
+                var f = _index.Find(filename) ?? throw new IOException($"File {filename} does not exist in archive.");
+                return YanFileSystemIO.BlockRead(_stream, f.Id, f.Flags, f.Position, f.SizeOnDisk, _password);
+            }
+            finally
+            {
+                _lock.ReleaseReaderLock();
+            }
         }
 
         protected void OpenStream()
@@ -184,18 +268,26 @@ namespace DotNetCommons.IO.YanArchive
             if (_readOnly)
                 throw new IOException(ErrorArchiveIsReadonly);
 
-            _index.SortByPosition();
-
-            var newIndex = _index.Where(x => !x.Flags.HasFlag(YanFileFlags.Deleted)).Select(x => x.Copy()).ToList();
-            var pos = YanHeader.Length;
-            foreach(var f in newIndex)
+            _lock.AcquireWriterLock(Timeout);
+            try
             {
-                f.Position = pos;
-                pos += f.SizeOnDisk;
-            }
+                _index.SortByPosition();
 
-            if (newIndex.Count < _index.Count)
-                PackInplace(newIndex);
+                var newIndex = _index.Where(x => !x.Flags.HasFlag(YanFileFlags.Deleted)).Select(x => x.Copy()).ToList();
+                var pos = YanHeader.Length;
+                foreach (var f in newIndex)
+                {
+                    f.Position = pos;
+                    pos += f.SizeOnDisk;
+                }
+
+                if (newIndex.Count < _index.Count)
+                    PackInplace(newIndex);
+            }
+            finally
+            {
+                _lock.ReleaseWriterLock();
+            }
         }
 
         private void PackInplace(List<YanFile> newIndex)
