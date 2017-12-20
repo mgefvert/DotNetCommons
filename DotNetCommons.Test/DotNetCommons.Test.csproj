@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -51,19 +52,39 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="HolidayTest.cs" />
+    <Compile Include="Collections\DictionarySerializerTest.cs" />
+    <Compile Include="Html\HAttrTest.cs" />
+    <Compile Include="Html\HAttrsTest.cs" />
+    <Compile Include="Html\HTagTest.cs" />
+    <Compile Include="IO\YanArchive\Test.cs" />
+    <Compile Include="Logging\LogChainTest.cs" />
+    <Compile Include="Logging\LogEntryDurationTest.cs" />
+    <Compile Include="Logging\LogEntryTest.cs" />
+    <Compile Include="Logging\LoggerTest.cs" />
+    <Compile Include="Logging\LogMethods\BufferLoggerTest.cs" />
+    <Compile Include="Logging\LogMethods\ConsoleLoggerTest.cs" />
+    <Compile Include="Logging\LogMethods\FileLoggerTest.cs" />
+    <Compile Include="Logging\LogMethods\LimitSeverityLoggerTest.cs" />
+    <Compile Include="Logging\Mock\MockLogger.cs" />
+    <Compile Include="Net\IPAccessListTest.cs" />
+    <Compile Include="Net\IPNetworkTest.cs" />
+    <Compile Include="Temporal\HolidayTest.cs" />
     <Compile Include="IoC\SubclassedContainerTest.cs" />
     <Compile Include="IoC\MicroContainerTest.cs" />
-    <Compile Include="PasswordsTest.cs" />
-    <Compile Include="_CommandLine\Options.cs" />
-    <Compile Include="_Extensions\CollectionExtensionsTest.cs" />
-    <Compile Include="_CommandLine\CommandLineTest.cs" />
-    <Compile Include="_Extensions\DateTimeExtensionsTest.cs" />
-    <Compile Include="_Extensions\HashExtensionsTest.cs" />
-    <Compile Include="IndexedListTest.cs" />
+    <Compile Include="Security\PasswordsTest.cs" />
+    <Compile Include="Sys\Options.cs" />
+    <Compile Include="Collections\CollectionExtensionsTest.cs" />
+    <Compile Include="Sys\CommandLineTest.cs" />
+    <Compile Include="Temporal\DateTimeExtensionsTest.cs" />
+    <Compile Include="Security\HashExtensionsTest.cs" />
+    <Compile Include="Collections\IndexedListTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="_Extensions\StringExtensionsTest.cs" />
-    <Compile Include="TextToolsTest.cs" />
+    <Compile Include="Text\Parsers\ApacheLogParserTest.cs" />
+    <Compile Include="Text\Parsers\CsvParserOfTTest.cs" />
+    <Compile Include="Text\Parsers\CsvParserTest.cs" />
+    <Compile Include="Text\Parsers\Name.cs" />
+    <Compile Include="Text\StringExtensionsTest.cs" />
+    <Compile Include="Text\TextToolsTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
@@ -71,6 +92,10 @@
       <Name>DotNetCommons</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Text\Parsers\name-test.csv.gz" />
+  </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

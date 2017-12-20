@@ -5,7 +5,7 @@ using System.Linq;
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 
-namespace DotNetCommons
+namespace DotNetCommons.Collections
 {
     public class TreeCollection<T>
     {
