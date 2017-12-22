@@ -5,6 +5,7 @@ namespace DotNetCommons.Logging.LogMethods
 {
     public class BufferLogger : ILogMethod
     {
+        private readonly object _lock = new object();
         private readonly List<LogEntry> _buffer = new List<LogEntry>();
         private readonly int _count;
         private readonly TimeSpan _time;
@@ -22,13 +23,13 @@ namespace DotNetCommons.Logging.LogMethods
 
         private bool BufferExceeded => _buffer.Count >= _count || DateTime.Now - (_start ?? DateTime.Now) > _time;
 
-        public List<LogEntry> Handle(List<LogEntry> entries, bool flush)
+        public IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush)
         {
-            lock (_buffer)
-            {
-                if (_start == null)
-                    _start = DateTime.Now;
+            if (_start == null)
+                _start = DateTime.Now;
 
+            lock (_lock)
+            {
                 _buffer.AddRange(entries);
 
                 var result = new List<LogEntry>();

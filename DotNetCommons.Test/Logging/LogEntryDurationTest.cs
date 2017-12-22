@@ -17,7 +17,7 @@ namespace DotNetCommons.Test.Logging
             var logger = LogSystem.CreateLogger(null, LogChannelChainMode.Clear);
             var chain = new LogChain("mock");
             chain.Push(mock);
-            logger.LogChains.Add(chain);
+            logger.Chains.Add(chain);
 
             using (new LogEntryDuration(logger))
             {

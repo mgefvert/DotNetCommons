@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace DotNetCommons.Logging.LogMethods
 {
@@ -16,19 +17,29 @@ namespace DotNetCommons.Logging.LogMethods
 
     public class TapLogger : ILogMethod
     {
-        private static readonly object Lock = new object();
-
         public delegate void TapLoggerDelegate(object sender, TapLoggerArgs args);
         public event TapLoggerDelegate DataAvailable;
 
-        public List<LogEntry> Handle(List<LogEntry> entries, bool flush)
+        public IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush)
         {
-            lock (Lock)
-            {
-                if (entries.Any())
-                    DataAvailable?.Invoke(this, new TapLoggerArgs(entries));
+            if (DataAvailable != null && entries.Any())
+                ThreadPool.QueueUserWorkItem(CallTap, entries.ToList());
 
-                return entries;
+            return entries;
+        }
+
+        private void CallTap(object state)
+        {
+            if (DataAvailable == null)
+                return;
+
+            try
+            {
+                DataAvailable(this, new TapLoggerArgs((List<LogEntry>)state));
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("TapLogger: " + e.Message);
             }
         }
     }

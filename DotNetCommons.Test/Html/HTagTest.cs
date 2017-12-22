@@ -11,7 +11,7 @@ namespace DotNetCommons.Test.Html
         [TestMethod]
         public void TestNoAttr()
         {
-            var tag = new HTag("div", new HText("I'm a text!"), new HText(new HtmlString("<br>")));
+            var tag = new HTag("div", new HText("I'm a text!"), new HRawHtml("<br>"));
 
             Assert.AreEqual("<div>I&#39;m a text!<br></div>", tag.Render());
             Assert.AreEqual("</div>", tag.RenderCloseTag());
@@ -24,7 +24,7 @@ namespace DotNetCommons.Test.Html
         public void Test1Attr()
         {
             var tag = new HTag("div", new HAttr("class", "btn"), 
-                new HText("I'm a text!"), new HText(new HtmlString("<br>")));
+                new HText("I'm a text!"), new HRawHtml("<br>"));
 
             Assert.AreEqual("<div class=\"btn\">I&#39;m a text!<br></div>", tag.Render());
             Assert.AreEqual("</div>", tag.RenderCloseTag());
@@ -38,7 +38,7 @@ namespace DotNetCommons.Test.Html
         {
             var tag = new HTag("div", new HAttrs(new HAttr("class", "btn"), new HAttr("name", "control")),
                 new HText("I'm a text!"), 
-                new HText(new HtmlString("<br>")));
+                new HRawHtml("<br>"));
 
             Assert.AreEqual("<div class=\"btn\" name=\"control\">I&#39;m a text!<br></div>", tag.Render());
             Assert.AreEqual("</div>", tag.RenderCloseTag());

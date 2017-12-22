@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,15 +19,21 @@ namespace DotNetCommons.Logging
 
     public class LogChannel : IDisposable
     {
-        internal LogSeverity ActualSeverity => Severity ?? LogSystem.Configuration.Severity;
+        private int _level;
 
-        public LogSeverity? Severity = null;
+        protected ConsoleLogger ConsoleLogger = new ConsoleLogger();
+
         public string Channel { get; set; }
+        public LogSeverity? Severity { get; set; } = null;
+        public ConcurrentBag<LogChain> Chains { get; }
+
+        public event LogEvent LogEvent;
 
         public void Trace(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Trace, text, extraValues);
         public void Debug(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Debug, text, extraValues);
         public void Log(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Normal, text, extraValues);
         public void Normal(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Normal, text, extraValues);
+        public void Info(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Info, text, extraValues);
         public void Api(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Api, text, extraValues);
         public void Notice(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Notice, text, extraValues);
         public void Warning(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Warning, text, extraValues);
@@ -34,12 +41,7 @@ namespace DotNetCommons.Logging
         public void Critical(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Critical, text, extraValues);
         public void Fatal(string text, Dictionary<string, string> extraValues = null) => Write(LogSeverity.Fatal, text, extraValues);
 
-        public event LogEvent LogEvent;
-
-        public List<LogChain> LogChains { get; }
-        protected ConsoleLogger ConsoleLogger = new ConsoleLogger();
-
-        private int _level;
+        internal LogSeverity ActualSeverity => Severity ?? LogSystem.Configuration.Severity;
 
         internal LogChannel(string channel, LogChannelChainMode chainMode)
         {
@@ -48,17 +50,17 @@ namespace DotNetCommons.Logging
             switch (chainMode)
             {
                 case LogChannelChainMode.Clear:
-                    LogChains = new List<LogChain>();
+                    Chains = new ConcurrentBag<LogChain>();
                     break;
 
                 case LogChannelChainMode.CopyDefault:
-                    LogChains = new List<LogChain>();
+                    Chains = new ConcurrentBag<LogChain>();
                     foreach (var chain in LogSystem.LogChains)
-                        LogChains.Add(new LogChain(chain));
+                        Chains.Add(new LogChain(chain));
                     break;
 
                 case LogChannelChainMode.UseDefault:
-                    LogChains = LogSystem.LogChains;
+                    Chains = LogSystem.LogChains;
                     break;
             }
         }
@@ -108,7 +110,7 @@ namespace DotNetCommons.Logging
                     foreach (var entry in entries)
                         LogEvent?.Invoke(this, entry);
 
-                foreach (var chain in LogChains)
+                foreach (var chain in Chains.ToArray())
                     chain.Process(entries.ToList(), false);
 
                 if (LogSystem.Configuration.EchoToConsole)
@@ -222,13 +224,13 @@ namespace DotNetCommons.Logging
         public void Dispose()
         {
             Flush();
-            LogChains.Clear();
         }
 
         public void Flush()
         {
+            // ReSharper disable once CollectionNeverUpdated.Local
             var empty = new List<LogEntry>();
-            foreach (var chain in LogChains)
+            foreach (var chain in Chains.ToArray())
                 chain.Process(empty, true);
         }
     }

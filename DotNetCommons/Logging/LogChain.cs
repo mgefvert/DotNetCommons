@@ -20,7 +20,7 @@ namespace DotNetCommons.Logging
                 Push(link);
         }
 
-        public void Process(List<LogEntry> entries, bool flush)
+        public void Process(IReadOnlyList<LogEntry> entries, bool flush)
         {
             foreach (var link in this)
                 entries = link.Handle(entries, flush);

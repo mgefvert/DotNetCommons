@@ -72,7 +72,7 @@ namespace DotNetCommons.Text
 
                     c = source[position++];
                 }
-                else if (c == scan && string.CompareOrdinal(source, position, endtext, 1, endtext.Length - 1) == 0)
+                else if (c == scan && (endtext.Length == 1 || string.CompareOrdinal(source, position, endtext, 1, endtext.Length - 1) == 0))
                 {
                     token.Text = sb.ToString();
                     position += endtext.Length - 1;

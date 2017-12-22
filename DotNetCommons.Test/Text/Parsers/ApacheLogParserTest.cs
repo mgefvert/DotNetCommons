@@ -19,6 +19,9 @@ namespace DotNetCommons.Test.Text.Parsers
         [TestMethod]
         public void Test()
         {
+            ApacheLogParser.Parse(_testData[3]);
+            return;
+
             var logs = _testData.Select(ApacheLogParser.Parse).ToList();
 
             Assert.AreEqual(4, logs.Count);

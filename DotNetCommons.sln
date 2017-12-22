@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons", "DotNetCommons\DotNetCommons.csproj", "{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons", "DotNetCommons\DotNetCommons.csproj", "{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.Test", "DotNetCommons.Test\DotNetCommons.Test.csproj", "{A0935A03-286E-4D7B-9985-38836B78C2ED}"
 EndProject

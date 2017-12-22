@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Net;
 using DotNetCommons.Collections;
 
 namespace DotNetCommons.Html
@@ -43,9 +43,9 @@ namespace DotNetCommons.Html
 
         public override string Render()
         {
-            var result = HttpUtility.HtmlEncode(Key);
+            var result = WebUtility.HtmlEncode(Key);
             if (Values.Any())
-                result += "=\"" + string.Join(" ", Values.Select(HttpUtility.HtmlAttributeEncode)) + '"';
+                result += "=\"" + string.Join(" ", Values.Select(WebUtility.HtmlEncode)) + '"';
 
             return result;
         }

@@ -16,8 +16,8 @@ namespace DotNetCommons.Test.Logging
             var logger = LogSystem.CreateLogger("test", LogChannelChainMode.CopyDefault);
 
             Assert.AreEqual("test", logger.Channel);
-            Assert.IsTrue(logger.LogChains.Count >= 1);
-            Assert.IsTrue(logger.LogChains.First().Count >= 1);
+            Assert.IsTrue(logger.Chains.Count >= 1);
+            Assert.IsTrue(logger.Chains.First().Count >= 1);
 
             logger.Normal("Hello, world!");
         }
@@ -30,7 +30,7 @@ namespace DotNetCommons.Test.Logging
             var mock = new MockLogger();
             chain.Push(mock);
             chain.Push(new LimitSeverityLogger(LogSeverity.Error));
-            logger.LogChains.Add(chain);
+            logger.Chains.Add(chain);
 
             logger.Normal("This is normal");
             logger.Error("This is an error");

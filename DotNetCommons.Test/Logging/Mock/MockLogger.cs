@@ -8,7 +8,7 @@ namespace DotNetCommons.Test.Logging.Mock
     {
         public List<LogEntry> Entries { get; } = new List<LogEntry>();
 
-        public List<LogEntry> Handle(List<LogEntry> entries, bool flush)
+        public IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush)
         {
             Entries.AddRange(entries);
             return entries;

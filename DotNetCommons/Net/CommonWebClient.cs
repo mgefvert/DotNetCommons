@@ -194,7 +194,7 @@ namespace DotNetCommons.Net
             }
 
             return result.Any()
-                ? string.Join("&", result.Select(x => x.Key + "=" + HttpUtility.UrlEncode(x.Value?.ToString())))
+                ? string.Join("&", result.Select(x => x.Key + "=" + WebUtility.UrlEncode(x.Value?.ToString())))
                 : null;
         }
 

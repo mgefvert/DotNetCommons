@@ -8,7 +8,6 @@ namespace DotNetCommons.Logging
     {
         public static LogConfiguration Configuration => LogSystem.Configuration;
         public static LogChannel LogChannel => LogSystem.DefaultLogger;
-        public static List<LogChain> LogChains => LogChannel.LogChains;
             
         [Obsolete]
         public static void Warn(string text) => LogChannel.Write(LogSeverity.Warning, text);
@@ -21,6 +20,7 @@ namespace DotNetCommons.Logging
         public static void Debug(string text, Dictionary<string, string> extraValues = null) => LogChannel.Write(LogSeverity.Debug, text, extraValues);
         public static void Log(string text, Dictionary<string, string> extraValues = null) => LogChannel.Write(LogSeverity.Normal, text, extraValues);
         public static void Normal(string text, Dictionary<string, string> extraValues = null) => LogChannel.Write(LogSeverity.Normal, text, extraValues);
+        public static void Info(string text, Dictionary<string, string> extraValues = null) => LogChannel.Write(LogSeverity.Info, text, extraValues);
         public static void Api(string text, Dictionary<string, string> extraValues = null) => LogChannel.Write(LogSeverity.Api, text, extraValues);
         public static void Notice(string text, Dictionary<string, string> extraValues = null) => LogChannel.Write(LogSeverity.Notice, text, extraValues);
         public static void Warning(string text, Dictionary<string, string> extraValues = null) => LogChannel.Write(LogSeverity.Warning, text, extraValues);

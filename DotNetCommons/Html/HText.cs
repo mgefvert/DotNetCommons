@@ -1,11 +1,11 @@
 using System;
-using System.Web;
+using System.Net;
 
 namespace DotNetCommons.Html
 {
     public class HText : HElement
     {
-        public HtmlString Content { get; set; }
+        public string Text { get; set; }
 
         public HText()
         {
@@ -13,17 +13,12 @@ namespace DotNetCommons.Html
 
         public HText(string content)
         {
-            Content = new HtmlString(HttpUtility.HtmlEncode(content));
-        }
-
-        public HText(HtmlString content)
-        {
-            Content = content;
+            Text = WebUtility.HtmlEncode(content);
         }
 
         public override string Render()
         {
-            return Content.ToString();
+            return Text;
         }
     }
 }

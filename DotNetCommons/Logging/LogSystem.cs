@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using DotNetCommons.Logging.LogMethods;
@@ -9,7 +9,7 @@ namespace DotNetCommons.Logging
     public static class LogSystem
     {
         public static LogConfiguration Configuration { get; } = new LogConfiguration();
-        public static List<LogChain> LogChains { get; } = new List<LogChain>();
+        public static ConcurrentBag<LogChain> LogChains { get; } = new ConcurrentBag<LogChain>();
         public static ConsoleColor DefaultColor { get; } = Console.ForegroundColor;
         public static int MainThreadId { get; } = Thread.CurrentThread.ManagedThreadId;
 
@@ -30,7 +30,9 @@ namespace DotNetCommons.Logging
 
         private static void InitializeLogSystem()
         {
+#if !NETSTANDARD2_0
             Configuration.LoadFromAppSettings();
+#endif
 
             var chain = new LogChain("default");
             if (Configuration.UseErrorLog)

@@ -175,7 +175,7 @@ namespace DotNetCommons.Logging.LogMethods
             }
         }
 
-        public List<LogEntry> Handle(List<LogEntry> entries, bool flush)
+        public IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush)
         {
             var rotate = false;
 

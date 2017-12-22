@@ -21,7 +21,7 @@ namespace DotNetCommons.Logging.LogMethods
             _allowed = allowed;
         }
 
-        public List<LogEntry> Handle(List<LogEntry> entries, bool flush)
+        public IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush)
         {
             return entries.Where(x => _allowed.Contains(x.Severity)).ToList();
         }
