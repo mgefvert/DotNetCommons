@@ -46,13 +46,13 @@ namespace DotNetCommons.Test.Net
         }
 
         [TestMethod]
-        public void TestParse(string network)
+        public void TestParse()
         {
             var r = IPNetwork.Parse("192.168.1.120");
             Test("Parse 1", r, "192.168.1.120", "255.255.255.255", 32);
 
             r = IPNetwork.Parse("192.168.1.120/24");
-            Test("Parse 2", r, "192.168.1.0", "255.255.255.0", 0);
+            Test("Parse 2", r, "192.168.1.0", "255.255.255.0", 24);
 
             r = IPNetwork.Parse("192.168.1.120/0");
             Test("Parse 3", r, "0.0.0.0", "0.0.0.0", 0);
@@ -61,13 +61,12 @@ namespace DotNetCommons.Test.Net
         [TestMethod]
         public void TestTryParse()
         {
-            IPNetwork r;
-            Assert.IsTrue(IPNetwork.TryParse("192.168.1.0", out r));
-            Assert.IsTrue(IPNetwork.TryParse("192.168.1.0/24", out r));
-            Assert.IsFalse(IPNetwork.TryParse("192.168.1.9/m", out r));
-            Assert.IsFalse(IPNetwork.TryParse("192.168.1/", out r));
-            Assert.IsFalse(IPNetwork.TryParse("/24", out r));
-            Assert.IsFalse(IPNetwork.TryParse("mike/24", out r));
+            Assert.IsTrue(IPNetwork.TryParse("192.168.1.0", out _));
+            Assert.IsTrue(IPNetwork.TryParse("192.168.1.0/24", out _));
+            Assert.IsFalse(IPNetwork.TryParse("192.168.1.9/m", out _));
+            Assert.IsFalse(IPNetwork.TryParse("192.168.1/", out _));
+            Assert.IsFalse(IPNetwork.TryParse("/24", out _));
+            Assert.IsFalse(IPNetwork.TryParse("mike/24", out _));
         }
 
         [TestMethod]

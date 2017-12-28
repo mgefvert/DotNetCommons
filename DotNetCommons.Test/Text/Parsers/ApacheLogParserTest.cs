@@ -19,9 +19,6 @@ namespace DotNetCommons.Test.Text.Parsers
         [TestMethod]
         public void Test()
         {
-            ApacheLogParser.Parse(_testData[3]);
-            return;
-
             var logs = _testData.Select(ApacheLogParser.Parse).ToList();
 
             Assert.AreEqual(4, logs.Count);
@@ -43,7 +40,7 @@ namespace DotNetCommons.Test.Text.Parsers
             var t0 = DateTime.Now;
 
             var c = 0;
-            for (int i = 0; i < 5000; i++)
+            for (var i = 0; i < 5000; i++)
             {
                 foreach (var line in _testData)
                 {
@@ -52,7 +49,7 @@ namespace DotNetCommons.Test.Text.Parsers
                 }
             }
 
-            Console.WriteLine($"{c} lines analyzed in {(DateTime.Now - t0).TotalMilliseconds.ToString("N2")} ms");
+            Console.WriteLine($"{c} lines analyzed in {(DateTime.Now - t0).TotalMilliseconds:N2} ms");
         }
     }
 }

@@ -82,6 +82,8 @@ namespace DotNetCommons
                     value = !ValueIsNull(value) ? TimeSpan.Parse(value.ToString(), culture) : TimeSpan.Zero;
                 else if (propertyType == typeof(Guid))
                     value = !ValueIsNull(value) ? Guid.Parse(value.ToString()) : Guid.Empty;
+                else if (propertyType == typeof(Uri))
+                    value = !ValueIsNull(value) ? new Uri(value.ToString()) : null;
                 else
                     value = Convert.ChangeType(value, propertyType, culture);
             }

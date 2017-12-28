@@ -15,6 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinForms", "WinForms", "{47
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.WinForms.Test", "DotNetCommons.WinForms.Test\DotNetCommons.WinForms.Test.csproj", "{CCEE6F42-209D-4E50-8DC1-9767622AD431}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConfigTest", "ConfigTest", "{A740DBC2-01EF-4F9A-A938-82C549A85077}"
+	ProjectSection(SolutionItems) = preProject
+		sysconfig.xml = sysconfig.xml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -8,30 +8,30 @@ namespace DotNetCommons.Test.Temporal
     public class DateTimeExtensionsTest
     {
         [TestMethod]
-        public void TestDateTime(long timestamp)
+        public void TestDateTime()
         {
             var dt = DateTimeExtensions.FromUnixSeconds(1469284816);
             Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
         [TestMethod]
-        public void TestDateTimeMillis(long millisTimestamp)
+        public void TestDateTimeMillis()
         {
             var dt = DateTimeExtensions.FromUnixMilliseconds(1469284816000L);
             Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
         [TestMethod]
-        public void TestDateTimeOffset(long timestamp)
+        public void TestDateTimeOffset()
         {
             var dt = DateTimeExtensions.FromUnixSecondsOffset(1469284816);
             Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
         [TestMethod]
-        public void TestDateTimeOffsetMillis(long timestamp)
+        public void TestDateTimeOffsetMillis()
         {
-            var dt = DateTimeExtensions.FromUnixMillisecondsOffset(1469284816);
+            var dt = DateTimeExtensions.FromUnixMillisecondsOffset(1469284816000);
             Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         }
 

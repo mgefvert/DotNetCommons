@@ -85,6 +85,7 @@
     <Compile Include="Text\Parsers\Name.cs" />
     <Compile Include="Text\StringExtensionsTest.cs" />
     <Compile Include="Text\TextToolsTest.cs" />
+    <Compile Include="SysConfigTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
@@ -95,7 +96,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Text\Parsers\name-test.csv.gz" />
   </ItemGroup>
-  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

@@ -37,14 +37,15 @@ namespace DotNetCommons.WinForms.Graphics
             ConvertToFormat(convertTo);
         }
 
-        public Stream AsBmp() => AsStream(ImageFormat.Bmp);
-        public Stream AsJpeg() => AsStream(ImageFormat.Jpeg);
-        public Stream AsPng() => AsStream(ImageFormat.Png);
+        public Stream AsBmp(EncoderParameters encoderParams = null) => AsStream(ImageFormat.Bmp, encoderParams);
+        public Stream AsJpeg(EncoderParameters encoderParams = null) => AsStream(ImageFormat.Jpeg, encoderParams);
+        public Stream AsPng(EncoderParameters encoderParams = null) => AsStream(ImageFormat.Png, encoderParams);
 
-        public Stream AsStream(ImageFormat format)
+        public Stream AsStream(ImageFormat format, EncoderParameters encoderParams = null)
         {
+            var codec = ImageCodecInfo.GetImageEncoders().First(x => x.FormatID == format.Guid);
             var result = new MemoryStream();
-            _bitmap.Save(result, format);
+            _bitmap.Save(result, codec, encoderParams);
             result.Position = 0;
             return result;
         }

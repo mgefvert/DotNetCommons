@@ -64,19 +64,24 @@ namespace DotNetCommons.Net
             var x = network.Split('/');
 
             IPAddress address = null;
-            int mask = 0;
-            var success = true;
+            var mask = 0;
 
             if (x.Length >= 1)
-                success &= IPAddress.TryParse(x[0], out address);
+            {
+                if (!IPAddress.TryParse(x[0], out address))
+                    return false;
+
+                mask = address.GetAddressBytes().Length * 8;
+            }
 
             if (x.Length == 2)
-                success &= int.TryParse(x[1], out mask);
+            {
+                if (!int.TryParse(x[1], out mask))
+                    return false;
+            }
 
-            if (success)
-                range = new IPNetwork(address, mask);
-
-            return success;
+            range = new IPNetwork(address, mask);
+            return true;
         }
 
         public override string ToString()
