@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -100,7 +101,7 @@ namespace DotNetCommons
             {
                 // Set the property to the value
                 var property = FindProperty(originalKey, key, resultType, flags);
-                result.SetPropertyValue(property, value);
+                result.SetPropertyValue(property, value, CultureInfo.InvariantCulture);
             }
         }
 
@@ -121,12 +122,12 @@ namespace DotNetCommons
                                 if (root == null)
                                     root = reader.Name;
                                 else
-                                    path.Push(reader.Name);
+                                    path.Push(reader.Name.Replace("-", ""));
                             }
                             break;
 
                         case XmlNodeType.Text:
-                            values[string.Join(".", path.Reverse())] = reader.Value;
+                            values[string.Join(".", path.Reverse())] = reader.Value.Replace("~/", file.DirectoryName + Path.DirectorySeparatorChar);
                             break;
 
                         case XmlNodeType.EndElement:

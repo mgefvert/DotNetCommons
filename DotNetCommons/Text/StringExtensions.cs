@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -10,6 +11,15 @@ namespace DotNetCommons.Text
 {
     public static class StringExtensions
     {
+        public static bool Contains(this StringBuilder builder, char c)
+        {
+            for (var i = 0; i < builder.Length; i++)
+                if (builder[i] == c)
+                    return true;
+
+            return false;
+        }
+        
         public static string Left(this string value, int count)
         {
             return string.IsNullOrEmpty(value)
