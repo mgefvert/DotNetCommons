@@ -119,6 +119,16 @@ namespace DotNetCommons.Text
               : Mid(value, value.Length - count, count);
         }
 
+        public static string StartUppercase(this string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return value;
+
+            return value.Length == 1
+                ? value.ToUpper()
+                : char.ToUpper(value[0]) + value.Substring(1, value.Length - 1);
+        }
+
         public static IEnumerable<string> TrimAndFilter(this IEnumerable<string> strings)
         {
             return strings

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DotNetCommons.Collections;
 
 namespace DotNetCommons.Text.Tokenizer
 {
@@ -14,6 +15,21 @@ namespace DotNetCommons.Text.Tokenizer
         public TokenList(IEnumerable<Token> tokens)
         {
             AddRange(tokens);
+        }
+
+        public Token Consume(params int[] allowed)
+        {
+            var result = this.ExtractFirstOrDefault();
+            if (result != null && !allowed.Contains(result.Value))
+                throw new StringTokenizerException($"Illegal token '{result.Text}' in text.");
+
+            return result;
+        }
+
+        public IEnumerable<Token> ConsumeAll(params int[] allowed)
+        {
+            foreach (var token in this)
+                yield return Consume(allowed);
         }
 
         public void RemoveValues(params int[] values)
