@@ -26,15 +26,15 @@ namespace DotNetCommons.WinForms.Graphics
         public Size Size => new Size(_bitmap.Width, _bitmap.Height);
         public InterpolationMode InterpolationMode { get; set; }
 
-        public ImageProcessor(Image image)
+        public ImageProcessor(Image image, bool forceCopy = false)
         {
-            _bitmap = ConvertToBitmap(image, image.PixelFormat);
+            _bitmap = ConvertToBitmap(image, image.PixelFormat, forceCopy);
             InterpolationMode = InterpolationMode.HighQualityBicubic;
         }
 
-        public ImageProcessor(Image image, PixelFormat convertTo) : this(image)
+        public ImageProcessor(Image image, PixelFormat convertTo, bool forceCopy) : this(image)
         {
-            ConvertToFormat(convertTo);
+            ConvertToFormat(convertTo, forceCopy);
         }
 
         public Stream AsBmp(EncoderParameters encoderParams = null) => AsStream(ImageFormat.Bmp, encoderParams);
@@ -50,10 +50,10 @@ namespace DotNetCommons.WinForms.Graphics
             return result;
         }
 
-        private static Bitmap ConvertToBitmap(Image image, PixelFormat format)
+        private static Bitmap ConvertToBitmap(Image image, PixelFormat format, bool forceCopy)
         {
-            if (image is Bitmap && image.PixelFormat == format)
-                return (Bitmap)image;
+            if (image is Bitmap bmp && image.PixelFormat == format && forceCopy == false)
+                return bmp;
 
             var bitmap = CreateNewBitmap(image, format, image.Size);
             using (var g = System.Drawing.Graphics.FromImage(bitmap))
@@ -62,9 +62,9 @@ namespace DotNetCommons.WinForms.Graphics
             return bitmap;
         }
 
-        public void ConvertToFormat(PixelFormat format)
+        public void ConvertToFormat(PixelFormat format, bool forceCopy)
         {
-            var newBitmap = ConvertToBitmap(_bitmap, format);
+            var newBitmap = ConvertToBitmap(_bitmap, format, forceCopy);
             if (_bitmap == newBitmap)
                 return;
 
@@ -75,6 +75,8 @@ namespace DotNetCommons.WinForms.Graphics
         public static Bitmap CreateNewBitmap(Image original, PixelFormat pixelFormat, Size size)
         {
             var result = new Bitmap(size.Width, size.Height, pixelFormat);
+            result.SetResolution(original.HorizontalResolution, original.VerticalResolution);
+
             foreach (var id in original.PropertyIdList)
                 result.SetPropertyItem(original.GetPropertyItem(id));
             return result;
@@ -82,7 +84,7 @@ namespace DotNetCommons.WinForms.Graphics
 
         public void FadeEdges(int percent, Edges edges)
         {
-            ConvertToFormat(PixelFormat.Format32bppArgb);
+            ConvertToFormat(PixelFormat.Format32bppArgb, false);
 
             var w = _bitmap.Width;
             var h = _bitmap.Height;
@@ -141,7 +143,7 @@ namespace DotNetCommons.WinForms.Graphics
 
         public bool RemoveBackground(int sensitivity)
         {
-            ConvertToFormat(PixelFormat.Format32bppArgb);
+            ConvertToFormat(PixelFormat.Format32bppArgb, false);
 
             var w = _bitmap.Width - 1;
             var h = _bitmap.Height - 1;
@@ -181,7 +183,7 @@ namespace DotNetCommons.WinForms.Graphics
 
         public void HighlightColors(ColorMatchDelegate match, Color highlight)
         {
-            ConvertToFormat(PixelFormat.Format32bppArgb);
+            ConvertToFormat(PixelFormat.Format32bppArgb, false);
 
             using (var buffer = GetBitmapBuffer())
             {
@@ -196,7 +198,7 @@ namespace DotNetCommons.WinForms.Graphics
 
         public void RevealColors(ColorMatchDelegate match)
         {
-            ConvertToFormat(PixelFormat.Format32bppArgb);
+            ConvertToFormat(PixelFormat.Format32bppArgb, false);
 
             using (var buffer = GetBitmapBuffer())
             {
@@ -308,6 +310,11 @@ namespace DotNetCommons.WinForms.Graphics
 
             _bitmap.Dispose();
             _bitmap = bitmap;
+        }
+
+        public ImageProcessor Clone()
+        {
+            return new ImageProcessor(_bitmap, true);
         }
     }
 }
