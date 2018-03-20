@@ -88,13 +88,13 @@
     <Compile Include="SysConfigTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
-      <Project>{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}</Project>
-      <Name>DotNetCommons</Name>
-    </ProjectReference>
+    <EmbeddedResource Include="Text\Parsers\name-test.csv.gz" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Text\Parsers\name-test.csv.gz" />
+    <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
+      <Project>{9f8d0f1b-bf6b-4022-bfba-3337945c45b5}</Project>
+      <Name>DotNetCommons</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -1,5 +1,4 @@
 using System;
-using System.Web;
 using DotNetCommons.Html;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,7 +10,7 @@ namespace DotNetCommons.Test.Html
         [TestMethod]
         public void TestNoAttr()
         {
-            var tag = new HTag("div", new HText("I'm a text!"), new HRawHtml("<br>"));
+            var tag = new HTag("div", HString.Encode("I'm a text!"), HString.Raw("<br>"));
 
             Assert.AreEqual("<div>I&#39;m a text!<br></div>", tag.Render());
             Assert.AreEqual("</div>", tag.RenderCloseTag());
@@ -24,7 +23,7 @@ namespace DotNetCommons.Test.Html
         public void Test1Attr()
         {
             var tag = new HTag("div", new HAttr("class", "btn"), 
-                new HText("I'm a text!"), new HRawHtml("<br>"));
+                HString.Encode("I'm a text!"), HString.Raw("<br>"));
 
             Assert.AreEqual("<div class=\"btn\">I&#39;m a text!<br></div>", tag.Render());
             Assert.AreEqual("</div>", tag.RenderCloseTag());
@@ -37,8 +36,7 @@ namespace DotNetCommons.Test.Html
         public void Test2Attr()
         {
             var tag = new HTag("div", new HAttrs(new HAttr("class", "btn"), new HAttr("name", "control")),
-                new HText("I'm a text!"), 
-                new HRawHtml("<br>"));
+                HString.Encode("I'm a text!"), HString.Raw("<br>"));
 
             Assert.AreEqual("<div class=\"btn\" name=\"control\">I&#39;m a text!<br></div>", tag.Render());
             Assert.AreEqual("</div>", tag.RenderCloseTag());

@@ -103,12 +103,6 @@
     <Compile Include="WinApiStructs.cs" />
     <Compile Include="WinApiEnums.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj">
-      <Project>{A86D8B8B-D601-4EB9-AA0A-E03372ACC104}</Project>
-      <Name>DotNetCommons</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
