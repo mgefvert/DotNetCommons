@@ -20,8 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConfigTest", "ConfigTest", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons", "DotNetCommons\DotNetCommons.csproj", "{9F8D0F1B-BF6B-4022-BFBA-3337945C45B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.Core", "DotNetCommons.Core\DotNetCommons.Core.csproj", "{ADC49826-9DBB-4AD7-82DC-B33870815C67}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,10 +42,6 @@ Global
 		{9F8D0F1B-BF6B-4022-BFBA-3337945C45B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F8D0F1B-BF6B-4022-BFBA-3337945C45B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F8D0F1B-BF6B-4022-BFBA-3337945C45B5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ADC49826-9DBB-4AD7-82DC-B33870815C67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADC49826-9DBB-4AD7-82DC-B33870815C67}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ADC49826-9DBB-4AD7-82DC-B33870815C67}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ADC49826-9DBB-4AD7-82DC-B33870815C67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,7 +51,6 @@ Global
 		{716AE81D-1017-462D-A5CD-5C57A68D0C0C} = {472F0D80-8F25-4BBA-9E7F-50C23C13F4C4}
 		{CCEE6F42-209D-4E50-8DC1-9767622AD431} = {472F0D80-8F25-4BBA-9E7F-50C23C13F4C4}
 		{9F8D0F1B-BF6B-4022-BFBA-3337945C45B5} = {C8364123-3397-4EE1-85B0-B73328A41856}
-		{ADC49826-9DBB-4AD7-82DC-B33870815C67} = {C8364123-3397-4EE1-85B0-B73328A41856}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FFDB2602-973E-4DCA-AD1E-1EC803FB6677}
