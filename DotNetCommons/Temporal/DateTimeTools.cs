@@ -115,6 +115,16 @@ namespace DotNetCommons.Temporal
             return all.Any() ? all.Min() : null;
         }
 
+        public static DateTime MaxDate(DateTime datetime1, DateTime datetime2)
+        {
+            return datetime1.Ticks > datetime2.Ticks ? datetime1 : datetime2;
+        }
+
+        public static DateTimeOffset MaxDate(DateTimeOffset datetime1, DateTimeOffset datetime2)
+        {
+            return datetime1.Ticks > datetime2.Ticks ? datetime1 : datetime2;
+        }
+
         public static DateTime? MaxDate(IEnumerable<DateTime?> datetimes)
         {
             var all = datetimes.Where(x => x.HasValue).ToList();

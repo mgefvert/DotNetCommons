@@ -76,6 +76,8 @@ namespace DotNetCommons
                         value = Enum.Parse(propertyType, str, true);
                     }
                 }
+                else if (propertyType == typeof(DateTimeOffset))
+                    value = !ValueIsNull(value) ? DateTimeOffset.Parse(value.ToString(), culture) : DateTimeOffset.MinValue;
                 else if (propertyType == typeof(DateTime))
                     value = !ValueIsNull(value) ? DateTime.Parse(value.ToString(), culture) : DateTime.MinValue;
                 else if (propertyType == typeof(TimeSpan))
@@ -84,11 +86,32 @@ namespace DotNetCommons
                     value = !ValueIsNull(value) ? Guid.Parse(value.ToString()) : Guid.Empty;
                 else if (propertyType == typeof(Uri))
                     value = !ValueIsNull(value) ? new Uri(value.ToString()) : null;
+                else if (propertyType == typeof(Boolean))
+                    value = !ValueIsNull(value) && StringToBoolean(value.ToString());
                 else
                     value = Convert.ChangeType(value, propertyType, culture);
             }
 
             property.SetValue(obj, value);
+        }
+
+        private static bool StringToBoolean(string value)
+        {
+            // Empty equals false
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            // Common values - true|yes|t|y
+            value = value.Trim().ToLower();
+            if (value == "true" || value == "yes" || value == "t" || value == "y")
+                return true;
+
+            // Is it numeric? If so, check for <> 0
+            if (int.TryParse(value, out var n))
+                return n != 0;
+
+            // All other values, route through bool.TryParse.
+            return bool.TryParse(value, out var result) && result;
         }
 
         private static bool ValueIsNull(object value)

@@ -11,6 +11,12 @@ namespace DotNetCommons.Text
 {
     public static class StringExtensions
     {
+        /// <summary>
+        /// Test whether a StringBuilder contains a particular character.
+        /// </summary>
+        /// <param name="builder">StringBuilder to query.</param>
+        /// <param name="c">Character to search for.</param>
+        /// <returns>true if the character is found, otherwise false.</returns>
         public static bool Contains(this StringBuilder builder, char c)
         {
             for (var i = 0; i < builder.Length; i++)
@@ -19,9 +25,27 @@ namespace DotNetCommons.Text
 
             return false;
         }
-        
+
+        public static string FirstLine(this string value)
+        {
+            var n = (value ?? "").IndexOfAny(new[] { '\r', '\n' });
+            return n == -1 ? value : (value ?? "").Substring(0, n).Trim();
+        }
+
+        /// <summary>
+        /// Take the left n characters from a string, possibly returning less than
+        /// the full number of characters if there aren't enough in the string. If the
+        /// source string is null, this function will simply return an empty string.
+        /// </summary>
+        /// <param name="value">String to operate on.</param>
+        /// <param name="count">Number of characters to take. If this number is negative, it will
+        ///     take all but the last n characters.</param>
+        /// <returns>The n characters from the left of the source string.</returns>
         public static string Left(this string value, int count)
         {
+            if (count < 0)
+                count = (value?.Length ?? 0) + count;
+
             return string.IsNullOrEmpty(value)
               ? string.Empty
               : Mid(value, 0, count);
@@ -112,8 +136,20 @@ namespace DotNetCommons.Text
             return long.TryParse((value ?? "").Trim(), out var result) ? result : defaultValue;
         }
 
+        /// <summary>
+        /// Take the right n characters from a string, possibly returning less than
+        /// the full number of characters if there aren't enough in the string. If the
+        /// source string is null, this function will simply return an empty string.
+        /// </summary>
+        /// <param name="value">String to operate on.</param>
+        /// <param name="count">Number of characters to take. If this number is negative, it will
+        ///     take all but the first n characters.</param>
+        /// <returns>The n characters from the right of the source string.</returns>
         public static string Right(this string value, int count)
         {
+            if (count < 0)
+                count = (value?.Length ?? 0) + count;
+
             return string.IsNullOrEmpty(value)
               ? string.Empty
               : Mid(value, value.Length - count, count);
