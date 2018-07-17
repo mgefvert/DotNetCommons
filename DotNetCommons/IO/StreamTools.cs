@@ -11,6 +11,16 @@ namespace DotNetCommons.IO
 
     public static class StreamTools
     {
+        public static MemoryStream LoadFileIntoMemory(string filename)
+        {
+            var result = new MemoryStream();
+            using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
+                fs.CopyTo(result);
+
+            result.Position = 0;
+            return result;
+        }
+
         public static byte[] ReadToEnd(Stream stream)
         {
             var result = new MemoryStream();
@@ -24,16 +34,6 @@ namespace DotNetCommons.IO
 
                 result.Write(buffer, 0, len);
             }
-        }
-
-        public static MemoryStream LoadFileIntoMemory(string filename)
-        {
-            var result = new MemoryStream();
-            using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
-                fs.CopyTo(result);
-
-            result.Position = 0;
-            return result;
         }
 
         public static void SaveStreamToFile(Stream stream, string filename, StreamMode mode)
