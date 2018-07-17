@@ -32,6 +32,35 @@ namespace DotNetCommons.Test.Text
         [TestMethod]
         public void WordWrap()
         {
+            var s =
+                //            1    1    2    2    3    3    4
+                //   1---5----0----5----0----5----0----5----0
+                    "This is a random string. This is a " + 
+                    "random string. This is a random string. " +
+                    "This is a random string. This is the " +
+                    "end.";
+
+            var lines = TextTools.WordWrap(s, 40);
+            Assert.AreEqual(4, lines.Count);
+            Assert.AreEqual("This is a random string. This is a", lines[0]);
+            Assert.AreEqual("random string. This is a random string.", lines[1]);
+            Assert.AreEqual("This is a random string. This is the", lines[2]);
+            Assert.AreEqual("end.", lines[3]);
+
+            lines = TextTools.WordWrap(s, 40, 10);
+            Assert.AreEqual(5, lines.Count);
+            Assert.AreEqual("This is a random string. This is a", lines[0]);
+            Assert.AreEqual("          random string. This is a", lines[1]);
+            Assert.AreEqual("          random string. This is a", lines[2]);
+            Assert.AreEqual("          random string. This is the", lines[3]);
+            Assert.AreEqual("          end.", lines[4]);
+
+            lines = TextTools.WordWrap(s, 40, -10);
+            Assert.AreEqual(4, lines.Count);
+            Assert.AreEqual("          This is a random string. This", lines[0]);
+            Assert.AreEqual("is a random string. This is a random", lines[1]);
+            Assert.AreEqual("string. This is a random string. This", lines[2]);
+            Assert.AreEqual("is the end.", lines[3]);
         }
     }
 }

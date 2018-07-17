@@ -94,9 +94,16 @@ namespace DotNetCommons.Text
             var result = new List<string>();
             while (text != "")
             {
-                var n = FindWordBreak(text, maxlen);
+                var indentString = result.Count == 0 ? indentFirst : indentNext;
 
-                result.Add((result.Count == 0 ? indentFirst : indentNext) + text.Mid(0, n).TrimEnd());
+                if (text.Length + indentString.Length < maxlen)
+                {
+                    result.Add(indentString + text);
+                    break;
+                }
+
+                var n = FindWordBreak(text, maxlen - indentString.Length);
+                result.Add(indentString + text.Mid(0, n).TrimEnd());
                 text = text.Mid(n).TrimStart();
             }
 
