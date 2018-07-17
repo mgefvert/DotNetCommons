@@ -8,8 +8,12 @@ namespace DotNetCommons.WinForms
 {
     public class AppBarForm : Form
     {
-        public bool Registered { get; private set; }
+        protected WinApi.ABEdge AppBarPosition { get; set; } = WinApi.ABEdge.ABE_TOP;
+        protected Screen AppBarMonitor { get; set; }
         private int uCallBack;
+        private bool _inSetPos;
+
+        public bool Registered { get; private set; }
 
         public void RegisterAppBar()
         {
@@ -37,75 +41,94 @@ namespace DotNetCommons.WinForms
 
         protected void ABSetPos()
         {
-            var abd = new WinApi.APPBARDATA();
-            abd.cbSize = Marshal.SizeOf(abd);
-            abd.hWnd = Handle;
-            abd.uEdge = (int)WinApi.ABEdge.ABE_TOP;
+            if (_inSetPos)
+                return;
 
-            if (abd.uEdge == (int)WinApi.ABEdge.ABE_LEFT || abd.uEdge == (int)WinApi.ABEdge.ABE_RIGHT)
+            _inSetPos = true;
+            try
             {
-                abd.rc.top = 0;
-                abd.rc.bottom = SystemInformation.PrimaryMonitorSize.Height;
-                if (abd.uEdge == (int)WinApi.ABEdge.ABE_LEFT)
+                var abd = new WinApi.APPBARDATA();
+                abd.cbSize = Marshal.SizeOf(abd);
+                abd.hWnd = Handle;
+                abd.uEdge = (int)AppBarPosition;
+
+                CalculateCoordinates(ref abd, AppBarMonitor);
+
+                // Query the system for an approved size and position. 
+                WinApi.SHAppBarMessage((int)WinApi.ABMsg.ABM_QUERYPOS, ref abd);
+
+                // Adjust the rectangle, depending on the edge to which the 
+                // appbar is anchored. 
+                switch (abd.uEdge)
                 {
-                    abd.rc.left = 0;
-                    abd.rc.right = Size.Width;
+                    case (int)WinApi.ABEdge.ABE_LEFT:
+                        abd.rc.right = abd.rc.left + Size.Width;
+                        break;
+                    case (int)WinApi.ABEdge.ABE_RIGHT:
+                        abd.rc.left = abd.rc.right - Size.Width;
+                        break;
+                    case (int)WinApi.ABEdge.ABE_TOP:
+                        abd.rc.bottom = abd.rc.top + Size.Height;
+                        break;
+                    case (int)WinApi.ABEdge.ABE_BOTTOM:
+                        abd.rc.top = abd.rc.bottom - Size.Height;
+                        break;
+                }
+
+                // Pass the final bounding rectangle to the system. 
+                WinApi.SHAppBarMessage((int)WinApi.ABMsg.ABM_SETPOS, ref abd);
+
+                // Move and size the appbar so that it conforms to the 
+                // bounding rectangle passed to the system. 
+                WinApi.MoveWindow(abd.hWnd, abd.rc.left, abd.rc.top, abd.rc.right - abd.rc.left, abd.rc.bottom - abd.rc.top, true);
+            }
+            finally
+            {
+                _inSetPos = false;
+            }
+        }
+
+        private void CalculateCoordinates(ref WinApi.APPBARDATA result, Screen screen)
+        {
+            if (screen == null)
+                screen = Screen.PrimaryScreen;
+
+            if (result.uEdge == (int)WinApi.ABEdge.ABE_LEFT || result.uEdge == (int)WinApi.ABEdge.ABE_RIGHT)
+            {
+                result.rc.top = screen.WorkingArea.Top;
+                result.rc.bottom = screen.WorkingArea.Bottom;
+                if (result.uEdge == (int)WinApi.ABEdge.ABE_LEFT)
+                {
+                    result.rc.left = screen.WorkingArea.Left;
+                    result.rc.right = Size.Width;
                 }
                 else
                 {
-                    abd.rc.right = SystemInformation.PrimaryMonitorSize.Width;
-                    abd.rc.left = abd.rc.right - Size.Width;
+                    result.rc.right = screen.WorkingArea.Right;
+                    result.rc.left = result.rc.right - Size.Width;
                 }
             }
             else
             {
-                abd.rc.left = 0;
-                abd.rc.right = SystemInformation.PrimaryMonitorSize.Width;
-                if (abd.uEdge == (int)WinApi.ABEdge.ABE_TOP)
+                result.rc.left = screen.WorkingArea.Left;
+                result.rc.right = screen.WorkingArea.Right;
+                if (result.uEdge == (int)WinApi.ABEdge.ABE_TOP)
                 {
-                    abd.rc.top = 0;
-                    abd.rc.bottom = Size.Height;
+                    result.rc.top = screen.WorkingArea.Top;
+                    result.rc.bottom = Size.Height;
                 }
                 else
                 {
-                    abd.rc.bottom = SystemInformation.PrimaryMonitorSize.Height;
-                    abd.rc.top = abd.rc.bottom - Size.Height;
+                    result.rc.bottom = screen.WorkingArea.Height;
+                    result.rc.top = result.rc.bottom - Size.Height;
                 }
             }
-
-            // Query the system for an approved size and position. 
-            WinApi.SHAppBarMessage((int)WinApi.ABMsg.ABM_QUERYPOS, ref abd);
-
-            // Adjust the rectangle, depending on the edge to which the 
-            // appbar is anchored. 
-            switch (abd.uEdge)
-            {
-                case (int)WinApi.ABEdge.ABE_LEFT:
-                    abd.rc.right = abd.rc.left + Size.Width;
-                    break;
-                case (int)WinApi.ABEdge.ABE_RIGHT:
-                    abd.rc.left = abd.rc.right - Size.Width;
-                    break;
-                case (int)WinApi.ABEdge.ABE_TOP:
-                    abd.rc.bottom = abd.rc.top + Size.Height;
-                    break;
-                case (int)WinApi.ABEdge.ABE_BOTTOM:
-                    abd.rc.top = abd.rc.bottom - Size.Height;
-                    break;
-            }
-
-            // Pass the final bounding rectangle to the system. 
-            WinApi.SHAppBarMessage((int)WinApi.ABMsg.ABM_SETPOS, ref abd);
-
-            // Move and size the appbar so that it conforms to the 
-            // bounding rectangle passed to the system. 
-            WinApi.MoveWindow(abd.hWnd, abd.rc.left, abd.rc.top, abd.rc.right - abd.rc.left, abd.rc.bottom - abd.rc.top, true);
         }
 
         protected override void WndProc(ref Message m)
         {
-            if (m.Msg == uCallBack && m.WParam.ToInt32() == (int)WinApi.ABNotify.ABN_POSCHANGED)
-                ABSetPos();
+            //if (m.Msg == uCallBack && m.WParam.ToInt32() == (int)WinApi.ABNotify.ABN_POSCHANGED)
+            //    ABSetPos();
 
             base.WndProc(ref m);
         }
@@ -115,8 +138,8 @@ namespace DotNetCommons.WinForms
             get
             {
                 var cp = base.CreateParams;
-                cp.Style &= (~0x00C00000); // WS_CAPTION
-                cp.Style &= (~0x00800000); // WS_BORDER
+                // cp.Style &= ~0x00C00000; // WS_CAPTION
+                // cp.Style &= ~0x00800000; // WS_BORDER
                 cp.ExStyle = 0x00000080 | 0x00000008; // WS_EX_TOOLWINDOW | WS_EX_TOPMOST
                 return cp;
             }
