@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
@@ -13,7 +14,7 @@ namespace DotNetCommons.Net
         public string ContentEncoding { get; set; }
         public string CharacterSet { get; set; }
         public string ContentType { get; set; }
-        public WebHeaderCollection Headers { get; set; }
+        public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         public byte[] Data { get; set; }
 
         public string Text => Encoding.GetEncoding(CharacterSet ?? "utf-8").GetString(Data);
