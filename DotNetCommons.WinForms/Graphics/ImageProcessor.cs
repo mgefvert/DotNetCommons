@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -315,6 +316,26 @@ namespace DotNetCommons.WinForms.Graphics
         public ImageProcessor Clone()
         {
             return new ImageProcessor(_bitmap, true);
+        }
+
+        public Image Thumbnail(Size size, Color background)
+        {
+            // Make a clone of the image and resize
+            var clone = Clone();
+            clone.ScaleMax(size);
+
+            // Make another clone of the new image and set the target size
+            var result = CreateNewBitmap(clone.Bitmap, clone.Bitmap.PixelFormat, size);
+
+            using (var g = System.Drawing.Graphics.FromImage(result))
+            using (var brush = new SolidBrush(background))
+            {
+                g.FillRectangle(brush, g.ClipBounds);
+                g.InterpolationMode = InterpolationMode.Default;
+                g.DrawImageUnscaled(clone.Bitmap, (result.Width - clone.Width) / 2, (result.Height - clone.Height) / 2);
+            }
+
+            return result;
         }
     }
 }
