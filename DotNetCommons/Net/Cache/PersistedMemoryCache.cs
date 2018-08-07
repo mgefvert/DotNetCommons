@@ -1,26 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
 
-namespace DotNetCommons.Net
+namespace DotNetCommons.Net.Cache
 {
-    public class MemoryCache : IWebCache
+    public class PersistedMemoryCache : MemoryCache
     {
-        private readonly Dictionary<string, CommonWebResult> _store = new Dictionary<string, CommonWebResult>();
-
-        public bool Exists(string uri)
-        {
-            return _store.ContainsKey(uri);
-        }
-
-        public CommonWebResult Fetch(string uri)
-        {
-            return _store.TryGetValue(uri, out var result) ? result : null;
-        }
-
         public void Load(string filename)
         {
             if (!File.Exists(filename))
@@ -39,6 +26,7 @@ namespace DotNetCommons.Net
                 while (records-- > 0)
                 {
                     var uri = reader.ReadString();
+                    var ticks = reader.ReadInt64();
 
                     var result = new CommonWebResult
                     {
@@ -61,7 +49,12 @@ namespace DotNetCommons.Net
                     count = reader.ReadInt32();
                     result.Data = reader.ReadBytes(count);
 
-                    _store[uri] = result;
+                    _store[uri] = new CacheItem
+                    {
+                        Uri = uri,
+                        Timestamp = new DateTime(ticks, DateTimeKind.Utc),
+                        Result = result
+                    };
                 }
             }
         }
@@ -83,38 +76,35 @@ namespace DotNetCommons.Net
             using (var writer = new BinaryWriter(deflate, Encoding.UTF8, true))
             {
                 writer.Write(_store.Count);
-                foreach(var record in _store)
+                foreach(var record in _store.Values)
                 {
-                    writer.Write(record.Key);
-                    writer.Write(record.Value.Success);
-                    writer.Write((int)record.Value.StatusCode);
-                    writer.Write(record.Value.StatusDescription ?? "");
-                    writer.Write(record.Value.ContentEncoding ?? "");
-                    writer.Write(record.Value.CharacterSet ?? "");
-                    writer.Write(record.Value.ContentType ?? "");
+                    writer.Write(record.Uri);
+                    writer.Write(record.Timestamp.Ticks);
+                    writer.Write(record.Result.Success);
+                    writer.Write((int)record.Result.StatusCode);
+                    writer.Write(record.Result.StatusDescription ?? "");
+                    writer.Write(record.Result.ContentEncoding ?? "");
+                    writer.Write(record.Result.CharacterSet ?? "");
+                    writer.Write(record.Result.ContentType ?? "");
 
-                    writer.Write(record.Value.Headers.Count);
-                    foreach(var header in record.Value.Headers)
+                    writer.Write(record.Result.Headers.Count);
+                    foreach(var header in record.Result.Headers)
                     {
                         writer.Write(header.Key);
                         writer.Write(header.Value ?? "");
                     }
 
-                    writer.Write(record.Value.Data?.Length ?? 0);
-                    if (record.Value.Data != null)
-                        writer.Write(record.Value.Data);
+                    writer.Write(record.Result.Data?.Length ?? 0);
+                    if (record.Result.Data != null)
+                        writer.Write(record.Result.Data);
                 }
             }
         }
 
-        public void Store(string uri, CommonWebResult result)
+        public void SaveIfChanged(string filename)
         {
-            _store[uri] = result;
-        }
-
-        public bool TryFetch(string uri, out CommonWebResult result)
-        {
-            return _store.TryGetValue(uri, out result);
+            if (Changed)
+                Save(filename);
         }
     }
 }
