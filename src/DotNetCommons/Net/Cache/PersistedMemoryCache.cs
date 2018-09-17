@@ -37,7 +37,7 @@ namespace DotNetCommons.Net.Cache
 
                 if (flags.HasFlag(PersistedMemoryFlags.Compressed))
                 {
-                    deflate = new DeflateStream(stream, CompressionMode.Compress, true);
+                    deflate = new DeflateStream(stream, CompressionMode.Decompress, true);
                     reader = new BinaryReader(deflate, Encoding.UTF8, true);
                 }
 
