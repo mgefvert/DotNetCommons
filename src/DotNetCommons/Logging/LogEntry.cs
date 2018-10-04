@@ -45,6 +45,16 @@ namespace DotNetCommons.Logging
         /// <summary>Indentation level</summary>
         public int Level { get; set; }
 
+        public LogEntry()
+        {
+        }
+
+        public LogEntry(LogSeverity severity, string message)
+        {
+            Severity = severity;
+            Message = message;
+        }
+
         public void Add(string key, string value)
         {
             ExtraValues[key] = value;

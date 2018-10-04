@@ -20,6 +20,12 @@ namespace DotNetCommons.Collections
                 collection.Add(item);
         }
 
+        public static void AddRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> items)
+        {
+            foreach (var item in items)
+                dictionary.Add(item);
+        }
+
         public static void AddRangeIfNotNull<T>(this ICollection<T> collection, IEnumerable<T> items)
         {
             if (collection == null || items == null)
@@ -38,6 +44,12 @@ namespace DotNetCommons.Collections
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult?> func) where TResult : struct
         {
             return list.Select(func).Where(x => x != null).Select(x => x.Value).Distinct().ToList();
+        }
+
+        public static void Each<T>(this IEnumerable<T> items, Action<T> action)
+        {
+            foreach (var item in items)
+                action(item);
         }
 
         public static T ExtractAt<T>(this IList<T> list, int position)
