@@ -20,9 +20,12 @@ namespace DotNetCommons.Security
 
         private static readonly RNGCryptoServiceProvider Rng = new RNGCryptoServiceProvider();
 
-        private const string AlphaLowercase = "abcdefghijkmnpqrstwxyz";
-        private const string AlphaUppercase = "ABCDEFGHJKLMNPQRSTWXYZ";
-        private const string Digits = "23456789";
+        private const string AlphaLowercase = "abcdefghijklmnopqrstuvwxyz";
+        private const string AlphaUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private const string HexLowercase = "0123456789abcdef";
+        private const string HexUppercase = "0123456789ABCDEF";
+        private const string Friendly = "abcdefghijkmnopqrstwxyzABCDEFGHJKLMNPQRSTWXYZ23456789";
+        private const string Digits = "0123456789";
         private const string Punctuation = ",.;:?!@#$*-_+=";
 
         private const string AlphaMixedCase = AlphaLowercase + AlphaUppercase;
@@ -88,6 +91,9 @@ namespace DotNetCommons.Security
               A      Alphabetic character (A-Z, a-z)
               C      Alphabetic character, uppercase only (A-Z)
               c      Alphabetic character, lowercase only (a-z)
+              F      Friendly characters or digits, omitting hard-to-read ones (l, 1, I etc)
+              H      Uppercase hex digit (0-9, A-F)
+              h      Lowercase hex digit (0-9, a-f)
               N      Digit (0-9)
               X      Any character or digit
               p      Punctuation (,.;:?!@#$*-+=)
@@ -145,6 +151,9 @@ namespace DotNetCommons.Security
                     case 'A': alphabet = AlphaMixedCase; break;
                     case 'C': alphabet = AlphaUppercase; break;
                     case 'c': alphabet = AlphaLowercase; break;
+                    case 'F': alphabet = Friendly; break;
+                    case 'H': alphabet = HexUppercase; break;
+                    case 'h': alphabet = HexLowercase; break;
                     case 'N': alphabet = Digits; break;
                     case 'X': alphabet = FullAlphabet; break;
                     case 'p': alphabet = Punctuation; break;
