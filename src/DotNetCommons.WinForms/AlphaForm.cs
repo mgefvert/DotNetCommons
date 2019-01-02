@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
@@ -15,12 +16,19 @@ namespace DotNetCommons.WinForms
         public Bitmap CurrentBitmap { get; set; }
         public int TargetAlpha { get; set; }
         private readonly Timer _timer;
+        protected int PreferredScreen { get; set; }
+        public int OffsetX { get; set; }
+        public int OffsetY { get; set; }
 
-        public AlphaForm()
+        public AlphaForm() : this(false)
+        {
+        }
+
+        public AlphaForm(bool showInTaskBar)
         {
             TopMost = true;
-            ShowIcon = false;
-            ShowInTaskbar = false;
+            ShowIcon = showInTaskBar;
+            ShowInTaskbar = showInTaskBar;
             FormBorderStyle = FormBorderStyle.None;
 
             _timer = new Timer();
@@ -61,7 +69,8 @@ namespace DotNetCommons.WinForms
         protected void FadeTo(int alpha)
         {
             TargetAlpha = alpha;
-            _timer.Start();
+            if (!_timer.Enabled)
+                _timer.Start();
         }
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
@@ -89,7 +98,10 @@ namespace DotNetCommons.WinForms
             };
 
             var zero = IntPtr.Zero;
-            WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA);
+            if (Thread.CurrentThread.IsThreadPoolThread || Thread.CurrentThread.IsBackground)
+                Invoke((Action)delegate { WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA); });
+            else
+                WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA);
         }
 
         public bool UpdateImage()
@@ -97,12 +109,12 @@ namespace DotNetCommons.WinForms
             if (CurrentBitmap == null)
                 return false;
 
-            var area = Screen.PrimaryScreen.WorkingArea;
+            var area = (Screen.AllScreens.ElementAtOrDefault(PreferredScreen) ?? Screen.PrimaryScreen).WorkingArea;
 
             Width = CurrentBitmap.Width;
             Height = CurrentBitmap.Height;
-            Left = area.Right - 7 * Width / 8;
-            Top = area.Bottom - Height;
+            Left = area.Right - Width + OffsetX;
+            Top = area.Bottom - Height + OffsetY;
 
             var screenDc = WinApi.GetDC(IntPtr.Zero);
             var memDc = WinApi.CreateCompatibleDC(screenDc);

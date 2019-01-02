@@ -59,5 +59,12 @@ namespace DotNetCommons.Test.Net
             Assert.IsFalse(al.Contains(IPAddress.Parse("172.16.20.0")));
             Assert.IsFalse(al.Contains(IPAddress.Parse("192.168.2.0")));
         }
+
+        [TestMethod]
+        public void TestGlobal()
+        {
+            var al = IPAccessList.Parse("255.255.255.255/0");
+            Assert.IsTrue(al.Contains(IPAddress.Parse("74.65.2.190")));
+        }
     }
 }
