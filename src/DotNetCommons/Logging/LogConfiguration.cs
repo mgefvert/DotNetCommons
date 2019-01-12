@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -43,7 +44,6 @@ namespace DotNetCommons.Logging
                 : Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
         }
 
-#if !NETSTANDARD2_0
         public void LoadFromAppSettings()
         {
             Directory = Environment.ExpandEnvironmentVariables(ConfigurationManager.AppSettings["LogPath"] ?? "");
@@ -60,6 +60,5 @@ namespace DotNetCommons.Logging
         {
             return bool.TryParse(value, out var result) && result;
         }
-#endif
     }
 }
