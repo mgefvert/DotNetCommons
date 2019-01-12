@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.IO
 {
     public enum StreamMode

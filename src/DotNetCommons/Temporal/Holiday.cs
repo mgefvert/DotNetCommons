@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using DotNetCommons.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Temporal
 {
     public enum HolidayType

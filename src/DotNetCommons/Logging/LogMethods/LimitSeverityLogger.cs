@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Logging.LogMethods
 {
     public class LimitSeverityLogger : ILogMethod

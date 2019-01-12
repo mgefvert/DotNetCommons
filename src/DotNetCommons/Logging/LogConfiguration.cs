@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+
+// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Logging
 {

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.IO.YanArchive
 {
     public static class YanFileSystemIO

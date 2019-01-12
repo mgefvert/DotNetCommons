@@ -1,5 +1,7 @@
 ﻿using System;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Net.Cache
 {
     public interface IWebCache

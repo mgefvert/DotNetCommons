@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Net
 {
     public class CommonWebClient

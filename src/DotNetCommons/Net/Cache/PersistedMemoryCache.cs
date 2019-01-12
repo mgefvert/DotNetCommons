@@ -4,6 +4,8 @@ using System.IO.Compression;
 using System.Net;
 using System.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Net.Cache
 {
     [Flags]
@@ -44,7 +46,7 @@ namespace DotNetCommons.Net.Cache
                 while (records-- > 0)
                 {
                     var item = LoadRecord(reader);
-                    _store[item.Uri] = item;
+                    InternalStore[item.Uri] = item;
                 }
             }
             finally
@@ -108,7 +110,7 @@ namespace DotNetCommons.Net.Cache
             {
                 writer = new BinaryWriter(stream, Encoding.UTF8, true);
                 {
-                    writer.Write(_store.Count);
+                    writer.Write(InternalStore.Count);
                     writer.Write((int) flags);
                 }
 
@@ -119,7 +121,7 @@ namespace DotNetCommons.Net.Cache
                     writer = new BinaryWriter(deflate, Encoding.UTF8, true);
                 }
 
-                foreach (var record in _store.Values)
+                foreach (var record in InternalStore.Values)
                     SaveRecord(writer, record);
             }
             finally

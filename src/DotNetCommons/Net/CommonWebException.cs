@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Net
 {
     public class CommonWebException : Exception

@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using DotNetCommons.Collections;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.IO
 {
     public static class FileSystemTools

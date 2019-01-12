@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.IO.YanArchive
 {
     public static class YanFileIndex

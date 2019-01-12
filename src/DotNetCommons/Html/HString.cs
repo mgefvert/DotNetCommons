@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Html
 {
     public class HString : HElement, IEqualityComparer<HString>
@@ -49,7 +51,7 @@ namespace DotNetCommons.Html
 
         public bool Equals(HString x, HString y)
         {
-            return string.Equals(x._html, y._html);
+            return string.Equals(x?._html, y?._html);
         }
 
         public int GetHashCode(HString obj)

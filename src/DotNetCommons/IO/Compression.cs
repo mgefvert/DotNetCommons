@@ -3,6 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.IO
 {
     public static class Compression

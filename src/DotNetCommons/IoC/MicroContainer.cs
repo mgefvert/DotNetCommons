@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using DotNetCommons.Collections;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.IoC
 {
     public enum CreationMode
@@ -193,7 +195,7 @@ namespace DotNetCommons.IoC
 
         public T Get<T>(string configKey)
         {
-            return Configuration.TryGetValue(configKey, out var value) ? (T) value : default(T);
+            return Configuration.TryGetValue(configKey, out var value) ? (T) value : default;
         }
 
         public MicroContainer Register<TInterface, TImplementation>(CreationMode mode = CreationMode.Create)

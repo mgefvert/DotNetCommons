@@ -4,11 +4,26 @@ using System.Linq;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
+// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Collections
 {
     public static class CollectionExtensions
     {
+        public class Intersection<T>
+        {
+            public readonly List<T> Left;
+            public readonly List<T> Both;
+            public readonly List<T> Right;
+
+            public Intersection()
+            {
+                Left = new List<T>();
+                Both = new List<T>();
+                Right = new List<T>();
+            }
+        }
+
         private static int MinMax(int value, int min, int max)
         {
             return value < min ? min : (value > max ? max : value);
@@ -62,7 +77,7 @@ namespace DotNetCommons.Collections
 
         public static T ExtractAtOrDefault<T>(this IList<T> list, int position)
         {
-            return position < 0 || position >= list.Count ? default(T) : ExtractAt(list, position);
+            return position < 0 || position >= list.Count ? default : ExtractAt(list, position);
         }
 
         public static List<T> ExtractAll<T>(this IList<T> list, Predicate<T> match)
@@ -81,7 +96,7 @@ namespace DotNetCommons.Collections
 
         public static T ExtractFirstOrDefault<T>(this IList<T> list)
         {
-            return list.Any() ? ExtractAt(list, 0) : default(T);
+            return list.Any() ? ExtractAt(list, 0) : default;
         }
 
         public static T ExtractLast<T>(this IList<T> list)
@@ -91,7 +106,7 @@ namespace DotNetCommons.Collections
 
         public static T ExtractLastOrDefault<T>(this IList<T> list)
         {
-            return list.Any() ? ExtractAt(list, list.Count - 1) : default(T);
+            return list.Any() ? ExtractAt(list, list.Count - 1) : default;
         }
 
         public static List<T> ExtractRange<T>(this List<T> list, int offset, int count)
@@ -107,14 +122,7 @@ namespace DotNetCommons.Collections
 
         public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         {
-            return dictionary.TryGetValue(key, out var result) ? result : default(TValue);
-        }
-
-        public static string GetStringOrNull<TKey>(this IDictionary<TKey, string> dictionary, TKey key)
-        {
-            return dictionary.IsSet(key)
-                ? dictionary[key]
-                : null;
+            return dictionary.TryGetValue(key, out var result) ? result : default;
         }
 
         public static decimal Increase<TKey>(this IDictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
@@ -129,6 +137,99 @@ namespace DotNetCommons.Collections
             value += GetOrDefault(dictionary, key);
             dictionary[key] = value;
             return value;
+        }
+
+        /// <summary>
+        /// Compare two lists against each other and return an Intersection result from the comparison, 
+        /// listing the objects found in only list1, only list2, or both lists.
+        /// </summary>
+        /// <typeparam name="T">Type of list</typeparam>
+        /// <param name="list1">The first list (left)</param>
+        /// <param name="list2">The second list (right)</param>
+        /// <returns>An Intersection object with the results of the comparison</returns>
+        public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2)
+        {
+            return Intersect(list1, list2, (Comparison<T>)null);
+        }
+
+        /// <summary>
+        /// Compare two lists against each other and return an Intersection result from the comparison, 
+        /// listing the objects found in only list1, only list2, or both lists.
+        /// </summary>
+        /// <typeparam name="T">Type of list</typeparam>
+        /// <param name="list1">The first list (left)</param>
+        /// <param name="list2">The second list (right)</param>
+        /// <param name="comparer">A specific comparer to use for comparing the objects</param>
+        /// <returns>An Intersection object with the results of the comparison</returns>
+        public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2, IComparer<T> comparer)
+        {
+            return Intersect(list1, list2, comparer.Compare);
+        }
+
+        /// <summary>
+        /// Compare two lists against each other and return an Intersection result from the comparison, 
+        /// listing the objects found in only list1, only list2, or both lists.
+        /// </summary>
+        /// <typeparam name="T">Type of list</typeparam>
+        /// <param name="list1">The first list (left)</param>
+        /// <param name="list2">The second list (right)</param>
+        /// <param name="comparison">A comparison method for comparing the objects</param>
+        /// <returns>An Intersection object with the results of the comparison</returns>
+        public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2, Comparison<T> comparison)
+        {
+            bool DoCompare(T item1, T item2)
+            {
+                if (comparison != null)
+                    return comparison(item1, item2) == 0;
+                if (item1 is IComparable<T> comparable)
+                    return comparable.CompareTo(item2) == 0;
+                if (item1 is IEquatable<T> equatable)
+                    return equatable.Equals(item2);
+
+                return Comparer<T>.Default.Compare(item1, item2) == 0;
+            }
+
+            var result = new Intersection<T>();
+
+            bool empty1 = list1 == null || list1.Count == 0;
+            bool empty2 = list2 == null || list2.Count == 0;
+
+            if (empty1 && empty2)
+                return result;
+
+            if (empty1)
+            {
+                result.Right.AddRange(list2);
+                return result;
+            }
+
+            if (empty2)
+            {
+                result.Left.AddRange(list1);
+                return result;
+            }
+
+            var search2 = new List<T>(list2);
+
+            // Divide array1 into Left and Both
+            foreach (var item1 in list1)
+            {
+                var n = search2.FindIndex(x => DoCompare(item1, x));
+                if (n == -1)
+                {
+                    result.Left.Add(item1);
+                }
+                else
+                {
+                    result.Both.Add(item1);
+                    search2.RemoveAt(n);
+                }
+            }
+
+            // Any remaining items in array2 (=search2) must now fall to right.
+            result.Right.AddRange(search2);
+
+            return result;
         }
 
         public static bool IsSet<TKey>(this IDictionary<TKey, string> dictionary, TKey key)

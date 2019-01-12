@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.IO.YanArchive
 {
     public class YanFileSystem : IDisposable

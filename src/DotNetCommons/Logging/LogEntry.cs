@@ -4,6 +4,8 @@ using System.Linq;
 using DotNetCommons.Collections;
 using DotNetCommons.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Logging
 {
     public enum LogFormat

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using DotNetCommons.Text.Tokenizer;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Text
 {
     public class StringTokenizer

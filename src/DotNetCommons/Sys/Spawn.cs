@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading;
 using DotNetCommons.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Sys
 {
     public class Spawn

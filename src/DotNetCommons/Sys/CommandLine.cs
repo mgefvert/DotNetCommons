@@ -7,6 +7,7 @@ using DotNetCommons.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
+// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Sys
 {

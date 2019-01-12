@@ -7,6 +7,8 @@ using System.Text;
 using DotNetCommons.Collections;
 using DotNetCommons.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Logging.LogMethods
 {
     public class FileLogger : ILogMethod

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Security
 {
     public static class Crc32

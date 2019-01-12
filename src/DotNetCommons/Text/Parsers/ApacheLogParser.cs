@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Net;
 using DotNetCommons.Text.Tokenizer;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Text.Parsers
 {
     public class ApacheLogEntry

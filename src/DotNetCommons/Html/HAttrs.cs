@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using DotNetCommons.Collections;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Html
 {
     public class HAttrs : HElement, IEnumerable<HAttr>

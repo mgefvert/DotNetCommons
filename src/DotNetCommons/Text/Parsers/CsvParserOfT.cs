@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using DotNetCommons.Collections;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Text.Parsers
 {
     [AttributeUsage(AttributeTargets.Property)]
@@ -170,8 +172,7 @@ namespace DotNetCommons.Text.Parsers
             foreach (var definition in Definitions)
             {
                 var name = definition.Attribute.Name.ToLower();
-                int value;
-                if (lookup.TryGetValue(name, out value))
+                if (lookup.TryGetValue(name, out var value))
                     definition.FieldNo = value;
             }
 

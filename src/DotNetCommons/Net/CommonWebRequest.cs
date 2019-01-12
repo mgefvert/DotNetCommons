@@ -7,6 +7,8 @@ using System.Text;
 using DotNetCommons.IO;
 using DotNetCommons.Net.Cache;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Net
 {
     public class CommonWebRequest

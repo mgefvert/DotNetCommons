@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using DotNetCommons.Text.Tokenizer;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Text.Parsers
 {
     public class ConfigStringParser

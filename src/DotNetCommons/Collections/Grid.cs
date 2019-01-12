@@ -6,6 +6,7 @@ using System.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
+// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Collections
 {
@@ -23,7 +24,7 @@ namespace DotNetCommons.Collections
         public Dictionary<Tuple<TRow, TCol>, TData> Data { get; } = new Dictionary<Tuple<TRow, TCol>, TData>();
         protected Tuple<TRow, TCol> Key(TRow row, TCol column) => new Tuple<TRow, TCol>(row, column);
 
-        public TData Extract(TRow row, TCol column, TData defaultValue = default(TData))
+        public TData Extract(TRow row, TCol column, TData defaultValue = default)
         {
             var key = Key(row, column);
             var result = Get(key, defaultValue);
@@ -38,12 +39,12 @@ namespace DotNetCommons.Collections
                 : defaultValue;
         }
 
-        public TData Get(TRow row, TCol column, TData defaultValue = default(TData))
+        public TData Get(TRow row, TCol column, TData defaultValue = default)
         {
             return Get(Key(row, column), defaultValue);
         }
 
-        public TData Manipulate(TRow row, TCol column, Func<TData, TData> func, TData defaultValue = default(TData))
+        public TData Manipulate(TRow row, TCol column, Func<TData, TData> func, TData defaultValue = default)
         {
             var key = Key(row, column);
             var value = func(Get(key, defaultValue));

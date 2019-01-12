@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Logging.LogMethods
 {
     public class TapLoggerArgs : EventArgs

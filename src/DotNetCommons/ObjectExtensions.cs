@@ -5,6 +5,7 @@ using System.Reflection;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
+// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons
 {
@@ -116,7 +117,7 @@ namespace DotNetCommons
 
         private static bool ValueIsNull(object value)
         {
-            return value == null || (value is string && string.IsNullOrEmpty((string)value));
+            return value == null || (value is string s && string.IsNullOrEmpty(s));
         }
     }
 }

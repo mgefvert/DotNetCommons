@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Temporal
 {
     public class PrecisionTimer

@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Threading;
 using DotNetCommons.Logging.LogMethods;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Logging
 {
     public static class LogSystem

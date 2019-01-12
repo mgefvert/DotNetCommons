@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Logging
 {
     public static class Logger

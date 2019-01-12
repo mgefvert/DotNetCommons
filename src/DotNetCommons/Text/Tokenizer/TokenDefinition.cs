@@ -1,5 +1,7 @@
 ﻿using System;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Text.Tokenizer
 {
     public enum TokenMode

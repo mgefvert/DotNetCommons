@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Collections
 {
     public class DrawList<T>

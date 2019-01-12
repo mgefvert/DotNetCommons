@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Net
 {
     [Serializable]

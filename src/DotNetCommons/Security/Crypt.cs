@@ -3,6 +3,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Security
 {
     public static class Crypt

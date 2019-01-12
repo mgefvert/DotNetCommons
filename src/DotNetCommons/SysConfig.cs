@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Xml;
 using DotNetCommons.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons
 {
     public static class SysConfig

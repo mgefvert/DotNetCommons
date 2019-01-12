@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading;
 using DotNetCommons.Logging.LogMethods;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Logging
 {
     public delegate void LogEvent(object sender, LogEntry entry);

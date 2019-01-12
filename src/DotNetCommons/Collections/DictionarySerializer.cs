@@ -5,6 +5,8 @@ using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Collections
 {
     public class DictionarySerializer
