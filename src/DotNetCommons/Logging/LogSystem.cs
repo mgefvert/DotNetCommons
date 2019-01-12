@@ -32,9 +32,7 @@ namespace DotNetCommons.Logging
 
         private static void InitializeLogSystem()
         {
-#if !NETSTANDARD2_0
             Configuration.LoadFromAppSettings();
-#endif
 
             var chain = new LogChain("default");
             if (Configuration.UseErrorLog)
