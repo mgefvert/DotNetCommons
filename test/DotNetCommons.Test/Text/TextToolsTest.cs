@@ -9,6 +9,14 @@ namespace DotNetCommons.Test.Text
     public class TextToolsTest
     {
         [TestMethod]
+        public void TestAsciify()
+        {
+            Assert.AreEqual("Abcdefgh!", TextTools.Asciify("Abcdefgh!"));
+            Assert.AreEqual("Aaeurg!", TextTools.Asciify("Åäurg!"));
+            Assert.AreEqual("(c) 1993", TextTools.Asciify("© 1993"));
+        }
+
+        [TestMethod]
         public void TestDetermineEncoding()
         {
             Assert.AreEqual(Encoding.ASCII, TextTools.DetermineEncoding(Encoding.Default.GetBytes("Abcdefgh")));

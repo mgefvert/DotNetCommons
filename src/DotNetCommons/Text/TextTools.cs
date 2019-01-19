@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 // Written by Mats Gefvert
@@ -10,6 +11,41 @@ namespace DotNetCommons.Text
 {
     public static class TextTools
     {
+        private static readonly Encoding Win1252 = Encoding.GetEncoding(1252);
+        private static readonly string[] HighBitsXlate = 
+        {
+            /* 0x80 */ null, null, "\'", "f",  "\"", "...", null, null, "^",  null,   "S",  "<", "OE",  null,  "Z",   null,
+            /* 0x90 */ null, "\'", "\'", "\"", "\"", "*",   "-",  "-",  "~",  "(tm)", "s",  ">", "oe",  null,  "z",   "Y",
+            /* 0xA0 */ " ",  "!",  "c",  null, "$",  null,  "|",  null, null, "(c)",  null, "<", null,  null,  "(r)", null,
+            /* 0xB0 */ null, "+-", "^2", "^3", "\'", "u",   "pi", "*",  null, "^1",   null, ">", "1/4", "1/2", "3/4", "?",
+            /* 0xC0 */ "A",  "A",  "A",  "A",  "AE", "A",   "AE", "C",  "E",  "E",    "E",  "E", "I",   "I",   "I",   "I",
+            /* 0xD0 */ "DH", "N",  "O",  "O",  "O",  "O",   "OE", "x",  "O",  "U",    "U",  "U", "U",   "Y",   "TH",  "ss",
+            /* 0xE0 */ "a",  "a",  "a",  "a",  "ae", "a",   "ae", "c",  "e",  "e",    "e",  "e", "i",   "i",   "i",   "i",
+            /* 0xF0 */ "dh", "n",  "o",  "o",  "o",  "o",   "oe", "/",  "o",  "u",    "u",  "u", "u",   "y",   "th",  "y"
+        };
+
+        public static string Asciify(string text)
+        {
+            var textbuffer = Encoding.UTF8.GetBytes(text);
+            if (textbuffer.All(x => x <= 127))
+                return text;
+
+            // First, convert the string down to ANSI.
+            var resultbuffer = Encoding.Convert(Encoding.UTF8, Win1252, textbuffer);
+
+            // Now translate all characters down to ASCII.
+            var result = new StringBuilder(resultbuffer.Length);
+            foreach (var c in resultbuffer)
+            {
+                if (c <= 127)
+                    result.Append((char)c);
+                else
+                    result.Append(HighBitsXlate[c - 128]);
+            }
+
+            return result.ToString();
+        }
+
         public static Encoding DetermineEncoding(byte[] buffer)
         {
             return DetermineEncoding(buffer, 0, buffer.Length);
@@ -34,6 +70,20 @@ namespace DotNetCommons.Text
             return Encoding.Default;
         }
 
+        public static int FindWordBreak(string text, int maxlen)
+        {
+            var i = Math.Min(text.Length - 1, maxlen);
+
+            while (i > 1)
+            {
+                if (char.IsWhiteSpace(text[i]))
+                    return i;
+                i--;
+            }
+
+            return maxlen;
+        }
+
         public static bool IsUtf8Valid(byte[] data)
         {
             return InternalValidateUtf8(data, 0, data.Length);
@@ -44,7 +94,7 @@ namespace DotNetCommons.Text
             return InternalValidateUtf8(data, offset, length);
         }
 
-        // From http://michalis.site/2013/12/levenshtein/
+        /// From http://michalis.site/2013/12/levenshtein/
         public static int Levenshtein(string a, string b, bool ignoreCase)
         {
             a = a ?? "";
@@ -109,20 +159,6 @@ namespace DotNetCommons.Text
             }
 
             return result;
-        }
-
-        public static int FindWordBreak(string text, int maxlen)
-        {
-            var i = Math.Min(text.Length - 1, maxlen);
-
-            while (i > 1)
-            {
-                if (char.IsWhiteSpace(text[i]))
-                    return i;
-                i--;
-            }
-
-            return maxlen;
         }
 
         private static bool InternalValidateUtf8(byte[] data, int offset, int length)
