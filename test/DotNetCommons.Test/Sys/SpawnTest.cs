@@ -3,45 +3,39 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using DotNetCommons.Sys;
 using DotNetCommons.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Sys
+namespace DotNetCommons.Test.Sys
 {
-    public class Spawn
+    [TestClass]
+    public class SpawnTest
     {
-        public static void ExtractCommand(string cmd, out string executable, out string parameters)
+        [TestMethod]
+        public void TestExtractCommand()
         {
-            executable = "";
-            parameters = "";
+            Spawn.ExtractCommand("cmd", out var exe, out var p);
+            Assert.AreEqual("cmd", exe);
+            Assert.AreEqual("", p);
 
-            cmd = cmd?.Trim();
-            if (string.IsNullOrEmpty(cmd))
-                return;
+            Spawn.ExtractCommand("cmd hello, world", out exe, out p);
+            Assert.AreEqual("cmd", exe);
+            Assert.AreEqual("hello, world", p);
 
-            if (cmd[0] == '"')
-            {
-                var n = cmd.IndexOf('"', 1);
-                if (n == -1)
-                    executable = cmd.Mid(1);
-                else
-                {
-                    executable = cmd.Mid(1, n - 1);
-                    parameters = cmd.Mid(n + 1).Trim();
-                }
-            }
-            else
-            {
-                var n = cmd.IndexOf(' ');
-                if (n == -1)
-                    executable = cmd;
-                else
-                {
-                    executable = cmd.Left(n);
-                    parameters = cmd.Mid(n + 1).Trim();
-                }
-            }
+            Spawn.ExtractCommand("cmd \"hello, world\"", out exe, out p);
+            Assert.AreEqual("cmd", exe);
+            Assert.AreEqual("\"hello, world\"", p);
+
+            Spawn.ExtractCommand("\"c:\\program files\\test.exe\"", out exe, out p);
+            Assert.AreEqual("c:\\program files\\test.exe", exe);
+            Assert.AreEqual("", p);
+
+            Spawn.ExtractCommand("\"c:\\program files\\test.exe\" hello, world", out exe, out p);
+            Assert.AreEqual("c:\\program files\\test.exe", exe);
+            Assert.AreEqual("hello, world", p);
         }
 
         public static string Run(string cmd, string parameters = null, string startDirectory = null)
