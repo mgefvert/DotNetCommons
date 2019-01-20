@@ -93,6 +93,17 @@ namespace DotNetCommons.Text
             return count > 0 ? value.Substring(offset, count) : string.Empty;
         }
 
+        public static bool ParseBoolean(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            if (bool.TryParse(value, out var result))
+                return result;
+
+            return long.TryParse(value, out var longresult) && longresult != 0;
+        }
+
         public static decimal ParseDecimal(this string value, CultureInfo culture, decimal defaultValue = 0)
         {
             return decimal.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result) 
