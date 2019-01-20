@@ -76,7 +76,7 @@ namespace DotNetCommons.Sys
             return Parse<T>(Environment.GetCommandLineArgs().Skip(1).ToArray());
         }
 
-        public static T Parse<T>(string[] args) where T : class, new()
+        public static T Parse<T>(params string[] args) where T : class, new()
         {
             if (args.Length == 0 && DisplayHelpOnEmpty)
                 throw new CommandLineDisplayHelpException(typeof(T));    
@@ -105,8 +105,8 @@ namespace DotNetCommons.Sys
                     var option = property.GetCustomAttribute<CommandLineOptionAttribute>();
                     if (option != null)
                     {
-                        definition.ShortOption = option.ShortOption;
-                        definition.LongOption = option.LongOption;
+                        definition.ShortOptions = option.ShortOptions;
+                        definition.LongOptions = option.LongOptions;
                         definition.Description = option.Description;
                     }
 

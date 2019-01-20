@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using DotNetCommons.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -10,18 +12,17 @@ namespace DotNetCommons.Sys
 {
     public class CommandLineDefinition
     {
-        public PropertyInfo Property { get; set; }
-        public char ShortOption { get; set; } = '\0';
-        public string LongOption { get; set; }
-        public string Description { get; set; }
         public bool BooleanValue { get; set; }
+        public string Description { get; set; }
+        public string[] LongOptions { get; set; }
+        public PropertyInfo Property { get; set; }
+        public string[] ShortOptions { get; set; }
 
         internal bool Remainder { get; set; }
         internal int Position { get; set; }
 
-        internal bool HasInfo => ShortOption != '\x0' || LongOption != null || Position != -1 || Remainder || Description != null;
-
-        internal bool IsAttribute => ShortOption != '\x0' || LongOption != null;
+        internal bool HasInfo => AnyShortOptions() || AnyLongOptions() || Position != -1 || Remainder || Description != null;
+        internal bool IsAttribute => AnyShortOptions() || AnyLongOptions();
 
         public string OptionString
         {
@@ -29,14 +30,20 @@ namespace DotNetCommons.Sys
             {
                 var result = new List<string>();
 
-                if (ShortOption != '\0')
-                    result.Add("-" + ShortOption);
+                if (AnyShortOptions())
+                    result.Add("-" + ShortOptions.First());
 
-                if (!string.IsNullOrEmpty(LongOption))
-                    result.Add("--" + LongOption);
+                if (AnyLongOptions())
+                    result.Add("--" + LongOptions.First());
 
                 return string.Join(", ", result);
             }
         }
+
+        public bool AnyLongOptions() => LongOptions != null && LongOptions.Length > 0;
+        public bool AnyShortOptions() => ShortOptions != null && ShortOptions.Length > 0;
+
+        public bool MatchesLongOption(string arg) => AnyLongOptions() && LongOptions.Any(o => o.Like(arg));
+        public bool MatchesShortOption(string arg) => AnyShortOptions() && ShortOptions.Any(o => o.Like(arg));
     }
 }

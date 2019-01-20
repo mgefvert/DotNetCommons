@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -9,21 +10,28 @@ namespace DotNetCommons.Sys
     [AttributeUsage(AttributeTargets.Property)]
     public class CommandLineOptionAttribute : Attribute
     {
-        public char ShortOption { get; }
-        public string LongOption { get; }
+        public string[] ShortOptions { get; }
+        public string[] LongOptions { get; }
         public string Description { get; }
 
         public CommandLineOptionAttribute(string longOption, string description = null)
         {
-            ShortOption = '\0';
-            LongOption = longOption;
+            ShortOptions = new string[0];
+            LongOptions = new[] { longOption };
             Description = description;
         }
 
         public CommandLineOptionAttribute(char shortOption, string longOption = null, string description = null)
         {
-            ShortOption = shortOption;
-            LongOption = longOption;
+            ShortOptions = new[] { shortOption.ToString() };
+            LongOptions = new[] { longOption };
+            Description = description;
+        }
+
+        public CommandLineOptionAttribute(char[] shortOptions, string[] longOption = null, string description = null)
+        {
+            ShortOptions = shortOptions?.Select(x => x.ToString()).ToArray() ?? new string[0];
+            LongOptions = longOption ?? new string[0];
             Description = description;
         }
     }

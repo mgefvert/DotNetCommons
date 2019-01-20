@@ -46,7 +46,7 @@ namespace DotNetCommons.Sys
             {
                 var items = arg.Split(new[] { '=' }, 2);
                 arg = items[0];
-                value = items[1];
+                value = items[1].Trim('"');
             }
             else if (arg.Length >= 2 && type == OptionType.Short)
             {
@@ -121,7 +121,7 @@ namespace DotNetCommons.Sys
 
         private CommandLineDefinition FindDefinition(string key)
         {
-            return Definitions.FirstOrDefault(x => x.ShortOption.ToString() == key || x.LongOption == key);
+            return Definitions.FirstOrDefault(x => x.MatchesShortOption(key) || x.MatchesLongOption(key));
         }
 
         private CommandLineDefinition FindDefinition(int position)
