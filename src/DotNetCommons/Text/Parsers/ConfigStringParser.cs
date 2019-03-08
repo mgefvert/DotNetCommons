@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using DotNetCommons.Text.Tokenizer;
 
@@ -37,6 +38,9 @@ namespace DotNetCommons.Text.Parsers
             foreach (var item in items)
             {
                 item.Trim(WhitespaceToken);
+                if (!item.Any())
+                    break;
+
                 var key = item.Consume(TextToken);
 
                 item.Trim(WhitespaceToken);

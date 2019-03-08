@@ -30,7 +30,7 @@ namespace DotNetCommons.Text.Tokenizer
 
         public IEnumerable<Token> ConsumeAll(params int[] allowed)
         {
-            foreach (var token in this)
+            while (Count > 0)
                 yield return Consume(allowed);
         }
 
