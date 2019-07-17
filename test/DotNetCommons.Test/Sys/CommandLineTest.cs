@@ -10,14 +10,14 @@ namespace DotNetCommons.Test.Sys
         [TestMethod]
         public void TestShortOptions()
         {
-            var options = CommandLine.Parse<Options>(new[] { "-u", "test", "-p", "password", "-P", "80", "-z" });
+            var options = CommandLine.Parse<Options>("-u", "test", "-p", "password", "-P", "80", "-z");
             Assert.AreEqual("test", options.User);
             Assert.AreEqual("password", options.Password);
             Assert.AreEqual(80, options.Port);
             Assert.IsTrue(options.Zip);
             Assert.IsFalse(options.Encrypt);
 
-            options = CommandLine.Parse<Options>(new[] { "-u=test", "-p=password", "-P=80", "-z" });
+            options = CommandLine.Parse<Options>("-u=test", "-p=password", "-P=80", "-z");
             Assert.AreEqual("test", options.User);
             Assert.AreEqual("password", options.Password);
             Assert.AreEqual(80, options.Port);
@@ -28,14 +28,14 @@ namespace DotNetCommons.Test.Sys
         [TestMethod]
         public void TestShortOptionsAlternate()
         {
-            var options = CommandLine.Parse<Options>(new[] { "/u", "test", "/p", "password", "/P", "80", "/z" });
+            var options = CommandLine.Parse<Options>("/u", "test", "/p", "password", "/P", "80", "/z");
             Assert.AreEqual("test", options.User);
             Assert.AreEqual("password", options.Password);
             Assert.AreEqual(80, options.Port);
             Assert.IsTrue(options.Zip);
             Assert.IsFalse(options.Encrypt);
 
-            options = CommandLine.Parse<Options>(new[] { "/u=test", "/p=password", "-P=80", "/z" });
+            options = CommandLine.Parse<Options>("/u=test", "/p=password", "-P=80", "/z");
             Assert.AreEqual("test", options.User);
             Assert.AreEqual("password", options.Password);
             Assert.AreEqual(80, options.Port);
@@ -46,14 +46,14 @@ namespace DotNetCommons.Test.Sys
         [TestMethod]
         public void TestLongOptions()
         {
-            var options = CommandLine.Parse<Options>(new[] { "--user", "test", "--password", "password", "--port", "80", "--zip" });
+            var options = CommandLine.Parse<Options>("--user", "test", "--password", "password", "--port", "80", "--zip");
             Assert.AreEqual("test", options.User);
             Assert.AreEqual("password", options.Password);
             Assert.AreEqual(80, options.Port);
             Assert.IsTrue(options.Zip);
             Assert.IsFalse(options.Encrypt);
 
-            options = CommandLine.Parse<Options>(new[] { "--user=test", "--password=password", "--port", "80", "--zip" });
+            options = CommandLine.Parse<Options>("--user=test", "--password=password", "--port", "80", "--zip");
             Assert.AreEqual("test", options.User);
             Assert.AreEqual("password", options.Password);
             Assert.AreEqual(80, options.Port);
@@ -66,20 +66,20 @@ namespace DotNetCommons.Test.Sys
         {
             CommandLine.MultipleShortOptions = true;
 
-            var options = CommandLine.Parse<Options>(new[] { "-ze" });
+            var options = CommandLine.Parse<Options>("-ze");
             Assert.IsTrue(options.Zip);
             Assert.IsTrue(options.Encrypt);
 
             CommandLine.MultipleShortOptions = false;
 
-            options = CommandLine.Parse<Options>(new[] { "-uroot" });
+            options = CommandLine.Parse<Options>("-uroot");
             Assert.AreEqual("root", options.User);
         }
 
         [TestMethod]
         public void TestPositions()
         {
-            var options = CommandLine.Parse<Options>(new[] { "-z", "p1", "p2", "p3", "-e", "p4" });
+            var options = CommandLine.Parse<Options>("-z", "p1", "p2", "p3", "-e", "p4");
             Assert.IsTrue(options.Zip);
             Assert.IsTrue(options.Encrypt);
             Assert.AreEqual("p1", options.Param1);

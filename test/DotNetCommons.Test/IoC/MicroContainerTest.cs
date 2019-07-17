@@ -70,15 +70,15 @@ namespace DotNetCommons.Test.IoC
         public void Setup()
         {
             _container = new MicroContainer()
-                .Register<IFoo, Foo>()
+                .Register<IFoo, Foo>(CreationMode.Create)
                 .Register<IBar, Bar>(CreationMode.Singleton)
-                .Register<IFooBar, FooBar>();
+                .Register<IFooBar, FooBar>(CreationMode.Create);
         }
 
         [TestMethod]
         public void CreateFoo()
         {
-            var foo = _container.Create<IFoo>();
+            var foo = _container.Acquire<IFoo>();
             Assert.IsInstanceOfType(foo, typeof(Foo));
             Assert.AreEqual("Hello from Foo", foo.Message);
         }
@@ -86,19 +86,19 @@ namespace DotNetCommons.Test.IoC
         [TestMethod]
         public void CreateBar()
         {
-            var bar = _container.Create<IBar>();
+            var bar = _container.Acquire<IBar>();
             Assert.IsInstanceOfType(bar, typeof(Bar));
             Assert.IsInstanceOfType(bar.Foo, typeof(Foo));
             Assert.AreEqual("Hello from Foo", bar.Foo.Message);
 
-            var bar2 = _container.Create<IBar>();
+            var bar2 = _container.Acquire<IBar>();
             Assert.IsTrue(bar == bar2);
         }
 
         [TestMethod]
         public void CreateFooBar()
         {
-            var foobar = _container.Create<IFooBar>();
+            var foobar = _container.Acquire<IFooBar>();
             Assert.IsInstanceOfType(foobar, typeof(FooBar));
             Assert.IsInstanceOfType(foobar.Foo, typeof(Foo));
             Assert.IsInstanceOfType(foobar.Bar, typeof(Bar));
@@ -112,14 +112,14 @@ namespace DotNetCommons.Test.IoC
 
             var t0 = DateTime.Now;
             for (int i = 0; i < 500_000; i++)
-                _container.Create<IBar>();
+                _container.Acquire<IBar>();
             Console.WriteLine("Singleton completed in " + (DateTime.Now - t0).TotalMilliseconds + " msec");
 
             GC.Collect();
 
             t0 = DateTime.Now;
             for (int i = 0; i < 500_000; i++)
-                _container.Create<IFoo>();
+                _container.Acquire<IFoo>();
             Console.WriteLine("Creation completed in " + (DateTime.Now - t0).TotalMilliseconds + " msec");
         }
 
@@ -129,14 +129,14 @@ namespace DotNetCommons.Test.IoC
             var original = new Persistent();
             _container.Register<IPersistent>(original);
 
-            var bar = _container.Create<IBar>();
-            var persist = _container.Create<IPersistent>();
+            var bar = _container.Acquire<IBar>();
+            var persist = _container.Acquire<IPersistent>();
             Assert.IsNotNull(bar);
             Assert.IsTrue(persist == original);
 
             var local = _container.Local();
-            var bar2 = local.Create<IBar>();
-            var persist2 = local.Create<IPersistent>();
+            var bar2 = local.Acquire<IBar>();
+            var persist2 = local.Acquire<IPersistent>();
             Assert.IsFalse(bar2 == bar);
             Assert.IsTrue(persist2 == persist);
         }

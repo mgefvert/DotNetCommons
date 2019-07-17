@@ -27,6 +27,15 @@ namespace DotNetCommons.Html
             Add(elements);
         }
 
+        public HTag Add(IEnumerable<HElement> elements)
+        {
+            if (elements != null)
+                foreach (var element in elements)
+                    Add(element);
+
+            return this;
+        }
+
         public HTag Add(params HElement[] elements)
         {
             if (elements != null)

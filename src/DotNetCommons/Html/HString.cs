@@ -14,11 +14,21 @@ namespace DotNetCommons.Html
         {
         }
 
+        /// <summary>
+        /// Return a new string from raw HTML text without escaping.
+        /// </summary>
+        /// <param name="html"></param>
+        /// <returns></returns>
         public static HString Raw(string html)
         {
             return new HString { _html = html };
         }
 
+        /// <summary>
+        /// Return a new string from text, escaping it to HTML sequences.
+        /// </summary>
+        /// <param name="html"></param>
+        /// <returns></returns>
         public static HString Encode(string html)
         {
             return new HString { _html = WebUtility.HtmlEncode(html) };

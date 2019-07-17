@@ -27,6 +27,11 @@ namespace DotNetCommons.Text
             return false;
         }
 
+        /// <summary>
+        /// Get the first line from a text separated by CRLF.
+        /// </summary>
+        /// <param name="value">Line to search</param>
+        /// <returns>The first line.</returns>
         public static string FirstLine(this string value)
         {
             var n = (value ?? "").IndexOfAny(new[] { '\r', '\n' });
@@ -52,6 +57,13 @@ namespace DotNetCommons.Text
               : Mid(value, 0, count);
         }
 
+        /// <summary>
+        /// Get count characters from the left, adding an ellipsis (...) symbol if there's
+        /// more text beyond that.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
         public static string LeftEllipsis(this string value, int count)
         {
             var result = Left(value, count);
@@ -61,11 +73,48 @@ namespace DotNetCommons.Text
             return result;
         }
 
+        /// <summary>
+        /// Compare text according to the current culture, case insensitive.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="compare"></param>
+        /// <returns></returns>
         public static bool Like(this string value, string compare)
         {
             return string.Equals(value, compare, StringComparison.CurrentCultureIgnoreCase);
         }
 
+        /// <summary>
+        /// Mask the left portion of a string by replacing the characters with a mask character.
+        /// </summary>
+        /// <param name="value">String to work on.</param>
+        /// <param name="length">Number of characters to replace.</param>
+        /// <param name="mask">The character to mask with, e.g. '*'</param>
+        /// <returns>A new, masked string</returns>
+        public static string MaskLeft(this string value, int length, char mask)
+        {
+            return value.Left(-length) + new string(mask, length);
+        }
+
+        /// <summary>
+        /// Mask the right portion of a string by replacing the characters with a mask character.
+        /// </summary>
+        /// <param name="value">String to work on.</param>
+        /// <param name="length">Number of characters to replace.</param>
+        /// <param name="mask">The character to mask with, e.g. '*'</param>
+        /// <returns>A new, masked string</returns>
+        public static string MaskRight(this string value, int length, char mask)
+        {
+            return value.Right(-length) + new string(mask, length);
+        }
+
+        /// <summary>
+        /// Get a substring from the middle of the text to the end. If the offset is outside
+        /// of the string, an empty string will be returned.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public static string Mid(this string value, int offset)
         {
             if (string.IsNullOrEmpty(value))
@@ -74,6 +123,14 @@ namespace DotNetCommons.Text
             return offset < value.Length ? value.Substring(offset) : string.Empty;
         }
 
+        /// <summary>
+        /// Get a substring from the middle of the text. If the offset or count is outside
+        /// of the string, as many characters as was found will be returned.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="offset"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
         public static string Mid(this string value, int offset, int count)
         {
             if (string.IsNullOrEmpty(value))
@@ -93,6 +150,12 @@ namespace DotNetCommons.Text
             return count > 0 ? value.Substring(offset, count) : string.Empty;
         }
 
+        /// <summary>
+        /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
+        /// the common "true"/"false" case.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static bool ParseBoolean(this string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -167,6 +230,11 @@ namespace DotNetCommons.Text
               : Mid(value, value.Length - count, count);
         }
 
+        /// <summary>
+        /// Return the string with the first letter in uppercase.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static string StartUppercase(this string value)
         {
             if (string.IsNullOrEmpty(value))
@@ -177,6 +245,11 @@ namespace DotNetCommons.Text
                 : char.ToUpper(value[0]) + value.Substring(1, value.Length - 1);
         }
 
+        /// <summary>
+        /// Combine Trim() and IsNullOrEmpty() on a sequence of strings.
+        /// </summary>
+        /// <param name="strings"></param>
+        /// <returns></returns>
         public static IEnumerable<string> TrimAndFilter(this IEnumerable<string> strings)
         {
             return strings

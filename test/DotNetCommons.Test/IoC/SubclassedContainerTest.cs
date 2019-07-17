@@ -6,18 +6,18 @@ namespace DotNetCommons.Test.IoC
 {
     public class SubclassedContainer : MicroContainer
     {
-        public IBar Bar => Create<IBar>();
+        public IBar Bar => Acquire<IBar>();
 
         public string Email
         {
-            get => Get<string>("email");
-            set => Set("email", value);
+            get => GetConfigValue<string>("email");
+            set => SetConfig("email", value);
         }
 
         public int Port
         {
-            get => Get<int>("port");
-            set => Set("port", value);
+            get => GetConfigValue<int>("port");
+            set => SetConfig("port", value);
         }
     }
 
@@ -29,10 +29,10 @@ namespace DotNetCommons.Test.IoC
         {
             var sub = new SubclassedContainer();
             sub
-                .Register<IFoo, Foo>()
+                .Register<IFoo, Foo>(CreationMode.Create)
                 .Register<IBar, Bar>(CreationMode.Singleton)
-                .Set("email", "joe")
-                .Set("port", 42);
+                .SetConfig("email", "joe")
+                .SetConfig("port", 42);
 
             Assert.AreEqual("Hello from Foo", sub.Bar.Foo.Message);
             Assert.AreEqual("joe", sub.Email);

@@ -14,5 +14,10 @@ namespace DotNetCommons.Text.Tokenizer
             Definition = definition;
             Text = text;
         }
+
+        public override string ToString()
+        {
+            return $"[{Value}:{Text}]";
+        }
     }
 }

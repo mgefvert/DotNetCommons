@@ -106,17 +106,13 @@ namespace DotNetCommons.Sys
             }
 
             definition = FindRemainder();
-            if (definition != null)
-            {
-                    var remainder = definition.Property.GetValue(Result) as ICollection<string>;
-                    if (remainder == null)
-                        throw new CommandLineException("No CommandLineRemainder property found, or the designated property is not an ICollection<string>.");
+            if (definition == null) 
+                throw new CommandLineException("Unrecognized text on command line: " + arg);
 
-                    remainder.Add(arg);
-                return;
-            }
+            if (!(definition.Property.GetValue(Result) is ICollection<string> remainder))
+                throw new CommandLineException("No CommandLineRemainder property found, or the designated property is not an ICollection<string>.");
 
-            throw new CommandLineException("Unrecognized text on command line: " + arg);
+            remainder.Add(arg);
         }
 
         private CommandLineDefinition FindDefinition(string key)
@@ -160,8 +156,7 @@ namespace DotNetCommons.Sys
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
                 // Add the value onto a list instead of just setting the property
-                var list = definition.Property.GetValue(Result) as IList;
-                if (list == null)
+                if (!(definition.Property.GetValue(Result) is IList list))
                     throw new CommandLineException("Property " + definition.Property.Name + " has not been initialized.");
 
                 var subtype = type.GetGenericArguments().Single();

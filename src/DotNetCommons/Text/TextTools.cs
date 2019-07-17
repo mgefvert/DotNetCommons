@@ -24,8 +24,16 @@ namespace DotNetCommons.Text
             /* 0xF0 */ "dh", "n",  "o",  "o",  "o",  "o",   "oe", "/",  "o",  "u",    "u",  "u", "u",   "y",   "th",  "y"
         };
 
+        /// <summary>
+        /// Turn text into ASCII (7-bit), using some letter transformations as necessary. Handles ANSI and UTF8 gracefully.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public static string Asciify(string text)
         {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
             var textbuffer = Encoding.UTF8.GetBytes(text);
             if (textbuffer.All(x => x <= 127))
                 return text;
@@ -46,11 +54,25 @@ namespace DotNetCommons.Text
             return result.ToString();
         }
 
+        /// <summary>
+        /// Try to determine the encoding for text stored in a byte buffer. Differentiates
+        /// between ASCII, ANSI and UTF8.
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
         public static Encoding DetermineEncoding(byte[] buffer)
         {
             return DetermineEncoding(buffer, 0, buffer.Length);
         }
 
+        /// <summary>
+        /// Try to determine the encoding for text stored in a byte buffer. Differentiates
+        /// between ASCII, ANSI and UTF8.
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public static Encoding DetermineEncoding(byte[] buffer, int offset, int length)
         {
             var highbits = false;
@@ -70,6 +92,13 @@ namespace DotNetCommons.Text
             return Encoding.Default;
         }
 
+        /// <summary>
+        /// Find a suitable word break in a string, given the maximum length of a single row of text.
+        /// For instance, can break down text to fit on an 80-column wide screen.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="maxlen"></param>
+        /// <returns></returns>
         public static int FindWordBreak(string text, int maxlen)
         {
             var i = Math.Min(text.Length - 1, maxlen);
@@ -84,17 +113,36 @@ namespace DotNetCommons.Text
             return maxlen;
         }
 
+        /// <summary>
+        /// Determine if a byte buffer is valid UTF8.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static bool IsUtf8Valid(byte[] data)
         {
             return InternalValidateUtf8(data, 0, data.Length);
         }
 
+        /// <summary>
+        /// Determine if a byte buffer is valid UTF8.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public static bool IsUtf8Valid(byte[] data, int offset, int length)
         {
             return InternalValidateUtf8(data, offset, length);
         }
 
+        /// <summary>
+        /// Determine the levenshtein distance between two strings.
         /// From http://michalis.site/2013/12/levenshtein/
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="ignoreCase"></param>
+        /// <returns></returns>
         public static int Levenshtein(string a, string b, bool ignoreCase)
         {
             a = a ?? "";
@@ -133,6 +181,14 @@ namespace DotNetCommons.Text
             return v1[len];
         }
 
+        /// <summary>
+        /// Word wrap a certain text to fit the maximum width, optionally indenting the first row.
+        /// </summary>
+        /// <param name="text">Text to fit.</param>
+        /// <param name="width">Maximum width of a single line.</param>
+        /// <param name="indent">If more than zero, will indent subsequent lines but not the first line.
+        ///     If less than 0, will only indent the first line.</param>
+        /// <returns></returns>
         public static List<string> WordWrap(string text, int width, int indent = 0)
         {
             var indentFirst = indent < 0 ? new string(' ', -indent) : "";

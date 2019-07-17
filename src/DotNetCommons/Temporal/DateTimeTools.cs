@@ -105,40 +105,99 @@ namespace DotNetCommons.Temporal
             return date != null ? (DateTime?)new DateTime(date.Value.Ticks, kind) : null;
         }
 
+        /// <summary>
+        /// Return the lesser of two datetimes.
+        /// </summary>
+        /// <param name="datetime1"></param>
+        /// <param name="datetime2"></param>
+        /// <returns></returns>
+        public static DateTime MinDate(DateTime datetime1, DateTime datetime2)
+        {
+            return datetime1.Ticks < datetime2.Ticks ? datetime1 : datetime2;
+        }
+
+        /// <summary>
+        /// Return the lesser of two datetimes.
+        /// </summary>
+        /// <param name="datetime1"></param>
+        /// <param name="datetime2"></param>
+        /// <returns></returns>
+        public static DateTimeOffset MinDate(DateTimeOffset datetime1, DateTimeOffset datetime2)
+        {
+            return datetime1.Ticks < datetime2.Ticks ? datetime1 : datetime2;
+        }
+
+        /// <summary>
+        /// Return the minimum date from a sequence of datetimes.
+        /// </summary>
+        /// <param name="datetimes"></param>
+        /// <returns></returns>
         public static DateTime? MinDate(IEnumerable<DateTime?> datetimes)
         {
             var all = datetimes.Where(x => x.HasValue).ToList();
             return all.Any() ? all.Min() : null;
         }
 
+        /// <summary>
+        /// Return the minimum date from a sequence of datetimes.
+        /// </summary>
+        /// <param name="datetimes"></param>
+        /// <returns></returns>
         public static DateTimeOffset? MinDate(IEnumerable<DateTimeOffset?> datetimes)
         {
             var all = datetimes.Where(x => x.HasValue).ToList();
             return all.Any() ? all.Min() : null;
         }
 
+        /// <summary>
+        /// Return the greater of two datetimes.
+        /// </summary>
+        /// <param name="datetime1"></param>
+        /// <param name="datetime2"></param>
+        /// <returns></returns>
         public static DateTime MaxDate(DateTime datetime1, DateTime datetime2)
         {
             return datetime1.Ticks > datetime2.Ticks ? datetime1 : datetime2;
         }
 
+        /// <summary>
+        /// Return the greater of two datetimes.
+        /// </summary>
+        /// <param name="datetime1"></param>
+        /// <param name="datetime2"></param>
+        /// <returns></returns>
         public static DateTimeOffset MaxDate(DateTimeOffset datetime1, DateTimeOffset datetime2)
         {
             return datetime1.Ticks > datetime2.Ticks ? datetime1 : datetime2;
         }
 
+        /// <summary>
+        /// Return the maximum date from a sequence of datetimes.
+        /// </summary>
+        /// <param name="datetimes"></param>
+        /// <returns></returns>
         public static DateTime? MaxDate(IEnumerable<DateTime?> datetimes)
         {
             var all = datetimes.Where(x => x.HasValue).ToList();
             return all.Any() ? all.Max() : null;
         }
 
+        /// <summary>
+        /// Return the maximum date from a sequence of datetimes.
+        /// </summary>
+        /// <param name="datetimes"></param>
+        /// <returns></returns>
         public static DateTimeOffset? MaxDate(IEnumerable<DateTimeOffset?> datetimes)
         {
             var all = datetimes.Where(x => x.HasValue).ToList();
             return all.Any() ? all.Max() : null;
         }
 
+        /// <summary>
+        /// Return a timezone from a given ID without throwing exceptions, or null if none found.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static TimeZoneInfo FindTimeZone(string id)
         {
             if (string.IsNullOrWhiteSpace(id))

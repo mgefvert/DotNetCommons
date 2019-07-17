@@ -19,6 +19,7 @@ namespace DotNetCommons.Temporal
     public enum DateRangeType
     {
         Undefined,
+        Daily,
         Weekly,
         Biweekly,
         WeeklyIso,
@@ -35,6 +36,10 @@ namespace DotNetCommons.Temporal
         Millenium
     }
 
+    /// <summary>
+    /// Class that handles date ranges. Not suited for time calculations, assumes that the time part
+    /// is always 0.
+    /// </summary>
     public class DateRange
     {
         protected static readonly TimeSpan SingleDay = TimeSpan.FromDays(1);
@@ -45,16 +50,31 @@ namespace DotNetCommons.Temporal
         public TimeSpan Span => (End - Start).Add(SingleDay);
         public DateRangeType Type { get; set; }
 
+        /// <summary>
+        /// Create a new, empty DateRange instance.
+        /// </summary>
         public DateRange()
         {
         }
 
+        /// <summary>
+        /// Create a DateRange with specific start and end points.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
         public DateRange(DateTime start, DateTime end)
         {
             Start = start.Date;
             End = end.Date;
         }
 
+        /// <summary>
+        /// Create a DateRange from a collection of objects, searching for min and max dates.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
         public static DateRange FromMinMax<T>(IEnumerable<T> collection, Func<T, DateTime> selector)
         {
             var first = true;
@@ -88,6 +108,12 @@ namespace DotNetCommons.Temporal
                 throw new InvalidOperationException("Cannot perform date range arithmetic when type is undefined.");
         }
 
+        /// <summary>
+        /// Return a new, cloned DateRange with start and end points extended if needed.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         public DateRange BoundRange(DateTime? start, DateTime? end)
         {
             var result = (DateRange)MemberwiseClone();
@@ -117,6 +143,9 @@ namespace DotNetCommons.Temporal
 
             switch (type)
             {
+                case DateRangeType.Daily:
+                    return date;
+
                 case DateRangeType.Weekly:
                 case DateRangeType.Biweekly:
                     return date.StartOfWeek(DayOfWeek.Sunday);
@@ -164,6 +193,9 @@ namespace DotNetCommons.Temporal
         {
             switch (type)
             {
+                case DateRangeType.Daily:
+                    return date.AddDays(count);
+
                 case DateRangeType.Weekly:
                 case DateRangeType.WeeklyIso:
                     return date.AddDays(7 * count);
@@ -207,12 +239,23 @@ namespace DotNetCommons.Temporal
             }
         }
 
+        /// <summary>
+        /// Determine if a particular date is within the date range (inclusive endpoint).
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
         public bool InRange(DateTime date)
         {
             date = date.Date;
             return Start <= date && End >= date;
         }
 
+        /// <summary>
+        /// Determine if a DateRange is within the date range, overlapping, or outside.
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="boundingMode"></param>
+        /// <returns></returns>
         public bool InRange(DateRange range, DateRangeBound boundingMode)
         {
             switch (boundingMode)
@@ -234,6 +277,10 @@ namespace DotNetCommons.Temporal
             }
         }
 
+        /// <summary>
+        /// Calculate the next DateRange, using the set DateRangeType.
+        /// </summary>
+        /// <returns></returns>
         public DateRange Next()
         {
             AssertDateRangeTypeIsSet();
@@ -247,6 +294,10 @@ namespace DotNetCommons.Temporal
             };
         }
 
+        /// <summary>
+        /// Calculate the previous DateRange, using the set DateRangeType.
+        /// </summary>
+        /// <returns></returns>
         public DateRange Previous()
         {
             AssertDateRangeTypeIsSet();
@@ -260,6 +311,13 @@ namespace DotNetCommons.Temporal
             };
         }
 
+        /// <summary>
+        /// Get a DateRange with calculated start and end points based on the given date
+        /// and DateRangeType.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
         public static DateRange RangeBasedOnDate(DateRangeType type, DateTime date)
         {
             var start = GetStartDate(type, date.Date);
@@ -271,6 +329,13 @@ namespace DotNetCommons.Temporal
             };
         }
 
+        /// <summary>
+        /// Get a DateRange with calculated end point based on the given date and DateRangeType.
+        /// The start date will always be the given date.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
         public static DateRange RangeStartingOnDate(DateRangeType type, DateTime date)
         {
             var start = GetStartDate(type, date.Date);

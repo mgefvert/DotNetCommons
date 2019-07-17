@@ -23,6 +23,11 @@ namespace DotNetCommons.Html
             Values.AddRangeIfNotNull(values);
         }
 
+        public static HAttr IfNotEmpty(string key, string value)
+        {
+            return !string.IsNullOrWhiteSpace(value) ? new HAttr(key, value) : null;
+        }
+
         public void Add(string value)
         {
             Values.AddIfNotNull(value);

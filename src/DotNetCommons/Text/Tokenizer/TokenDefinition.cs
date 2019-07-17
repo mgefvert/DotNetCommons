@@ -11,7 +11,8 @@ namespace DotNetCommons.Text.Tokenizer
         Letter,
         Digit,
         LetterOrDigit,
-        Whitespace
+        Whitespace,
+        EndOfLine
     }
 
     public abstract class TokenDefinition
@@ -49,6 +50,8 @@ namespace DotNetCommons.Text.Tokenizer
                     return char.IsLetterOrDigit(c);
                 case TokenMode.Whitespace:
                     return char.IsWhiteSpace(c);
+                case TokenMode.EndOfLine:
+                    return c == 13 || c == 10;
                 default:
                     return false;
             }

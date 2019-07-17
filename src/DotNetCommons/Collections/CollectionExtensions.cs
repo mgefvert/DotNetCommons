@@ -53,12 +53,52 @@ namespace DotNetCommons.Collections
 
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult> func) where TResult : struct
         {
-            return list.Select(func).Distinct().ToList();
+            var result = new HashSet<TResult>();
+            foreach (var item in list)
+                result.Add(func(item));
+
+            return result.ToList();
+        }
+
+        public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult> func1, Func<T, TResult> func2) where TResult : struct
+        {
+            var result = new HashSet<TResult>();
+            foreach (var item in list)
+            {
+                result.Add(func1(item));
+                result.Add(func2(item));
+            }
+
+            return result.ToList();
         }
 
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult?> func) where TResult : struct
         {
-            return list.Select(func).Where(x => x != null).Select(x => x.Value).Distinct().ToList();
+            var result = new HashSet<TResult>();
+            foreach (var item in list)
+            {
+                var x = func(item);
+                if (x != null)
+                    result.Add(x.Value);
+            }
+
+            return result.ToList();
+        }
+
+        public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult?> func1, Func<T, TResult?> func2) where TResult : struct
+        {
+            var result = new HashSet<TResult>();
+            foreach (var item in list)
+            {
+                var x = func1(item);
+                if (x != null)
+                    result.Add(x.Value);
+                x = func2(item);
+                if (x != null)
+                    result.Add(x.Value);
+            }
+
+            return result.ToList();
         }
 
         public static void Each<T>(this IEnumerable<T> items, Action<T> action)
@@ -232,6 +272,13 @@ namespace DotNetCommons.Collections
             return result;
         }
 
+        /// <summary>
+        /// Check whether a value exists and is not null and not empty.
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="dictionary"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public static bool IsSet<TKey>(this IDictionary<TKey, string> dictionary, TKey key)
         {
             return !string.IsNullOrWhiteSpace(dictionary.GetOrDefault(key));
