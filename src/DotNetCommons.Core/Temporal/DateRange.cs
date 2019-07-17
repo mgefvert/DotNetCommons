@@ -19,6 +19,7 @@ namespace DotNetCommons.Core.Temporal
     public enum DateRangeType
     {
         Undefined,
+        Daily,
         Weekly,
         Biweekly,
         WeeklyIso,
@@ -142,6 +143,9 @@ namespace DotNetCommons.Core.Temporal
 
             switch (type)
             {
+                case DateRangeType.Daily:
+                    return date;
+
                 case DateRangeType.Weekly:
                 case DateRangeType.Biweekly:
                     return date.StartOfWeek(DayOfWeek.Sunday);
@@ -189,6 +193,9 @@ namespace DotNetCommons.Core.Temporal
         {
             switch (type)
             {
+                case DateRangeType.Daily:
+                    return date.AddDays(count);
+
                 case DateRangeType.Weekly:
                 case DateRangeType.WeeklyIso:
                     return date.AddDays(7 * count);

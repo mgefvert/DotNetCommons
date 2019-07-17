@@ -31,6 +31,9 @@ namespace DotNetCommons.Core.Text
         /// <returns></returns>
         public static string Asciify(string text)
         {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
             var textbuffer = Encoding.UTF8.GetBytes(text);
             if (textbuffer.All(x => x <= 127))
                 return text;

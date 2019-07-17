@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DotNetCommons.Core.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -43,7 +42,7 @@ namespace DotNetCommons.Core.Sys
         public bool AnyLongOptions() => LongOptions != null && LongOptions.Length > 0;
         public bool AnyShortOptions() => ShortOptions != null && ShortOptions.Length > 0;
 
-        public bool MatchesLongOption(string arg) => AnyLongOptions() && LongOptions.Any(o => o.Like(arg));
-        public bool MatchesShortOption(string arg) => AnyShortOptions() && ShortOptions.Any(o => o.Like(arg));
+        public bool MatchesLongOption(string arg) => AnyLongOptions() && LongOptions.Any(o => o == arg);
+        public bool MatchesShortOption(string arg) => AnyShortOptions() && ShortOptions.Any(o => o == arg);
     }
 }

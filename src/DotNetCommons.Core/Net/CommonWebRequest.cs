@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -133,7 +134,7 @@ namespace DotNetCommons.Core.Net
 
         public CommonWebRequest WithContent(IDictionary<string, string> formdata)
         {
-            WithContent(EncodeQuery(formdata));
+            WithContent(CommonWebClient.EncodeQuery(formdata as IDictionary));
             return this;
         }
 
@@ -213,7 +214,7 @@ namespace DotNetCommons.Core.Net
         {
             Uri = query == null
                 ? uri
-                : new Uri(EncodeQuery(uri, query));
+                : new Uri(CommonWebClient.EncodeQuery(uri.ToString(), query as IDictionary));
 
             return this;
         }
@@ -222,23 +223,6 @@ namespace DotNetCommons.Core.Net
         {
             UserAgent = userAgent;
             return this;
-        }
-
-        internal static string EncodeQuery(IDictionary<string, string> parameters)
-        {
-            return parameters != null && parameters.Any()
-                ? string.Join("&", parameters.Select(x => x.Key + "=" + WebUtility.UrlEncode(x.Value?.ToString())))
-                : null;
-        }
-
-        internal static string EncodeQuery(Uri source, IDictionary<string, string> parameters)
-        {
-            var query = EncodeQuery(parameters);
-            if (source == null)
-                return query;
-
-            var s = source.ToString();
-            return s + (s.Contains("?") ? "&" : "?") + query;
         }
     }
 }

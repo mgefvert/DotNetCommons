@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -100,6 +104,139 @@ namespace DotNetCommons.Core.Logging
         public static void Flush()
         {
             LogChannel.Flush();
+        }
+
+        public static string Expose(object obj)
+        {
+            var seen = new HashSet<object>();
+            var result = new StringBuilder();
+            Expose(null, obj, result, 0, seen);
+            return result.ToString();
+        }
+
+        public static string ExposeWeb(object obj)
+        {
+            var result = Expose(obj);
+            return 
+                "<pre>" + 
+                result
+                    .Replace("<", "&lt;")
+                    .Replace(">", "&gt;")
+                    .Replace("\r\n", "<br>") + 
+                "</pre>";
+        }
+
+        private static void Expose(string name, object obj, StringBuilder sb, int indent, HashSet<object> seen)
+        {
+            var indentstr = new string(' ', indent * 4);
+            if (!string.IsNullOrEmpty(name))
+                sb.Append(indentstr + name + ": ");
+
+            try
+            {
+                if (obj == null)
+                {
+                    sb.AppendLine("(null)");
+                    return;
+                }
+
+                var type = obj.GetType();
+                var objstr = obj.ToString();
+                if (objstr == type.FullName)
+                    objstr = "hash:" + obj.GetHashCode();
+
+                if (type.IsValueType)
+                {
+                    sb.AppendLine($"{objstr} <{type.Name}>");
+                    return;
+                }
+
+                if (obj is string s)
+                {
+                    sb.AppendLine($"\"{s}\"");
+                    return;
+                }
+
+                if (seen.Contains(obj))
+                {
+                    sb.AppendLine($"*SEEN* {objstr} <{type.Name}>");
+                    return;
+                }
+
+                seen.Add(obj);
+
+                if (obj is byte[] buffer)
+                {
+                    sb.AppendLine($"<{type.Name}> [");
+                    for (var i = 0; i < buffer.Length; i++)
+                    {
+                        if (i % 32 == 0)
+                        {
+                            if (i > 0)
+                                sb.AppendLine();
+                            sb.Append(indentstr);
+                            sb.Append("    ");
+                        }
+
+                        sb.Append(buffer[i].ToString("X2") + ' ');
+                    }
+                    sb.AppendLine();
+                    sb.AppendLine(indentstr + $"    ({buffer.Length} bytes)");
+                    sb.AppendLine(indentstr + "]");
+                    return;
+                }
+
+                if (obj is IDictionary dictionary)
+                {
+                    sb.AppendLine($"<{type.Name}> {{");
+                    var c = 0;
+                    foreach (DictionaryEntry item in dictionary)
+                    {
+                        Expose(item.Key.ToString(), item.Value, sb, indent + 1, seen);
+                        c++;
+                    }
+                    sb.AppendLine(indentstr + (c == 0 ? "    (empty)" : $"    ({c} items)"));
+                    sb.AppendLine(indentstr + "}");
+                    return;
+                }
+
+                if (obj is IEnumerable enumerable)
+                {
+                    sb.AppendLine($"<{type.Name}> [");
+                    var i = 0;
+                    foreach (var item in enumerable)
+                        Expose((i++).ToString(), item, sb, indent + 1, seen);
+                    if (i == 0)
+                        sb.AppendLine(indentstr + "    (empty)");
+                    sb.AppendLine(indentstr + "]");
+                    return;
+                }
+
+                if (type.FullName?.StartsWith("System.") ?? false)
+                {
+                    sb.AppendLine($"{objstr} <{type.Name}>");
+                    return;
+                }
+
+                sb.AppendLine($"<{type.Name}> {{");
+                foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).OrderBy(x => x.Name))
+                {
+                    try
+                    {
+                        Expose(prop.Name, prop.GetValue(obj), sb, indent + 1, seen);
+                    }
+                    catch (Exception e)
+                    {
+                        sb.AppendLine($"{indentstr}    {prop.Name}: <{e.GetType().Name}: {e.Message}>");
+                    }
+                }
+
+                sb.AppendLine(indentstr + "}");
+            }
+            catch (Exception e)
+            {
+                sb.AppendLine($"{indentstr} <{e.GetType().Name}: {e.Message}>");
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 
 // ReSharper disable UnusedMember.Global
@@ -14,6 +16,37 @@ namespace DotNetCommons.Core.Net
         public CommonWebClient()
         {
             Default = new CommonWebRequest(this, null);
+        }
+
+        // Static methods
+
+        public static Dictionary<string, string> ParametersFromObject(object data)
+        {
+            return data?
+                .GetType()
+                .GetProperties()
+                .ToDictionary(p => p.Name, p => (p.GetValue(data) ?? "").ToString());
+        }
+
+        public static string EncodeQuery(IDictionary parameters)
+        {
+            if (parameters == null || parameters.Count == 0)
+                return null;
+
+            var query = new List<string>();
+            foreach(DictionaryEntry pair in parameters)
+                query.Add(pair.Key + "=" + WebUtility.UrlEncode(pair.Value?.ToString()));
+
+            return string.Join("&", query);
+        }
+
+        public static string EncodeQuery(string source, IDictionary parameters)
+        {
+            var query = EncodeQuery(parameters);
+            if (source == null)
+                return query;
+
+            return source + (source.Contains("?") ? "&" : "?") + query;
         }
 
         // Internal methods

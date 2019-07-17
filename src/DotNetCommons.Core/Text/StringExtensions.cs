@@ -85,6 +85,30 @@ namespace DotNetCommons.Core.Text
         }
 
         /// <summary>
+        /// Mask the left portion of a string by replacing the characters with a mask character.
+        /// </summary>
+        /// <param name="value">String to work on.</param>
+        /// <param name="length">Number of characters to replace.</param>
+        /// <param name="mask">The character to mask with, e.g. '*'</param>
+        /// <returns>A new, masked string</returns>
+        public static string MaskLeft(this string value, int length, char mask)
+        {
+            return value.Left(-length) + new string(mask, length);
+        }
+
+        /// <summary>
+        /// Mask the right portion of a string by replacing the characters with a mask character.
+        /// </summary>
+        /// <param name="value">String to work on.</param>
+        /// <param name="length">Number of characters to replace.</param>
+        /// <param name="mask">The character to mask with, e.g. '*'</param>
+        /// <returns>A new, masked string</returns>
+        public static string MaskRight(this string value, int length, char mask)
+        {
+            return value.Right(-length) + new string(mask, length);
+        }
+
+        /// <summary>
         /// Get a substring from the middle of the text to the end. If the offset is outside
         /// of the string, an empty string will be returned.
         /// </summary>
