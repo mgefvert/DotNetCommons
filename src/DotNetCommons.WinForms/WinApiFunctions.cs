@@ -11,6 +11,8 @@ namespace DotNetCommons.WinForms
 
     public static partial class WinApi
     {
+        public delegate bool EnumThreadDelegate (IntPtr hWnd, IntPtr lParam);
+
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseServiceHandle(IntPtr hSCObject);
@@ -36,6 +38,9 @@ namespace DotNetCommons.WinForms
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteService(IntPtr hService);
 
+        [DllImport("user32.dll")]
+        public static extern bool EnumThreadWindows(uint dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
@@ -44,6 +49,9 @@ namespace DotNetCommons.WinForms
 
         [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern ulong GetTickCount64();
+
+        [DllImport("user32.dll", SetLastError=true)]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
         [DllImport("User32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
         public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, bool repaint);
@@ -57,6 +65,14 @@ namespace DotNetCommons.WinForms
         [DllImport("advapi32.dll")]
         public static extern int QueryServiceStatus(IntPtr hService, SERVICE_STATUS lpServiceStatus);
 
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool PostThreadMessage(uint threadId, uint msg, IntPtr wParam, IntPtr lParam);
+
         [DllImport("user32.dll")]
         public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
 
@@ -68,6 +84,9 @@ namespace DotNetCommons.WinForms
 
         [DllImport("gdi32.dll", ExactSpelling = true)]
         public static extern IntPtr SelectObject(IntPtr hDC, IntPtr hObject);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);

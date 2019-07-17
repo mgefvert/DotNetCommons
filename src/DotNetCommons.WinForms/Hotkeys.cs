@@ -50,7 +50,7 @@ namespace DotNetCommons.WinForms
 
         public void Process(ref Message msg)
         {
-            if (msg.Msg != WinApi.WM_HOTKEY)
+            if (msg.Msg != (int)WinApi.WM.HOTKEY)
                 return;
 
             int hotkey = (int)msg.WParam;
