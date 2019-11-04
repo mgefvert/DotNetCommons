@@ -97,30 +97,30 @@ namespace DotNetCommons.WinForms.Graphics
 
             using (var buffer = GetBitmapBuffer())
             {
-                var dim = h / percent;
-                if (el || er)
+                var dim = (int)(h * percent / 100.0);
+                if (et || eb)
                     for (var y = 0; y < dim; y++)
                     {
                         var c = y / (float)dim;
                         for (var x = 0; x < w; x++)
                         {
-                            if (el)
+                            if (et)
                                 buffer.MultPixelAlpha(buffer.CoordToOffset(x, y), c);
-                            if (er)
+                            if (eb)
                                 buffer.MultPixelAlpha(buffer.CoordToOffset(x, h - y - 1), c);
                         }
                     }
 
-                dim = _bitmap.Width / percent;
-                if (et || eb)
+                dim = (int)(w * percent / 100.0);
+                if (el || er)
                     for (var x = 0; x < dim; x++)
                     {
                         var c = x / (float)dim;
                         for (var y = 0; y < h; y++)
                         {
-                            if (et)
+                            if (el)
                                 buffer.MultPixelAlpha(buffer.CoordToOffset(x, y), c);
-                            if (eb)
+                            if (er)
                                 buffer.MultPixelAlpha(buffer.CoordToOffset(w - x - 1, y), c);
                         }
                     }

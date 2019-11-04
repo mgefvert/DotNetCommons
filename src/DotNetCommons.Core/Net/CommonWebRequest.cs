@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using DotNetCommons.Core.IO;
 using DotNetCommons.Core.Net.Cache;
 
@@ -73,9 +74,20 @@ namespace DotNetCommons.Core.Net
             return _client.Request(this);
         }
 
+        public async Task<CommonWebResult> DeleteAsync()
+        {
+            WithMethod("DELETE");
+            return await _client.RequestAsync(this);
+        }
+
         public CommonWebResult Execute()
         {
             return _client.Request(this);
+        }
+
+        public async Task<CommonWebResult> ExecuteAsync()
+        {
+            return await _client.RequestAsync(this);
         }
 
         public CommonWebResult Get()
@@ -84,10 +96,22 @@ namespace DotNetCommons.Core.Net
             return _client.Request(this);
         }
 
+        public async Task<CommonWebResult> GetAsync()
+        {
+            WithMethod("GET");
+            return await _client.RequestAsync(this);
+        }
+
         public CommonWebResult Head()
         {
             WithMethod("HEAD");
             return _client.Request(this);
+        }
+
+        public async Task<CommonWebResult> HeadAsync()
+        {
+            WithMethod("HEAD");
+            return await _client.RequestAsync(this);
         }
 
         public CommonWebResult Options()
@@ -96,10 +120,22 @@ namespace DotNetCommons.Core.Net
             return _client.Request(this);
         }
 
+        public async Task<CommonWebResult> OptionsAsync()
+        {
+            WithMethod("OPTIONS");
+            return await _client.RequestAsync(this);
+        }
+
         public CommonWebResult Post()
         {
             WithMethod("POST");
             return _client.Request(this);
+        }
+
+        public async Task<CommonWebResult> PostAsync()
+        {
+            WithMethod("POST");
+            return await _client.RequestAsync(this);
         }
 
         public CommonWebRequest WithAccept(string accept)

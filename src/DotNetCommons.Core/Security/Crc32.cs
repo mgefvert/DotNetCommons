@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -33,6 +34,11 @@ namespace DotNetCommons.Core.Security
         public static uint ComputeChecksum(byte[] bytes)
         {
             return ~bytes.Aggregate(0xFFFF_FFFF, (c, t) => (c >> 8) ^ Data[(byte) ((c & 0xFF) ^ t)]);
+        }
+
+        public static uint ComputeChecksum(string data, Encoding encoding = null)
+        {
+            return ComputeChecksum((encoding ?? Encoding.UTF8).GetBytes(data));
         }
     }
 }

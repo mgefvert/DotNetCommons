@@ -40,7 +40,7 @@ namespace DotNetCommons.Logging
             StackTrace = false;
 
             Name = Assembly.GetEntryAssembly() != null
-                ? Assembly.GetEntryAssembly().GetName().Name
+                ? Assembly.GetEntryAssembly()?.GetName().Name
                 : Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
         }
 

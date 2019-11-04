@@ -68,6 +68,9 @@ namespace DotNetCommons.WinForms
 
         protected void FadeTo(int alpha)
         {
+            if (TargetAlpha == alpha)
+                return;
+
             TargetAlpha = alpha;
             if (!_timer.Enabled)
                 _timer.Start();
@@ -83,7 +86,7 @@ namespace DotNetCommons.WinForms
 
             Alpha = Alpha < TargetAlpha
               ? Math.Min(TargetAlpha, Alpha + 8)
-              : Math.Max(TargetAlpha, Alpha - 16);
+              : Math.Max(TargetAlpha, Alpha - 8);
             UpdateAlpha();
         }
 

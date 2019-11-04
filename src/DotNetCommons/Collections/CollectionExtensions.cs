@@ -51,6 +51,23 @@ namespace DotNetCommons.Collections
                     collection.Add(item);
         }
 
+        public static IEnumerable<T[]> Batch<T>(this IEnumerable<T> list, int size)
+        {
+            var batch = new List<T>();
+            foreach (var item in list)
+            {
+                batch.Add(item);
+                if (batch.Count >= size)
+                {
+                    yield return batch.ToArray();
+                    batch.Clear();
+                }
+            }
+
+            if (batch.Any())
+                yield return batch.ToArray();
+        }
+
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult> func) where TResult : struct
         {
             var result = new HashSet<TResult>();
@@ -118,6 +135,13 @@ namespace DotNetCommons.Collections
         public static T ExtractAtOrDefault<T>(this IList<T> list, int position)
         {
             return position < 0 || position >= list.Count ? default : ExtractAt(list, position);
+        }
+
+        public static List<T> ExtractAll<T>(this IList<T> list)
+        {
+            var result = list.ToList();
+            list.Clear();
+            return result;
         }
 
         public static List<T> ExtractAll<T>(this IList<T> list, Predicate<T> match)
@@ -189,7 +213,22 @@ namespace DotNetCommons.Collections
         /// <returns>An Intersection object with the results of the comparison</returns>
         public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2)
         {
-            return Intersect(list1, list2, (Comparison<T>)null);
+            return Intersect(list1, list2, null, x => x);
+        }
+
+        /// <summary>
+        /// Compare two lists against each other and return an Intersection result from the comparison, 
+        /// listing the objects found in only list1, only list2, or both lists.
+        /// </summary>
+        /// <typeparam name="T">Type of list</typeparam>
+        /// <typeparam name="TKey">Type of key</typeparam>
+        /// <param name="list1">The first list (left)</param>
+        /// <param name="list2">The second list (right)</param>
+        /// <param name="selector">A selector for the key to compare the objects by</param>
+        /// <returns>An Intersection object with the results of the comparison</returns>
+        public static Intersection<T> Intersect<T, TKey>(IList<T> list1, IList<T> list2, Func<T, TKey> selector)
+        {
+            return Intersect(list1, list2, null, selector);
         }
 
         /// <summary>
@@ -203,7 +242,7 @@ namespace DotNetCommons.Collections
         /// <returns>An Intersection object with the results of the comparison</returns>
         public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2, IComparer<T> comparer)
         {
-            return Intersect(list1, list2, comparer.Compare);
+            return Intersect(list1, list2, comparer.Compare, x => x);
         }
 
         /// <summary>
@@ -217,16 +256,24 @@ namespace DotNetCommons.Collections
         /// <returns>An Intersection object with the results of the comparison</returns>
         public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2, Comparison<T> comparison)
         {
+            return Intersect(list1, list2, comparison, x => x);
+        }
+
+        public static Intersection<T> Intersect<T, TKey>(IList<T> list1, IList<T> list2, Comparison<TKey> comparison, Func<T, TKey> selector)
+        {
             bool DoCompare(T item1, T item2)
             {
-                if (comparison != null)
-                    return comparison(item1, item2) == 0;
-                if (item1 is IComparable<T> comparable)
-                    return comparable.CompareTo(item2) == 0;
-                if (item1 is IEquatable<T> equatable)
-                    return equatable.Equals(item2);
+                var value1 = selector(item1);
+                var value2 = selector(item2);
 
-                return Comparer<T>.Default.Compare(item1, item2) == 0;
+                if (comparison != null)
+                    return comparison(value1, value2) == 0;
+                if (value1 is IComparable<TKey> comparable)
+                    return comparable.CompareTo(value2) == 0;
+                if (value1 is IEquatable<TKey> equatable)
+                    return equatable.Equals(value2);
+
+                return Comparer<TKey>.Default.Compare(value1, value2) == 0;
             }
 
             var result = new Intersection<T>();
