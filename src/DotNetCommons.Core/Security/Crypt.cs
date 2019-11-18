@@ -11,28 +11,21 @@ namespace DotNetCommons.Core.Security
     {
         public static byte[] Decrypt(byte[] key, byte[] data)
         {
-            using (var aes = new AesManaged())
+            using var aes = new AesManaged { Key = PadKey(key, 32) };
+
+            using var mem = new MemoryStream(data);
+            byte[] result;
+
+            using (var reader = new BinaryReader(mem, Encoding.UTF8, true))
             {
-                aes.Key = PadKey(key, 32);
-
-                using (var mem = new MemoryStream(data))
-                {
-                    byte[] result;
-
-                    using (var reader = new BinaryReader(mem, Encoding.UTF8, true))
-                    {
-                        var ivlen = reader.ReadInt32();
-                        aes.IV = reader.ReadBytes(ivlen);
-                        result = new byte[reader.ReadInt32()];
-                    }
-
-                    using (var crypto = new CryptoStream(mem, aes.CreateDecryptor(), CryptoStreamMode.Read))
-                    {
-                        crypto.Read(result, 0, result.Length);
-                        return result;
-                    }
-                }
+                var ivlen = reader.ReadInt32();
+                aes.IV = reader.ReadBytes(ivlen);
+                result = new byte[reader.ReadInt32()];
             }
+
+            using var crypto = new CryptoStream(mem, aes.CreateDecryptor(), CryptoStreamMode.Read);
+            crypto.Read(result, 0, result.Length);
+            return result;
         }
 
         public static string Decrypt(byte[] key, string data)
@@ -43,25 +36,21 @@ namespace DotNetCommons.Core.Security
 
         public static byte[] Encrypt(byte[] key, byte[] data)
         {
-            using (var aes = new AesManaged())
+            using var aes = new AesManaged();
+            aes.GenerateIV();
+            aes.Key = PadKey(key, 32);
+
+            using var mem = new MemoryStream();
+            mem.Write(BitConverter.GetBytes(aes.IV.Length), 0, 4);
+            mem.Write(aes.IV, 0, aes.IV.Length);
+            mem.Write(BitConverter.GetBytes(data.Length), 0, 4);
+
+            using (var crypto = new CryptoStream(mem, aes.CreateEncryptor(), CryptoStreamMode.Write))
             {
-                aes.GenerateIV();
-                aes.Key = PadKey(key, 32);
-
-                using (var mem = new MemoryStream())
-                {
-                    mem.Write(BitConverter.GetBytes(aes.IV.Length), 0, 4);
-                    mem.Write(aes.IV, 0, aes.IV.Length);
-                    mem.Write(BitConverter.GetBytes(data.Length), 0, 4);
-
-                    using (var crypto = new CryptoStream(mem, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        crypto.Write(data, 0, data.Length);
-                    }
-
-                    return mem.ToArray();
-                }
+                crypto.Write(data, 0, data.Length);
             }
+
+            return mem.ToArray();
         }
 
         public static string Encrypt(byte[] key, string data)

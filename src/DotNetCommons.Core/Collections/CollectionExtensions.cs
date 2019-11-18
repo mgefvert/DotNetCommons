@@ -331,18 +331,27 @@ namespace DotNetCommons.Core.Collections
             return !string.IsNullOrWhiteSpace(dictionary.GetOrDefault(key));
         }
 
+        /**
+         * Return the minimum of a list of DateTimes
+         */
         public static DateTime Min<T>(this IEnumerable<T> list, Func<T, DateTime> selector)
         {
             var ticks = list.Select(selector).Select(x => x.Ticks).Min();
             return new DateTime(ticks);
         }
 
+        /**
+         * Return the maximum of a list of DateTimes
+         */
         public static DateTime Max<T>(this IEnumerable<T> list, Func<T, DateTime> selector)
         {
             var ticks = list.Select(selector).Select(x => x.Ticks).Max();
             return new DateTime(ticks);
         }
 
+        /**
+         * Repeat a collection a number of times
+         */
         public static IEnumerable<T> Repeat<T>(this ICollection<T> collection, int times = 2)
         {
             for (var i = 0; i < times; i++)
@@ -350,6 +359,9 @@ namespace DotNetCommons.Core.Collections
                     yield return item;
         }
 
+        /**
+         * Swap position for two items in a list
+         */
         public static bool Swap<T>(this IList<T> list, int pos1, int pos2)
         {
             if (pos1 < 0 || pos2 < 0 || pos1 >= list.Count || pos2 >= list.Count)
@@ -360,6 +372,14 @@ namespace DotNetCommons.Core.Collections
             list[pos2] = item;
 
             return true;
+        }
+
+        /**
+         * Iterate through an enumerable and bring along an index counter
+         */
+        public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> source)
+        {
+            return source.Select((item, index) => (item, index));
         }
     }
 }

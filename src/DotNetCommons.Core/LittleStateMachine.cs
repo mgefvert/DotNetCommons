@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CollectionExtensions = DotNetCommons.Core.Collections.CollectionExtensions;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Core
 {
     public class StateMachineException : Exception

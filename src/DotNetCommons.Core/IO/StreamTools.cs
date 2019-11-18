@@ -43,8 +43,8 @@ namespace DotNetCommons.Core.IO
             if (mode == StreamMode.FromStart)
                 stream.Position = 0;
 
-            using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
-                stream.CopyTo(fs);
+            using var fs = new FileStream(filename, FileMode.Create, FileAccess.Write);
+            stream.CopyTo(fs);
         }
     }
 }

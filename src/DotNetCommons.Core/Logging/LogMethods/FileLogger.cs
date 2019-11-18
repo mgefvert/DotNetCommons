@@ -115,12 +115,10 @@ namespace DotNetCommons.Core.Logging.LogMethods
             // If new file already exists and has data, skip the compression step
             if (!File.Exists(newFileName) || new FileInfo(newFileName).Length == 0)
             {
-                using (var oldFile = new FileStream(oldFileName, FileMode.Open, FileAccess.Read))
-                using (var newFile = new FileStream(newFileName, FileMode.Create, FileAccess.Write))
-                using (var gz = new GZipStream(newFile, CompressionMode.Compress))
-                {
-                    oldFile.CopyTo(gz);
-                }
+                using var oldFile = new FileStream(oldFileName, FileMode.Open, FileAccess.Read);
+                using var newFile = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
+                using var gz = new GZipStream(newFile, CompressionMode.Compress);
+                oldFile.CopyTo(gz);
             }
 
             try

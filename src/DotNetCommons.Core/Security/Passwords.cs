@@ -37,19 +37,18 @@ namespace DotNetCommons.Core.Security
 
         private static string ComputeHash(string plaintext, byte[] salt, int complexity)
         {
-            using (var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity))
-            using (var mem = new MemoryStream())
-            using (var writer = new BinaryWriter(mem))
-            {
-                writer.Write((byte)complexity);
-                writer.Write(salt);
-                
-                var data = pbkdf2.GetBytes(64);
-                writer.Write(data.Length);
-                writer.Write(data);
+            using var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity);
+            using var mem = new MemoryStream();
+            using var writer = new BinaryWriter(mem);
 
-                return Convert.ToBase64String(mem.ToArray());
-            }
+            writer.Write((byte)complexity);
+            writer.Write(salt);
+                
+            var data = pbkdf2.GetBytes(64);
+            writer.Write(data.Length);
+            writer.Write(data);
+
+            return Convert.ToBase64String(mem.ToArray());
         }
 
         private static char DrawLetter(int data, string alphabet)
@@ -74,16 +73,15 @@ namespace DotNetCommons.Core.Security
             if (string.IsNullOrWhiteSpace(encryptedPassword) || string.IsNullOrWhiteSpace(plaintext))
                 return false;
 
-            using (var mem = new MemoryStream(Convert.FromBase64String(encryptedPassword)))
-            using (var reader = new BinaryReader(mem))
-            {
-                var complexity = reader.ReadByte();
-                var salt = reader.ReadBytes(8);
+            using var mem = new MemoryStream(Convert.FromBase64String(encryptedPassword));
+            using var reader = new BinaryReader(mem);
 
-                var test = ComputeHash(plaintext, salt, complexity);
+            var complexity = reader.ReadByte();
+            var salt = reader.ReadBytes(8);
 
-                return string.CompareOrdinal(encryptedPassword, test) == 0;
-            }
+            var test = ComputeHash(plaintext, salt, complexity);
+
+            return string.CompareOrdinal(encryptedPassword, test) == 0;
         }
 
         /*
