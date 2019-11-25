@@ -16,16 +16,15 @@ namespace DotNetCommons.IO
         /// <returns></returns>
         public static byte[] Pack(byte[] data)
         {
-            using (var plain = new MemoryStream(data))
-            using (var packed = new MemoryStream())
-            {
-                using (var compress = new DeflateStream(packed, CompressionMode.Compress, true))
-                {
-                    plain.CopyTo(compress);
-                }
+            using var plain = new MemoryStream(data);
+            using var packed = new MemoryStream();
 
-                return packed.ToArray();
+            using (var compress = new DeflateStream(packed, CompressionMode.Compress, true))
+            {
+                plain.CopyTo(compress);
             }
+
+            return packed.ToArray();
         }
 
         /// <summary>
@@ -46,14 +45,13 @@ namespace DotNetCommons.IO
         /// <returns></returns>
         public static byte[] Unpack(byte[] data)
         {
-            using (var packed = new MemoryStream(data))
-            using (var plain = new MemoryStream())
-            {
-                using (var compress = new DeflateStream(packed, CompressionMode.Decompress, true))
-                    compress.CopyTo(plain);
+            using var packed = new MemoryStream(data);
+            using var plain = new MemoryStream();
 
-                return plain.ToArray();
-            }
+            using (var compress = new DeflateStream(packed, CompressionMode.Decompress, true))
+                compress.CopyTo(plain);
+
+            return plain.ToArray();
         }
 
         /// <summary>

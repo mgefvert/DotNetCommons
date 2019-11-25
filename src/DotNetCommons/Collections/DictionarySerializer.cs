@@ -19,28 +19,26 @@ namespace DotNetCommons.Collections
             if (!File.Exists(filename))
                 return new Dictionary<TKey, TValue>();
 
-            using (var fs = new FileStream(filename, FileMode.Open))
-                return Load<TKey, TValue>(fs);
+            using var fs = new FileStream(filename, FileMode.Open);
+            return Load<TKey, TValue>(fs);
         }
 
         public Dictionary<TKey, TValue> Load<TKey, TValue>(Stream stream)
         {
-            using (var zip = new DeflateStream(stream, CompressionMode.Decompress, true))
-            using (var reader = new BinaryReader(zip, Encoding, true))
+            using var zip = new DeflateStream(stream, CompressionMode.Decompress, true);
+            using var reader = new BinaryReader(zip, Encoding, true);
+            var result = new Dictionary<TKey, TValue>();
+
+            var count = reader.ReadInt32();
+            while (count-- > 0)
             {
-                var result = new Dictionary<TKey, TValue>();
+                var key = (TKey)ReadValue<TKey>(reader);
+                var value = (TValue)ReadValue<TValue>(reader);
 
-                var count = reader.ReadInt32();
-                while (count-- > 0)
-                {
-                    var key = (TKey)ReadValue<TKey>(reader);
-                    var value = (TValue)ReadValue<TValue>(reader);
-
-                    result[key] = value;
-                }
-
-                return result;
+                result[key] = value;
             }
+
+            return result;
         }
 
         private object ReadValue<T>(BinaryReader reader)
@@ -91,12 +89,10 @@ namespace DotNetCommons.Collections
                 var count = reader.ReadInt32();
                 var data = reader.ReadBytes(count);
 
-                using (var mem = new MemoryStream(data))
-                {
-                    var obj = _fmt.Deserialize(mem);
-                    if (obj is T)
-                        return obj;
-                }
+                using var mem = new MemoryStream(data);
+                var obj = _fmt.Deserialize(mem);
+                if (obj is T)
+                    return obj;
             }
 
             return default(T);
@@ -104,22 +100,20 @@ namespace DotNetCommons.Collections
 
         public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, string filename)
         {
-            using (var fs = new FileStream(filename, FileMode.Create))
-                Save(dictionary, fs);
+            using var fs = new FileStream(filename, FileMode.Create);
+            Save(dictionary, fs);
         }
 
         public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, Stream stream)
         {
-            using (var zip = new DeflateStream(stream, CompressionMode.Compress, true))
-            using (var writer = new BinaryWriter(zip, Encoding, true))
-            {
-                writer.Write(dictionary.Count);
+            using var zip = new DeflateStream(stream, CompressionMode.Compress, true);
+            using var writer = new BinaryWriter(zip, Encoding, true);
+            writer.Write(dictionary.Count);
 
-                foreach (var item in dictionary)
-                { 
-                    SaveValue(writer, item.Key);
-                    SaveValue(writer, item.Value);
-                }
+            foreach (var item in dictionary)
+            { 
+                SaveValue(writer, item.Key);
+                SaveValue(writer, item.Value);
             }
         }
 
@@ -173,13 +167,11 @@ namespace DotNetCommons.Collections
             // Generic object
             else
             {
-                using (var mem = new MemoryStream())
-                {
-                    _fmt.Serialize(mem, value);
+                using var mem = new MemoryStream();
+                _fmt.Serialize(mem, value);
 
-                    writer.Write((int)mem.Length);
-                    writer.Write(mem.ToArray());
-                }
+                writer.Write((int)mem.Length);
+                writer.Write(mem.ToArray());
             }
         }
     }

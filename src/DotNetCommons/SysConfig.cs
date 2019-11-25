@@ -109,34 +109,32 @@ namespace DotNetCommons
 
         private static void ParseFile(Dictionary<string, string> values, FileInfo file)
         {
-            using (var fs = file.OpenRead())
+            using var fs = file.OpenRead();
+            var reader = XmlReader.Create(fs);
+            var path = new Stack<string>();
+            string root = null;
+            while (reader.Read())
             {
-                var reader = XmlReader.Create(fs);
-                var path = new Stack<string>();
-                string root = null;
-                while (reader.Read())
+                switch (reader.NodeType)
                 {
-                    switch (reader.NodeType)
-                    {
-                        case XmlNodeType.Element:
-                            if (!reader.IsEmptyElement)
-                            {
-                                if (root == null)
-                                    root = reader.Name;
-                                else
-                                    path.Push(reader.Name.Replace("-", ""));
-                            }
-                            break;
+                    case XmlNodeType.Element:
+                        if (!reader.IsEmptyElement)
+                        {
+                            if (root == null)
+                                root = reader.Name;
+                            else
+                                path.Push(reader.Name.Replace("-", ""));
+                        }
+                        break;
 
-                        case XmlNodeType.Text:
-                            values[string.Join(".", path.Reverse())] = reader.Value.Replace("~/", file.DirectoryName + Path.DirectorySeparatorChar);
-                            break;
+                    case XmlNodeType.Text:
+                        values[string.Join(".", path.Reverse())] = reader.Value.Replace("~/", file.DirectoryName + Path.DirectorySeparatorChar);
+                        break;
 
-                        case XmlNodeType.EndElement:
-                            if (path.Any())
-                                path.Pop();
-                            break;
-                    }
+                    case XmlNodeType.EndElement:
+                        if (path.Any())
+                            path.Pop();
+                        break;
                 }
             }
         }

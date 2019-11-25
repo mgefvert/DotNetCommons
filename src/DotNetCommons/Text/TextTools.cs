@@ -145,8 +145,8 @@ namespace DotNetCommons.Text
         /// <returns></returns>
         public static int Levenshtein(string a, string b, bool ignoreCase)
         {
-            a = a ?? "";
-            b = b ?? "";
+            a ??= "";
+            b ??= "";
 
             if (ignoreCase)
             {

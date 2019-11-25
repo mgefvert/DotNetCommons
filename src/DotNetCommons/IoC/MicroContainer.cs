@@ -79,7 +79,7 @@ namespace DotNetCommons.IoC
         /// <returns>The default singleton instance.</returns>
         public static MicroContainer DefaultInstance()
         {
-            return _default ?? (_default = new MicroContainer());
+            return _default ??= new MicroContainer();
         }
 
         /// <summary>

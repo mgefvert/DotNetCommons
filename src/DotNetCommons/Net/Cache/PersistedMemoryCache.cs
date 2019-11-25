@@ -22,8 +22,8 @@ namespace DotNetCommons.Net.Cache
             if (!File.Exists(filename))
                 return;
 
-            using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
-                Load(fs);
+            using var fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            Load(fs);
         }
 
         public void Load(Stream stream)
@@ -97,8 +97,8 @@ namespace DotNetCommons.Net.Cache
 
         public void Save(string filename, PersistedMemoryFlags flags)
         {
-            using (var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
-                Save(fs, flags);
+            using var fs = new FileStream(filename, FileMode.Create, FileAccess.Write);
+            Save(fs, flags);
         }
 
         public void Save(Stream stream, PersistedMemoryFlags flags)

@@ -152,6 +152,7 @@ namespace DotNetCommons.Temporal
 
                 case DateRangeType.WeeklyIso:
                 case DateRangeType.BiweeklyIso:
+                    // ReSharper disable once RedundantArgumentDefaultValue
                     return date.StartOfWeek(DayOfWeek.Monday);
 
                 case DateRangeType.Monthly:

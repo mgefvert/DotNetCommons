@@ -20,7 +20,7 @@ namespace DotNetCommons.Logging
         private static bool _initialized;
         private static LogChannel _defaultLogger;
 
-        public static LogChannel DefaultLogger => _defaultLogger ?? (_defaultLogger = CreateLogger("", LogChannelChainMode.UseDefault));
+        public static LogChannel DefaultLogger => _defaultLogger ??= CreateLogger("", LogChannelChainMode.UseDefault);
 
         public static LogChannel CreateLogger(string channel, LogChannelChainMode mode)
         {
