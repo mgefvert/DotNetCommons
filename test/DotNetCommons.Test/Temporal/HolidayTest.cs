@@ -18,7 +18,7 @@ namespace DotNetCommons.Test.Temporal
             Assert.IsTrue(date == holiday.NextDate);
             Assert.IsTrue(date == holiday.NextDate);
 
-            Assert.AreEqual(HolidayType.NthWeek, holiday.HolidayType);
+            Assert.AreEqual(HolidayCalculation.NthWeek, holiday.HolidayCalculation);
             Assert.AreEqual(1, holiday.CalcAddDays);
             Assert.AreEqual(0, holiday.CalcDay);
             Assert.AreEqual(DayOfWeek.Monday, holiday.CalcDayOfWeek);
@@ -46,39 +46,74 @@ namespace DotNetCommons.Test.Temporal
         }
 
         [TestMethod]
+        public void TestHolidaysObserved()
+        {
+            Assert.IsNotNull(Holidays.IsObservedHoliday(new DateTime(2020, 7, 3)));
+            Assert.IsNull(Holidays.IsObservedHoliday(new DateTime(2020, 7, 4)));
+        }
+
+        [TestMethod]
         public void TestCommon()
         {
             // Holidays for 2017
-            Assert.AreEqual("2017-01-01", CommonHolidays.NewYearsDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-01-16", CommonHolidays.MlkBirthday.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-02-20", CommonHolidays.PresidentsDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-04-16", CommonHolidays.Easter.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-05-29", CommonHolidays.MemorialDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-07-04", CommonHolidays.IndependenceDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-09-04", CommonHolidays.LaborDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-10-09", CommonHolidays.ColumbusDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-11-11", CommonHolidays.VeteransDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-11-23", CommonHolidays.Thanksgiving.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-12-24", CommonHolidays.ChristmasEve.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-12-25", CommonHolidays.ChristmasDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-12-26", CommonHolidays.BoxingDay.CalculateDate(2017).ToShortDateString());
-            Assert.AreEqual("2017-12-31", CommonHolidays.NewYearsEve.CalculateDate(2017).ToShortDateString());
+            Assert.AreEqual("2017-01-01", CommonHolidays.NewYearsDay.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-01-16", CommonHolidays.MlkBirthday.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-02-20", CommonHolidays.PresidentsDay.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-04-16", CommonHolidays.Easter.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-05-29", CommonHolidays.MemorialDay.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-07-04", CommonHolidays.IndependenceDay.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-09-04", CommonHolidays.LaborDay.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-10-09", CommonHolidays.ColumbusDay.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-11-11", CommonHolidays.VeteransDay.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-11-23", CommonHolidays.Thanksgiving.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-12-24", CommonHolidays.ChristmasEve.CalculateDate(2017, false).ToShortDateString());
+            Assert.AreEqual("2017-12-25", CommonHolidays.ChristmasDay.CalculateDate(2017, false).ToShortDateString());
 
             // Holidays for 2019
-            Assert.AreEqual("2019-01-01", CommonHolidays.NewYearsDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-01-21", CommonHolidays.MlkBirthday.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-02-18", CommonHolidays.PresidentsDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-04-21", CommonHolidays.Easter.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-05-27", CommonHolidays.MemorialDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-07-04", CommonHolidays.IndependenceDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-09-02", CommonHolidays.LaborDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-10-14", CommonHolidays.ColumbusDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-11-11", CommonHolidays.VeteransDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-11-28", CommonHolidays.Thanksgiving.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-12-24", CommonHolidays.ChristmasEve.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-12-25", CommonHolidays.ChristmasDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-12-26", CommonHolidays.BoxingDay.CalculateDate(2019).ToShortDateString());
-            Assert.AreEqual("2019-12-31", CommonHolidays.NewYearsEve.CalculateDate(2019).ToShortDateString());
+            Assert.AreEqual("2019-01-01", CommonHolidays.NewYearsDay.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-01-21", CommonHolidays.MlkBirthday.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-02-18", CommonHolidays.PresidentsDay.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-04-21", CommonHolidays.Easter.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-05-27", CommonHolidays.MemorialDay.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-07-04", CommonHolidays.IndependenceDay.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-09-02", CommonHolidays.LaborDay.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-10-14", CommonHolidays.ColumbusDay.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-11-11", CommonHolidays.VeteransDay.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-11-28", CommonHolidays.Thanksgiving.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-12-24", CommonHolidays.ChristmasEve.CalculateDate(2019, false).ToShortDateString());
+            Assert.AreEqual("2019-12-25", CommonHolidays.ChristmasDay.CalculateDate(2019, false).ToShortDateString());
+        }
+
+        [TestMethod]
+        public void TestCommonObserved()
+        {
+            // Holidays for 2017
+            Assert.AreEqual("2017-01-01", CommonHolidays.NewYearsDay.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-01-16", CommonHolidays.MlkBirthday.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-02-20", CommonHolidays.PresidentsDay.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-04-16", CommonHolidays.Easter.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-05-29", CommonHolidays.MemorialDay.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-07-04", CommonHolidays.IndependenceDay.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-09-04", CommonHolidays.LaborDay.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-10-09", CommonHolidays.ColumbusDay.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-11-10", CommonHolidays.VeteransDay.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-11-23", CommonHolidays.Thanksgiving.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-12-24", CommonHolidays.ChristmasEve.CalculateDate(2017, true).ToShortDateString());
+            Assert.AreEqual("2017-12-25", CommonHolidays.ChristmasDay.CalculateDate(2017, true).ToShortDateString());
+
+            // Holidays for 2019
+            Assert.AreEqual("2019-01-01", CommonHolidays.NewYearsDay.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-01-21", CommonHolidays.MlkBirthday.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-02-18", CommonHolidays.PresidentsDay.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-04-21", CommonHolidays.Easter.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-05-27", CommonHolidays.MemorialDay.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-07-04", CommonHolidays.IndependenceDay.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-09-02", CommonHolidays.LaborDay.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-10-14", CommonHolidays.ColumbusDay.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-11-11", CommonHolidays.VeteransDay.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-11-28", CommonHolidays.Thanksgiving.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-12-24", CommonHolidays.ChristmasEve.CalculateDate(2019, true).ToShortDateString());
+            Assert.AreEqual("2019-12-25", CommonHolidays.ChristmasDay.CalculateDate(2019, true).ToShortDateString());
         }
 
         [TestMethod]
@@ -104,6 +139,21 @@ namespace DotNetCommons.Test.Temporal
             Assert.IsTrue(CommonHolidays.ChristmasDay.IsHoliday(new DateTime(2017, 12, 25)));
             Assert.IsFalse(CommonHolidays.ChristmasDay.IsHoliday(new DateTime(2014, 1, 1)));
             Assert.IsFalse(CommonHolidays.ChristmasDay.IsHoliday(new DateTime(1, 1, 2)));
+        }
+
+        [TestMethod]
+        public void TestIsObservedHoliday()
+        {
+            Assert.IsTrue(CommonHolidays.ChristmasDay.IsObservedHoliday(new DateTime(2014, 12, 25)));
+
+            Assert.IsTrue(CommonHolidays.IndependenceDay.IsObservedHoliday(new DateTime(2020, 7, 3)));
+            Assert.IsFalse(CommonHolidays.IndependenceDay.IsObservedHoliday(new DateTime(2020, 7, 4)));
+
+            Assert.IsTrue(CommonHolidays.VeteransDay.IsObservedHoliday(new DateTime(2020, 11, 11)));
+            Assert.IsTrue(CommonHolidays.VeteransDay.IsObservedHoliday(new DateTime(2019, 11, 11)));
+            Assert.IsTrue(CommonHolidays.VeteransDay.IsObservedHoliday(new DateTime(2018, 11, 12)));
+            Assert.IsTrue(CommonHolidays.VeteransDay.IsObservedHoliday(new DateTime(2017, 11, 10)));
+            Assert.IsTrue(CommonHolidays.VeteransDay.IsObservedHoliday(new DateTime(2016, 11, 11)));
         }
 
         [TestMethod]

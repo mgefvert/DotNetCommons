@@ -7,7 +7,7 @@ using DotNetCommons.Text;
 
 namespace DotNetCommons.Temporal
 {
-    public enum HolidayType
+    public enum HolidayCalculation
     {
         Date = 1,
         NthWeek = 2,
@@ -15,27 +15,74 @@ namespace DotNetCommons.Temporal
         Easter = 4
     }
 
+    [Flags]
+    public enum HolidayType
+    {
+        Holiday = 1,
+        Unofficial = 2,
+        Private = 4,
+        Halfday = 8
+    }
+
     /// <summary>
     /// Contains the most common U.S. Federal Holidays and a few more.
     /// </summary>
     public static class CommonHolidays
     {
-        private static readonly Holiday[] Cache = new Holiday[14];
+        private static readonly Holiday[] Cache;
 
-        public static Holiday NewYearsDay     => Cache[0] ?? (Cache[0] = Holiday.CreateSpecificDate(1, 1, "New Year's Day"));
-        public static Holiday MlkBirthday     => Cache[1] ?? (Cache[1] = Holiday.CreateDayInNthWeek(1, 3, DayOfWeek.Monday, 0, "Martin Luther King's Birthday"));
-        public static Holiday PresidentsDay   => Cache[2] ?? (Cache[2] = Holiday.CreateDayInNthWeek(2, 3, DayOfWeek.Monday, 0, "Washington's Birthday"));
-        public static Holiday Easter          => Cache[3] ?? (Cache[3] = Holiday.CreateEaster("Easter Sunday"));
-        public static Holiday MemorialDay     => Cache[4] ?? (Cache[4] = Holiday.CreateDayInLastWeek(5, DayOfWeek.Monday, 0, "Memorial Day"));
-        public static Holiday IndependenceDay => Cache[5] ?? (Cache[5] = Holiday.CreateSpecificDate(7, 4, "Independence Day"));
-        public static Holiday LaborDay        => Cache[6] ?? (Cache[6] = Holiday.CreateDayInNthWeek(9, 1, DayOfWeek.Monday, 0, "Labor Day"));
-        public static Holiday ColumbusDay     => Cache[7] ?? (Cache[7] = Holiday.CreateDayInNthWeek(10, 2, DayOfWeek.Monday, 0, "Columbus Day"));
-        public static Holiday VeteransDay     => Cache[8] ?? (Cache[8] = Holiday.CreateSpecificDate(11, 11, "Veteran's Day"));
-        public static Holiday Thanksgiving    => Cache[9] ?? (Cache[9] = Holiday.CreateDayInNthWeek(11, 4, DayOfWeek.Thursday, 0, "Thanksgiving"));
-        public static Holiday ChristmasEve    => Cache[10] ?? (Cache[10] = Holiday.CreateSpecificDate(12, 24, "Christmas Eve"));
-        public static Holiday ChristmasDay    => Cache[11] ?? (Cache[11] = Holiday.CreateSpecificDate(12, 25, "Christmas Day"));
-        public static Holiday BoxingDay       => Cache[12] ?? (Cache[12] = Holiday.CreateSpecificDate(12, 26, "Boxing Day"));
-        public static Holiday NewYearsEve     => Cache[13] ?? (Cache[13] = Holiday.CreateSpecificDate(12, 31, "New Year's Eve"));
+        public static DateTime FederalObservedRules(DateTime date)
+        {
+            if (date.DayOfWeek == DayOfWeek.Saturday)
+                return date.AddDays(-1);
+
+            if (date.DayOfWeek == DayOfWeek.Sunday)
+                return date.AddDays(1);
+
+            return date;
+        }
+
+        static CommonHolidays()
+        {
+            Cache = new[]
+            {
+                Holiday.CreateSpecificDate(1, 1, "New Year's Day"),
+                Holiday.CreateDayInNthWeek(1, 3, DayOfWeek.Monday, 0, "Martin Luther King's Birthday"),
+                Holiday.CreateDayInNthWeek(2, 3, DayOfWeek.Monday, 0, "Washington's Birthday"),
+                Holiday.CreateEaster("Easter Sunday"),
+                Holiday.CreateDayInLastWeek(5, DayOfWeek.Monday, 0, "Memorial Day"),
+                Holiday.CreateSpecificDate(7, 4, "Independence Day"),
+                Holiday.CreateDayInNthWeek(9, 1, DayOfWeek.Monday, 0, "Labor Day"),
+                Holiday.CreateDayInNthWeek(10, 2, DayOfWeek.Monday, 0, "Columbus Day"),
+                Holiday.CreateSpecificDate(11, 11, "Veteran's Day"),
+                Holiday.CreateDayInNthWeek(11, 4, DayOfWeek.Thursday, 0, "Thanksgiving"),
+                Holiday.CreateSpecificDate(12, 24, "Christmas Eve"),
+                Holiday.CreateSpecificDate(12, 25, "Christmas Day"),
+            };
+
+            MlkBirthday.ObservedRule = FederalObservedRules;
+            PresidentsDay.ObservedRule = FederalObservedRules;
+            MemorialDay.ObservedRule = FederalObservedRules;
+            IndependenceDay.ObservedRule = FederalObservedRules;
+            LaborDay.ObservedRule = FederalObservedRules;
+            ColumbusDay.ObservedRule = FederalObservedRules;
+            VeteransDay.ObservedRule = FederalObservedRules;
+        }
+
+        public static Holiday[] All => Cache;
+
+        public static Holiday NewYearsDay => Cache[0];
+        public static Holiday MlkBirthday => Cache[1];
+        public static Holiday PresidentsDay => Cache[2];
+        public static Holiday Easter => Cache[3];
+        public static Holiday MemorialDay => Cache[4];
+        public static Holiday IndependenceDay => Cache[5];
+        public static Holiday LaborDay => Cache[6];
+        public static Holiday ColumbusDay => Cache[7];
+        public static Holiday VeteransDay => Cache[8];
+        public static Holiday Thanksgiving => Cache[9];
+        public static Holiday ChristmasEve => Cache[10];
+        public static Holiday ChristmasDay => Cache[11];
     }
 
     /// <summary>
@@ -65,16 +112,8 @@ namespace DotNetCommons.Temporal
 
         private static void Initialize()
         {
-            if (_list != null)
-                return;
-
-            _list = new List<Holiday>(new[] {
-                CommonHolidays.NewYearsDay, CommonHolidays.MlkBirthday, CommonHolidays.PresidentsDay,
-                CommonHolidays.Easter, CommonHolidays.MemorialDay, CommonHolidays.IndependenceDay,
-                CommonHolidays.LaborDay, CommonHolidays.ColumbusDay, CommonHolidays.VeteransDay,
-                CommonHolidays.Thanksgiving, CommonHolidays.ChristmasEve, CommonHolidays.ChristmasDay,
-                CommonHolidays.BoxingDay, CommonHolidays.NewYearsEve
-            });
+            if (_list == null)
+                _list = new List<Holiday>(CommonHolidays.All);
         }
 
         /// <summary>
@@ -86,6 +125,12 @@ namespace DotNetCommons.Temporal
         {
             Initialize();
             return _list.FirstOrDefault(x => x.IsHoliday(date));
+        }
+
+        public static Holiday IsObservedHoliday(DateTime date)
+        {
+            Initialize();
+            return _list.FirstOrDefault(x => x.IsObservedHoliday(date));
         }
 
         /// <summary>
@@ -124,6 +169,7 @@ namespace DotNetCommons.Temporal
     /// </summary>
     public class Holiday
     {
+        private readonly Dictionary<int, DateTime> _dates = new Dictionary<int, DateTime>();
         private DateTime _nextDate = DateTime.MinValue;
 
         /// <summary>
@@ -141,9 +187,14 @@ namespace DotNetCommons.Temporal
         }
 
         /// <summary>
-        /// Holiday definition type (how it's calculcated).
+        /// Holiday definition (how it's calculcated).
         /// </summary>
-        public HolidayType HolidayType { get; private set; }
+        public HolidayCalculation HolidayCalculation { get; private set; }
+
+        /// <summary>
+        /// Holiday type (its status - half day, federal, unofficial etc).
+        /// </summary>
+        public HolidayType HolidayType { get; set; }
 
         /// <summary>
         /// Name of the holiday.
@@ -176,12 +227,17 @@ namespace DotNetCommons.Temporal
         public int CalcAddDays { get; private set; }
 
         /// <summary>
+        /// Rule for determining observed dates (when the holiday is shifted due to weekdays etc).
+        /// </summary>
+        public Func<DateTime, DateTime> ObservedRule { get; set; }
+
+        /// <summary>
         /// Get a definition for the holiday that can be persisted and given to new instances.
         /// </summary>
         /// <returns>A string representation of the holiday definition.</returns>
         public string GetDefinition()
         {
-            return "[" + string.Join(",", HolidayType.ToString(), Name, CalcMonth, CalcWeek, CalcDay, (int)CalcDayOfWeek, CalcAddDays) + "]";
+            return "[" + string.Join(",", HolidayCalculation.ToString(), Name, CalcMonth, CalcWeek, CalcDay, (int)CalcDayOfWeek, CalcAddDays) + "]";
         }
 
         /// <summary>
@@ -207,7 +263,7 @@ namespace DotNetCommons.Temporal
             if (items.Length != 7)
                 throw new InvalidOperationException($"Holiday definition {definition} is invalid.");
 
-            HolidayType = (HolidayType)Enum.Parse(typeof(HolidayType), items[0], true);
+            HolidayCalculation = (HolidayCalculation)Enum.Parse(typeof(HolidayCalculation), items[0], true);
             Name = items[1];
             CalcMonth = int.Parse(items[2]);
             CalcWeek = int.Parse(items[3]);
@@ -224,8 +280,9 @@ namespace DotNetCommons.Temporal
         public static Holiday CreateEaster(string name = null) 
             => new Holiday
             {
-                HolidayType = HolidayType.Easter,
-                Name = name
+                HolidayCalculation = HolidayCalculation.Easter,
+                Name = name,
+                HolidayType = HolidayType.Holiday
             };
 
         /// <summary>
@@ -234,14 +291,16 @@ namespace DotNetCommons.Temporal
         /// <param name="month">Month it occurs in.</param>
         /// <param name="day">Day of the month.</param>
         /// <param name="name">Optional holiday name.</param>
+        /// <param name="type">Holiday type</param>
         /// <returns>A new holiday object.</returns>
-        public static Holiday CreateSpecificDate(int month, int day, string name = null) 
+        public static Holiday CreateSpecificDate(int month, int day, string name = null, HolidayType type = HolidayType.Holiday)
             => new Holiday
             {
-                HolidayType = HolidayType.Date,
+                HolidayCalculation = HolidayCalculation.Date,
                 CalcMonth = month,
                 CalcDay = day,
-                Name = name
+                Name = name,
+                HolidayType = type
             };
 
         /// <summary>
@@ -252,16 +311,18 @@ namespace DotNetCommons.Temporal
         /// <param name="day">Which day of the week.</param>
         /// <param name="dayOffset">Any days added or subtracted to the given weekday.</param>
         /// <param name="name">Optional holiday name.</param>
+        /// <param name="type">Holiday type</param>
         /// <returns>A new holiday object.</returns>
-        public static Holiday CreateDayInNthWeek(int month, int week, DayOfWeek day, int dayOffset = 0, string name = null) 
+        public static Holiday CreateDayInNthWeek(int month, int week, DayOfWeek day, int dayOffset = 0, string name = null, HolidayType type = HolidayType.Holiday) 
             => new Holiday
             {
-                HolidayType = HolidayType.NthWeek,
+                HolidayCalculation = HolidayCalculation.NthWeek,
                 CalcMonth = month,
                 CalcWeek = week,
                 CalcDayOfWeek = day,
                 CalcAddDays = dayOffset,
-                Name = name
+                Name = name,
+                HolidayType = type
             };
 
         /// <summary>
@@ -271,15 +332,17 @@ namespace DotNetCommons.Temporal
         /// <param name="day">Which day of the week.</param>
         /// <param name="dayOffset">Any days added or subtracted to the given weekday.</param>
         /// <param name="name">Optional holiday name.</param>
+        /// <param name="type">Holiday type</param>
         /// <returns>A new holiday object.</returns>
-        public static Holiday CreateDayInLastWeek(int month, DayOfWeek day, int dayOffset = 0, string name = null)
+        public static Holiday CreateDayInLastWeek(int month, DayOfWeek day, int dayOffset = 0, string name = null, HolidayType type = HolidayType.Holiday)
             => new Holiday
             {
-                HolidayType = HolidayType.LastWeek,
+                HolidayCalculation = HolidayCalculation.LastWeek,
                 CalcMonth = month,
                 CalcDayOfWeek = day,
                 CalcAddDays = dayOffset,
-                Name = name
+                Name = name,
+                HolidayType = type
             };
 
         /// <summary>
@@ -308,22 +371,25 @@ namespace DotNetCommons.Temporal
         /// Calculate the date of this holiday for a given year.
         /// </summary>
         /// <param name="year">Year.</param>
+        /// <param name="applyObservedRule">Apply any observation rules</param>
         /// <returns>The date on which this holiday occurred that year.</returns>
-        public DateTime CalculateDate(int year)
+        public DateTime CalculateDate(int year, bool applyObservedRule)
         {
-            switch (HolidayType)
+            if (!_dates.TryGetValue(year, out var result))
             {
-                case HolidayType.Date:
-                    return new DateTime(year, CalcMonth, CalcDay);
-                case HolidayType.Easter:
-                    return GetEasterSundayDate(year);
-                case HolidayType.LastWeek:
-                    return GetDayInLastWeekOfMonth(year, CalcMonth, CalcDayOfWeek).AddDays(CalcAddDays);
-                case HolidayType.NthWeek:
-                    return GetDayInNthWeekOfMonth(year, CalcMonth, CalcWeek, CalcDayOfWeek).AddDays(CalcAddDays);
-                default:
-                    throw new InvalidOperationException("Unrecognized holiday type " + HolidayType);
+                result = HolidayCalculation switch
+                {
+                    HolidayCalculation.Date     => new DateTime(year, CalcMonth, CalcDay),
+                    HolidayCalculation.Easter   => GetEasterSundayDate(year),
+                    HolidayCalculation.LastWeek => GetDayInLastWeekOfMonth(year, CalcMonth, CalcDayOfWeek).AddDays(CalcAddDays),
+                    HolidayCalculation.NthWeek  => GetDayInNthWeekOfMonth(year, CalcMonth, CalcWeek, CalcDayOfWeek).AddDays(CalcAddDays),
+                    _ => throw new InvalidOperationException("Unrecognized holiday type " + HolidayCalculation)
+                };
+
+                _dates[year] = result;
             }
+
+            return applyObservedRule && ObservedRule != null ? ObservedRule(result) : result;
         }
 
         /// <summary>
@@ -385,7 +451,17 @@ namespace DotNetCommons.Temporal
         /// <returns>True if the date is the holiday for that year.</returns>
         public bool IsHoliday(DateTime date)
         {
-            return date.Date == CalculateDate(date.Year);
+            return date.Date == CalculateDate(date.Year, false);
+        }
+
+        /// <summary>
+        /// Determine whether the given date falls on this observed holiday.
+        /// </summary>
+        /// <param name="date">Date to test.</param>
+        /// <returns>True if the date is the holiday for that year.</returns>
+        public bool IsObservedHoliday(DateTime date)
+        {
+            return date.Date == CalculateDate(date.Year, true);
         }
 
         private void Recalculate()
@@ -393,13 +469,13 @@ namespace DotNetCommons.Temporal
             var year = DateTime.Today.Year;
             if (_nextDate.Year == year)
             {
-                _nextDate = CalculateDate(year + 1);
+                _nextDate = CalculateDate(year + 1, false);
             }
             else
             {
-                _nextDate = CalculateDate(year);
+                _nextDate = CalculateDate(year, false);
                 if (_nextDate < DateTime.Today)
-                    _nextDate = CalculateDate(year + 1);
+                    _nextDate = CalculateDate(year + 1, false);
             }
         }
     }
