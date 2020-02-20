@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -181,6 +184,28 @@ namespace DotNetCommons.Collections
             var result = list.GetRange(offset, count);
             list.RemoveRange(offset, count);
 
+            return result;
+        }
+
+        public static async Task<ConcurrentDictionary<TSource, TResult>> ForEachAsync<TSource, TResult>(this ICollection<TSource> list, int maxDegreeOfParallelism, Func<TSource, Task<TResult>> func)
+        {
+            var result = new ConcurrentDictionary<TSource, TResult>();
+            var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
+            var tasks = list.Select(async item =>
+            {
+                try
+                {
+                    await throttler.WaitAsync();
+                    var response = await func(item);
+                    result.TryAdd(item, response);
+                }
+                finally
+                {
+                    throttler.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
             return result;
         }
 
