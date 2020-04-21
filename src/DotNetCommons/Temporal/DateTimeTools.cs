@@ -12,6 +12,24 @@ namespace DotNetCommons.Temporal
     /// </summary>
     public static class DateTimeTools
     {
+        public static IEnumerable<DateTime> Generate(DateTime start, DateTime end, Func<DateTime, DateTime> next)
+        {
+            while (start <= end)
+            {
+                yield return start;
+                start = next(start);
+            }
+        }
+
+        public static IEnumerable<DateTime> Generate(DateTime start, int count, Func<DateTime, DateTime> next)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                yield return start;
+                start = next(start);
+            }
+        }
+
         private static void IterateOver<T1, T2>(object obj, Func<T1, T1> action1, Func<T2, T2> action2)
         {
             foreach (var p in obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanRead && p.CanWrite))
