@@ -12,9 +12,12 @@ namespace DotNetCommons.WinForms
     public static partial class WinApi
     {
         public delegate bool EnumThreadDelegate (IntPtr hWnd, IntPtr lParam);
+        public delegate IntPtr HookProc(int code, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseServiceHandle(IntPtr hSCObject);
 
         [DllImport("advapi32.dll")]
@@ -35,17 +38,28 @@ namespace DotNetCommons.WinForms
         public static extern bool DeleteObject(IntPtr hObject);
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteService(IntPtr hService);
 
         [DllImport("user32.dll")]
         public static extern bool EnumThreadWindows(uint dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+
+        [DllImport("USER32.dll")]
+        public static extern short GetAsyncKeyState(int nVirtKey);
 
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetKeyboardState(byte[] lpKeyState);
+
+        [DllImport("USER32.dll")]
+        public static extern short GetKeyState(int nVirtKey);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
 
         [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern ulong GetTickCount64();
@@ -65,11 +79,9 @@ namespace DotNetCommons.WinForms
         [DllImport("advapi32.dll")]
         public static extern int QueryServiceStatus(IntPtr hService, SERVICE_STATUS lpServiceStatus);
 
-        [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
-        [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool PostThreadMessage(uint threadId, uint msg, IntPtr wParam, IntPtr lParam);
 
@@ -91,6 +103,9 @@ namespace DotNetCommons.WinForms
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr SetWindowsHookEx(HookType hookType, HookProc lpfn, IntPtr hMod, uint dwThreadId);
+
         [DllImport("SHELL32", CallingConvention = CallingConvention.StdCall)]
         public static extern uint SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
 
@@ -105,6 +120,9 @@ namespace DotNetCommons.WinForms
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SystemParametersInfo(SPI uiAction, uint uiParam, byte[] pvParam, SPIF fWinIni);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
         [DllImport("user32.dll")]
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
