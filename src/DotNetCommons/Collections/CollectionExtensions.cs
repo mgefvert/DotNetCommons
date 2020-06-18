@@ -16,13 +16,13 @@ namespace DotNetCommons.Collections
         public class Intersection<T>
         {
             public readonly List<T> Left;
-            public readonly List<T> Both;
+            public readonly List<Tuple<T, T>> Both;
             public readonly List<T> Right;
 
             public Intersection()
             {
                 Left = new List<T>();
-                Both = new List<T>();
+                Both = new List<Tuple<T, T>>();
                 Right = new List<T>();
             }
         }
@@ -236,7 +236,7 @@ namespace DotNetCommons.Collections
         /// <param name="list1">The first list (left)</param>
         /// <param name="list2">The second list (right)</param>
         /// <returns>An Intersection object with the results of the comparison</returns>
-        public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2)
+        public static Intersection<T> Intersect<T>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2)
         {
             return Intersect(list1, list2, null, x => x);
         }
@@ -251,7 +251,7 @@ namespace DotNetCommons.Collections
         /// <param name="list2">The second list (right)</param>
         /// <param name="selector">A selector for the key to compare the objects by</param>
         /// <returns>An Intersection object with the results of the comparison</returns>
-        public static Intersection<T> Intersect<T, TKey>(IList<T> list1, IList<T> list2, Func<T, TKey> selector)
+        public static Intersection<T> Intersect<T, TKey>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Func<T, TKey> selector)
         {
             return Intersect(list1, list2, null, selector);
         }
@@ -265,7 +265,7 @@ namespace DotNetCommons.Collections
         /// <param name="list2">The second list (right)</param>
         /// <param name="comparer">A specific comparer to use for comparing the objects</param>
         /// <returns>An Intersection object with the results of the comparison</returns>
-        public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2, IComparer<T> comparer)
+        public static Intersection<T> Intersect<T>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, IComparer<T> comparer)
         {
             return Intersect(list1, list2, comparer.Compare, x => x);
         }
@@ -279,12 +279,12 @@ namespace DotNetCommons.Collections
         /// <param name="list2">The second list (right)</param>
         /// <param name="comparison">A comparison method for comparing the objects</param>
         /// <returns>An Intersection object with the results of the comparison</returns>
-        public static Intersection<T> Intersect<T>(IList<T> list1, IList<T> list2, Comparison<T> comparison)
+        public static Intersection<T> Intersect<T>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<T> comparison)
         {
             return Intersect(list1, list2, comparison, x => x);
         }
 
-        public static Intersection<T> Intersect<T, TKey>(IList<T> list1, IList<T> list2, Comparison<TKey> comparison, Func<T, TKey> selector)
+        public static Intersection<T> Intersect<T, TKey>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<TKey> comparison, Func<T, TKey> selector)
         {
             bool DoCompare(T item1, T item2)
             {
@@ -333,7 +333,7 @@ namespace DotNetCommons.Collections
                 }
                 else
                 {
-                    result.Both.Add(item1);
+                    result.Both.Add(new Tuple<T, T>(item1, search2[n]));
                     search2.RemoveAt(n);
                 }
             }
