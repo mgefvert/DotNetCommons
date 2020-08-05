@@ -134,5 +134,8 @@ namespace DotNetCommons.WinForms
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, IntPtr pptDst, IntPtr psize, IntPtr hdcSrc, 
             IntPtr pprSrc, Int32 crKey, ref BLENDFUNCTION pblend, Int32 dwFlags);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid powerSettingGuid, int flags);
     }
 }

@@ -187,7 +187,48 @@ namespace DotNetCommons.Collections
             return result;
         }
 
-        public static async Task<ConcurrentDictionary<TSource, TResult>> ForEachAsync<TSource, TResult>(this ICollection<TSource> list, int maxDegreeOfParallelism, Func<TSource, Task<TResult>> func)
+        public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> list,
+            int maxDegreeOfParallelism, Func<TSource, Task> func)
+        {
+            var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
+            var tasks = list.Select(async item =>
+            {
+                try
+                {
+                    await throttler.WaitAsync();
+                    await func(item);
+                }
+                finally
+                {
+                    throttler.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
+        }
+
+        public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> list,
+            int maxDegreeOfParallelism, Func<TSource, int, Task> func)
+        {
+            var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
+            var tasks = list.Select(async (item, index) =>
+            {
+                try
+                {
+                    await throttler.WaitAsync();
+                    await func(item, index);
+                }
+                finally
+                {
+                    throttler.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
+        }
+
+        public static async Task<ConcurrentDictionary<TSource, TResult>> ForEachAsync<TSource, TResult>(this IEnumerable<TSource> list, 
+            int maxDegreeOfParallelism, Func<TSource, Task<TResult>> func)
         {
             var result = new ConcurrentDictionary<TSource, TResult>();
             var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
@@ -197,6 +238,29 @@ namespace DotNetCommons.Collections
                 {
                     await throttler.WaitAsync();
                     var response = await func(item);
+                    result.TryAdd(item, response);
+                }
+                finally
+                {
+                    throttler.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
+            return result;
+        }
+
+        public static async Task<ConcurrentDictionary<TSource, TResult>> ForEachAsync<TSource, TResult>(this IEnumerable<TSource> list,
+            int maxDegreeOfParallelism, Func<TSource, int, Task<TResult>> func)
+        {
+            var result = new ConcurrentDictionary<TSource, TResult>();
+            var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
+            var tasks = list.Select(async (item, index) =>
+            {
+                try
+                {
+                    await throttler.WaitAsync();
+                    var response = await func(item, index);
                     result.TryAdd(item, response);
                 }
                 finally
