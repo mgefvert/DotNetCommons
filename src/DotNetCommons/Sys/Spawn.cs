@@ -11,6 +11,12 @@ namespace DotNetCommons.Sys
 {
     public class Spawn
     {
+        public class SpawnResult
+        {
+            public string Text { get; set; }
+            public int ExitCode { get; set; }
+        }
+
         public static void ExtractCommand(string cmd, out string executable, out string parameters)
         {
             executable = "";
@@ -44,7 +50,7 @@ namespace DotNetCommons.Sys
             }
         }
 
-        public static string Run(string cmd, string parameters = null, string startDirectory = null)
+        public static SpawnResult Run(string cmd, string parameters = null, string startDirectory = null)
         {
             var startInfo = new ProcessStartInfo(cmd, parameters)
             {
@@ -75,7 +81,11 @@ namespace DotNetCommons.Sys
                 process.CancelErrorRead();
                 process.CancelOutputRead();
 
-                return result.ToString();
+                return new SpawnResult
+                {
+                    Text = result.ToString(),
+                    ExitCode = process.ExitCode
+                };
             }
             finally
             {

@@ -116,6 +116,16 @@ namespace DotNetCommons.Temporal
         /// </summary>
         /// <param name="datetime"></param>
         /// <returns></returns>
+        public static DateTime StartOfHour(this DateTime datetime)
+        {
+            return new DateTime(datetime.Year, datetime.Month, datetime.Day, datetime.Hour, 0, 0);
+        }
+
+        /// <summary>
+        /// Calculate the start of the month.
+        /// </summary>
+        /// <param name="datetime"></param>
+        /// <returns></returns>
         public static DateTime StartOfMonth(this DateTime datetime)
         {
             return new DateTime(datetime.Year, datetime.Month, 1);

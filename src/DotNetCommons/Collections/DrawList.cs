@@ -13,7 +13,7 @@ namespace DotNetCommons.Collections
         private readonly List<T> _current = new List<T>();
 
         public bool Repeat { get; set; } = true;
-        
+
         public DrawList()
         {
         }
