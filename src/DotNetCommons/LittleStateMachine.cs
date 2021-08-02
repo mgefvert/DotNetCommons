@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetCommons.Collections;
+using CollectionExtensions = DotNetCommons.Collections.CollectionExtensions;
 
 namespace DotNetCommons
 {
@@ -35,8 +35,9 @@ namespace DotNetCommons
             if (_states.ContainsKey(state))
                 throw new ArgumentException($"State {state} is already defined.");
 
-            _states.Add(state, new StateRecord {
-                State = state, 
+            _states.Add(state, new StateRecord
+            {
+                State = state,
                 HasParent = false,
                 Arrive = arrive,
                 Leave = leave
@@ -52,8 +53,9 @@ namespace DotNetCommons
             if (!_states.ContainsKey(substateOf))
                 throw new ArgumentException($"Parent state {substateOf} has not been defined.");
 
-            _states.Add(state, new StateRecord {
-                State = state, 
+            _states.Add(state, new StateRecord
+            {
+                State = state,
                 SubstateOf = substateOf,
                 HasParent = true,
                 Arrive = arrive,
@@ -86,7 +88,7 @@ namespace DotNetCommons
 
             var sr = FindState(state);
             var result = new List<T>();
-            for(;;)
+            for (; ; )
             {
                 if (result.Contains(sr.State))
                     throw new StateMachineException($"Cyclical parent state not allowed for {sr.State}");

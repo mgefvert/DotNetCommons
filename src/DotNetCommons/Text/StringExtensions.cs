@@ -112,9 +112,8 @@ namespace DotNetCommons.Text
         /// Get a substring from the middle of the text to the end. If the offset is outside
         /// of the string, an empty string will be returned.
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="offset"></param>
-        /// <returns></returns>
+        /// <param name="value">String to work with</param>
+        /// <param name="offset">Zero-based offset</param>
         public static string Mid(this string value, int offset)
         {
             if (string.IsNullOrEmpty(value))
@@ -127,10 +126,9 @@ namespace DotNetCommons.Text
         /// Get a substring from the middle of the text. If the offset or count is outside
         /// of the string, as many characters as was found will be returned.
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="offset"></param>
-        /// <param name="count"></param>
-        /// <returns></returns>
+        /// <param name="value">String to work with</param>
+        /// <param name="offset">Zero-based offset</param>
+        /// <param name="count">Number of characters to extract</param>
         public static string Mid(this string value, int offset, int count)
         {
             if (string.IsNullOrEmpty(value))
@@ -151,22 +149,48 @@ namespace DotNetCommons.Text
         }
 
         /// <summary>
+        /// Returns null if the string IsNullOrEmpty.
+        /// </summary>
+        /// <param name="value">String to test.</param>
+        /// <returns>Null if the string is empty, otherwise the original string.</returns>
+        public static string NullIfEmpty(this string value)
+        {
+            return string.IsNullOrEmpty(value) ? null : value;
+        }
+
+        /// <summary>
         /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
         /// the common "true"/"false" case.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
         public static bool ParseBoolean(this string value)
         {
             if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentNullException(nameof(value), "Null or empty string can not recognized as a boolean.");
+
+            if (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("t", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("y", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (value.Equals("false", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("f", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("no", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("n", StringComparison.OrdinalIgnoreCase))
                 return false;
 
             if (bool.TryParse(value, out var result))
                 return result;
 
-            return long.TryParse(value, out var longresult) && longresult != 0;
+            if (long.TryParse(value, out var longresult))
+                return longresult != 0;
+                
+            throw new ArgumentOutOfRangeException(nameof(value), $"String '{value}' can not recognized as a boolean.");
         }
 
+        /// <summary>
+        /// Parse a decimal value according to NumberStyles.Number and a given culture.
+        /// </summary>
         public static decimal ParseDecimal(this string value, CultureInfo culture, decimal defaultValue = 0)
         {
             return decimal.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result) 
@@ -174,16 +198,25 @@ namespace DotNetCommons.Text
                 : defaultValue;
         }
 
+        /// <summary>
+        /// Parse a decimal value according to NumberStyles.Number and the current culture.
+        /// </summary>
         public static decimal ParseDecimal(this string value, decimal defaultValue = 0)
         {
             return ParseDecimal(value, CultureInfo.CurrentCulture, defaultValue);
         }
 
+        /// <summary>
+        /// Parse a decimal value according to NumberStyles.Number and the invariant culture.
+        /// </summary>
         public static decimal ParseDecimalInvariant(this string value, decimal defaultValue = 0)
         {
             return ParseDecimal(value, CultureInfo.InvariantCulture, defaultValue);
         }
 
+        /// <summary>
+        /// Parse a double value according to NumberStyles.Number and a given culture.
+        /// </summary>
         public static double ParseDouble(this string value, CultureInfo culture, double defaultValue = 0)
         {
             return double.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result)
@@ -191,21 +224,33 @@ namespace DotNetCommons.Text
                 : defaultValue;
         }
 
+        /// <summary>
+        /// Parse a double value according to NumberStyles.Number and the current culture.
+        /// </summary>
         public static double ParseDouble(this string value, double defaultValue = 0)
         {
             return ParseDouble(value, CultureInfo.CurrentCulture, defaultValue);
         }
 
+        /// <summary>
+        /// Parse a double value according to NumberStyles.Number and the invariant culture.
+        /// </summary>
         public static double ParseDoubleInvariant(this string value, double defaultValue = 0)
         {
             return ParseDouble(value, CultureInfo.InvariantCulture, defaultValue);
         }
 
+        /// <summary>
+        /// Parse a integer value.
+        /// </summary>
         public static int ParseInt(this string value, int defaultValue = 0)
         {
             return int.TryParse((value ?? "").Trim(), out var result) ? result : defaultValue;
         }
 
+        /// <summary>
+        /// Parse a long value.
+        /// </summary>
         public static long ParseLong(this string value, long defaultValue = 0)
         {
             return long.TryParse((value ?? "").Trim(), out var result) ? result : defaultValue;
@@ -248,8 +293,6 @@ namespace DotNetCommons.Text
         /// <summary>
         /// Combine Trim() and IsNullOrEmpty() on a sequence of strings.
         /// </summary>
-        /// <param name="strings"></param>
-        /// <returns></returns>
         public static IEnumerable<string> TrimAndFilter(this IEnumerable<string> strings)
         {
             return strings

@@ -32,6 +32,9 @@ namespace DotNetCommons.Collections
             return value < min ? min : (value > max ? max : value);
         }
 
+        /// <summary>
+        /// Add a value to a collection if it is not null. If the collection itself is null, nothing is done.
+        /// </summary>
         public static void AddIfNotNull<T>(this ICollection<T> collection, T item)
         {
             if (collection != null && item != null)
@@ -44,6 +47,10 @@ namespace DotNetCommons.Collections
                 dictionary.Add(item);
         }
 
+        /// <summary>
+        /// Add a range of values to a collection, filtering for null values. If the collection itself is null,
+        /// nothing is done.
+        /// </summary>
         public static void AddRangeIfNotNull<T>(this ICollection<T> collection, IEnumerable<T> items)
         {
             if (collection == null || items == null)
@@ -54,9 +61,15 @@ namespace DotNetCommons.Collections
                     collection.Add(item);
         }
 
+        /// <summary>
+        /// Separate a list of values into batches.
+        /// </summary>
         public static IEnumerable<T[]> Batch<T>(this IEnumerable<T> list, int size)
         {
-            var batch = new List<T>();
+            if (size <= 0)
+                throw new ArgumentOutOfRangeException(nameof(size));
+
+            var batch = new List<T>(size);
             foreach (var item in list)
             {
                 batch.Add(item);
@@ -71,6 +84,12 @@ namespace DotNetCommons.Collections
                 yield return batch.ToArray();
         }
 
+        /// <summary>
+        /// Generate a list of distinct values from a collection of objects using a select function.
+        /// </summary>
+        /// <param name="list">List of objects.</param>
+        /// <param name="func">Selector function that extracts a value from the object.</param>
+        /// <returns>A distinct list of the values returned from the selector function.</returns>
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult> func) where TResult : struct
         {
             var result = new HashSet<TResult>();
@@ -80,6 +99,13 @@ namespace DotNetCommons.Collections
             return result.ToList();
         }
 
+        /// <summary>
+        /// Generate a list of distinct values from a collection of objects using two select functions.
+        /// </summary>
+        /// <param name="list">List of objects.</param>
+        /// <param name="func1">First selector function</param>
+        /// <param name="func2">Second selector function</param>
+        /// <returns>A distinct combined list of the values returned from the two selector functions.</returns>
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult> func1, Func<T, TResult> func2) where TResult : struct
         {
             var result = new HashSet<TResult>();
@@ -92,6 +118,12 @@ namespace DotNetCommons.Collections
             return result.ToList();
         }
 
+        /// <summary>
+        /// Generate a list of distinct values from a collection of objects using a select function, and checking for null values.
+        /// </summary>
+        /// <param name="list">List of objects.</param>
+        /// <param name="func">Selector function that extracts a value from the object.</param>
+        /// <returns>A distinct list of the values returned from the selector function.</returns>
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult?> func) where TResult : struct
         {
             var result = new HashSet<TResult>();
@@ -105,6 +137,13 @@ namespace DotNetCommons.Collections
             return result.ToList();
         }
 
+        /// <summary>
+        /// Generate a list of distinct values from a collection of objects using two select functions, and checking for null values.
+        /// </summary>
+        /// <param name="list">List of objects.</param>
+        /// <param name="func1">First selector function</param>
+        /// <param name="func2">Second selector function</param>
+        /// <returns>A distinct combined list of the values returned from the two selector functions.</returns>
         public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult?> func1, Func<T, TResult?> func2) where TResult : struct
         {
             var result = new HashSet<TResult>();
@@ -127,6 +166,9 @@ namespace DotNetCommons.Collections
                 action(item);
         }
 
+        /// <summary>
+        /// Extract an item from a list at a given position.
+        /// </summary>
         public static T ExtractAt<T>(this IList<T> list, int position)
         {
             var result = list[position];
@@ -135,11 +177,17 @@ namespace DotNetCommons.Collections
             return result;
         }
 
-        public static T ExtractAtOrDefault<T>(this IList<T> list, int position)
+        /// <summary>
+        /// Extract an item from a list at a given position, or return a default (null) value if the position is out of bounds.
+        /// </summary>
+        public static T ExtractAtOrDefault<T>(this IList<T> list, int position, T defaultValue = default)
         {
-            return position < 0 || position >= list.Count ? default : ExtractAt(list, position);
+            return position < 0 || position >= list.Count ? defaultValue : ExtractAt(list, position);
         }
 
+        /// <summary>
+        /// Extract all values from a list, effectively clearing it.
+        /// </summary>
         public static List<T> ExtractAll<T>(this IList<T> list)
         {
             var result = list.ToList();
@@ -147,6 +195,9 @@ namespace DotNetCommons.Collections
             return result;
         }
 
+        /// <summary>
+        /// Extract all values from a list that matches a selector function.
+        /// </summary>
         public static List<T> ExtractAll<T>(this IList<T> list, Predicate<T> match)
         {
             var result = list.Where(x => match(x)).ToList();
@@ -156,26 +207,41 @@ namespace DotNetCommons.Collections
             return result;
         }
 
+        /// <summary>
+        /// Extract the first item from a list, throwing an exception if there are no items.
+        /// </summary>
         public static T ExtractFirst<T>(this IList<T> list)
         {
             return ExtractAt(list, 0);
         }
 
-        public static T ExtractFirstOrDefault<T>(this IList<T> list)
+        /// <summary>
+        /// Extract the first item from a list, or return a default (null) value if there are no items.
+        /// </summary>
+        public static T ExtractFirstOrDefault<T>(this IList<T> list, T defaultValue = default)
         {
-            return list.Any() ? ExtractAt(list, 0) : default;
+            return list.Any() ? ExtractAt(list, 0) : defaultValue;
         }
 
+        /// <summary>
+        /// Extract the last item from a list, throwing an exception if there are no items.
+        /// </summary>
         public static T ExtractLast<T>(this IList<T> list)
         {
             return ExtractAt(list, list.Count - 1);
         }
 
-        public static T ExtractLastOrDefault<T>(this IList<T> list)
+        /// <summary>
+        /// Extract the last item from a list, or return a default (null) value if there are no items.
+        /// </summary>
+        public static T ExtractLastOrDefault<T>(this IList<T> list, T defaultValue = default)
         {
-            return list.Any() ? ExtractAt(list, list.Count - 1) : default;
+            return list.Any() ? ExtractAt(list, list.Count - 1) : defaultValue;
         }
 
+        /// <summary>
+        /// Extract a range of items from a list.
+        /// </summary>
         public static List<T> ExtractRange<T>(this List<T> list, int offset, int count)
         {
             offset = MinMax(offset, 0, list.Count);
@@ -273,19 +339,30 @@ namespace DotNetCommons.Collections
             return result;
         }
 
-        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+        /// <summary>
+        /// Get a value from a dictionary if it exists, otherwise return the default value.
+        /// </summary>
+        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default)
         {
-            return dictionary.TryGetValue(key, out var result) ? result : default;
+            return dictionary.TryGetValue(key, out var result) ? result : defaultValue;
         }
 
-        public static decimal Increase<TKey>(this IDictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
+        /// <summary>
+        /// Increment the value of a given dictionary key, optionally creating the key with a default value of 0
+        /// if it doesn't exist, and then incrementing it. Returns the new value.
+        /// </summary>
+        public static decimal Increment<TKey>(this IDictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
         {
             value += GetOrDefault(dictionary, key);
             dictionary[key] = value;
             return value;
         }
 
-        public static int Increase<TKey>(this IDictionary<TKey, int> dictionary, TKey key, int value = 1)
+        /// <summary>
+        /// Increment the value of a given dictionary key, optionally creating the key with a default value of 0
+        /// if it doesn't exist, and then incrementing it. Returns the new value.
+        /// </summary>
+        public static int Increment<TKey>(this IDictionary<TKey, int> dictionary, TKey key, int value = 1)
         {
             value += GetOrDefault(dictionary, key);
             dictionary[key] = value;
@@ -409,38 +486,74 @@ namespace DotNetCommons.Collections
         }
 
         /// <summary>
-        /// Check whether a value exists and is not null and not empty.
+        /// Find minimum and maximum values for a sequence of values.
         /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <param name="dictionary"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static bool IsSet<TKey>(this IDictionary<TKey, string> dictionary, TKey key)
+        public static (T Min, T Max) MinMax<T>(this IEnumerable<T> collection)
+            where T : IComparable<T>
         {
-            return !string.IsNullOrWhiteSpace(dictionary.GetOrDefault(key));
+            var min = default(T);
+            var max = default(T);
+            var first = true;
+
+            foreach (var item in collection)
+            {
+                if (first)
+                {
+                    min = item;
+                    max = item;
+                    first = false;
+                }
+                else
+                {
+                    if (min!.CompareTo(item) > 0)
+                        min = item;
+                    if (max!.CompareTo(item) < 0)
+                        max = item;
+                }
+            }
+
+            if (first)
+                throw new InvalidOperationException("Cannot apply MinMax to an empty collection.");
+
+            return (min!, max!);
         }
 
-        /**
-         * Return the minimum of a list of DateTimes
-         */
-        public static DateTime Min<T>(this IEnumerable<T> list, Func<T, DateTime> selector)
+        /// <summary>
+        /// Find minimum and maximum values for a sequence of values using a selector for each value.
+        /// </summary>
+        public static (TValue Min, TValue Max) MinMax<TObject, TValue>(this IEnumerable<TObject> collection, Func<TObject, TValue> selector)
+            where TValue : IComparable<TValue>
         {
-            var ticks = list.Select(selector).Select(x => x.Ticks).Min();
-            return new DateTime(ticks);
+            var min = default(TValue);
+            var max = default(TValue);
+            var first = true;
+
+            foreach (var item in collection.Select(selector))
+            {
+                if (first)
+                {
+                    min = item;
+                    max = item;
+                    first = false;
+                }
+                else
+                {
+                    if (min!.CompareTo(item) > 0)
+                        min = item;
+                    if (max!.CompareTo(item) < 0)
+                        max = item;
+                }
+            }
+
+            if (first)
+                throw new InvalidOperationException("Cannot apply MinMax to an empty collection.");
+
+            return (min!, max!);
         }
 
-        /**
-         * Return the maximum of a list of DateTimes
-         */
-        public static DateTime Max<T>(this IEnumerable<T> list, Func<T, DateTime> selector)
-        {
-            var ticks = list.Select(selector).Select(x => x.Ticks).Max();
-            return new DateTime(ticks);
-        }
-
-        /**
-         * Repeat a collection a number of times
-         */
+        /// <summary>
+        /// Repeat a collection a number of times
+        /// </summary>
         public static IEnumerable<T> Repeat<T>(this ICollection<T> collection, int times = 2)
         {
             for (var i = 0; i < times; i++)
@@ -448,9 +561,9 @@ namespace DotNetCommons.Collections
                     yield return item;
         }
 
-        /**
-         * Swap position for two items in a list
-         */
+        /// <summary>
+        /// Swap position for two items in a list
+        /// </summary>
         public static bool Swap<T>(this IList<T> list, int pos1, int pos2)
         {
             if (pos1 < 0 || pos2 < 0 || pos1 >= list.Count || pos2 >= list.Count)
@@ -463,10 +576,10 @@ namespace DotNetCommons.Collections
             return true;
         }
 
-        /**
-         * Iterate through an enumerable and bring along an index counter
-         */
-        public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> source)
+        /// <summary>
+        /// Iterate through an enumerable and bring along an index counter
+        /// </summary>
+        public static IEnumerable<(T Item, int Index)> WithIndex<T>(this IEnumerable<T> source)
         {
             return source.Select((item, index) => (item, index));
         }
