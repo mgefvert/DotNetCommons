@@ -1,6 +1,4 @@
-﻿using System;
-
-// Written by Mats Gefvert
+﻿// Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 
 namespace DotNetCommons.WinForms
@@ -29,8 +27,9 @@ namespace DotNetCommons.WinForms
         public const int ULW_COLORKEY = 1;
         public const int ULW_OPAQUE = 4;
 
-        public const int WS_EX_LAYERED = 0x00080000;
-        public const int WS_EX_TRANSPARENT = 0x00000020;
+        public const int WS_VISIBLE = 0x1000_0000;
+        public const int WS_EX_LAYERED = 0x0008_0000;
+        public const int WS_EX_TRANSPARENT = 0x0000_0020;
 
         public const int DEVICE_NOTIFY_WINDOW_HANDLE = 0;
         public const int DEVICE_NOTIFY_SERVICE_HANDLE = 1;

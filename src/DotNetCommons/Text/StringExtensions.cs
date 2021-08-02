@@ -193,8 +193,8 @@ namespace DotNetCommons.Text
         /// </summary>
         public static decimal ParseDecimal(this string value, CultureInfo culture, decimal defaultValue = 0)
         {
-            return decimal.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result) 
-                ? result 
+            return decimal.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result)
+                ? result
                 : defaultValue;
         }
 
@@ -220,7 +220,7 @@ namespace DotNetCommons.Text
         public static double ParseDouble(this string value, CultureInfo culture, double defaultValue = 0)
         {
             return double.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result)
-                ? result 
+                ? result
                 : defaultValue;
         }
 
@@ -254,6 +254,22 @@ namespace DotNetCommons.Text
         public static long ParseLong(this string value, long defaultValue = 0)
         {
             return long.TryParse((value ?? "").Trim(), out var result) ? result : defaultValue;
+        }
+
+        public static string Repeat(this string value, int count)
+        {
+            switch (count)
+            {
+                case 0: return "";
+                case 1: return value;
+                default:
+                    {
+                        var sb = new StringBuilder(value.Length * count);
+                        for (var i = 0; i < count; i++)
+                            sb.Append(value);
+                        return sb.ToString();
+                    }
+            }
         }
 
         /// <summary>

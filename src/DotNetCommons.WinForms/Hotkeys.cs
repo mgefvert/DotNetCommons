@@ -7,14 +7,14 @@ using System.Windows.Forms;
 
 namespace DotNetCommons.WinForms
 {
-    public class Hotkeys
+    public class HotKeys
     {
         private readonly IntPtr _handle;
         private readonly Dictionary<int, Action> _hotkeys = new Dictionary<int, Action>();
         private int _counter = 1;
         private bool _succeeded = true;
 
-        public Hotkeys(IntPtr handle)
+        public HotKeys(IntPtr handle)
         {
             _handle = handle;
         }
