@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using DotNetCommons.Collections;
 using DotNetCommons.Text;
@@ -29,6 +30,14 @@ namespace DotNetCommons.Temporal
             RegisteredTypes[shortcut] = typeof(T);
         }
 
+        static Holiday()
+        {
+            RegisterHolidayClass<DateBasedHoliday>("date");
+            RegisterHolidayClass<EasterHoliday>("easter");
+            RegisterHolidayClass<LastDayHoliday>("last");
+            RegisterHolidayClass<NthDayHoliday>("nth");
+        }
+
         /// <summary>
         /// Create a new holiday according to a given definition.
         /// </summary>
@@ -43,22 +52,26 @@ namespace DotNetCommons.Temporal
             if (items.Length < 2)
                 throw new InvalidOperationException($"Holiday definition {definition} is invalid.");
 
-            var name = items[0];
-            var holidayType = (HolidayType)int.Parse(items[1]);
-
-            var type = RegisteredTypes.GetOrDefault(name);
+            var type = RegisteredTypes.GetOrDefault(items[0]);
             if (type == null)
-                throw new ArgumentException($"Holiday type '{name}' has not been registered.");
+                throw new ArgumentException($"Holiday type '{items[0]}' has not been registered.");
 
             var args = new List<object>
             {
-                name,
-                holidayType
+                items[1],
+                (HolidayType)int.Parse(items[2])
             };
 
-            args.AddRange(items.Skip(2).Select(int.Parse).Cast<object>());
+            args.AddRange(items.Skip(3).Select(int.Parse).Cast<object>());
 
-            return (Holiday)Activator.CreateInstance(type, args);
+            try
+            {
+                return (Holiday)Activator.CreateInstance(type, args.ToArray());
+            }
+            catch (Exception e)
+            {
+                throw new InvalidDataException("Unable to instantiate holiday from definition: " + definition, e);
+            }
         }
 
         private readonly Dictionary<int, DateTime> _dates = new();
