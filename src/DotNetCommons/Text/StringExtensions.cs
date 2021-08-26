@@ -12,6 +12,16 @@ namespace DotNetCommons.Text
 {
     public static class StringExtensions
     {
+        public static IEnumerable<string> BreakUp(this string value, int length)
+        {
+            if (length <= 0)
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must be positive.");
+
+            for (var pos = 0; pos < value.Length; pos += length)
+                yield return value.Mid(pos, length);
+        }
+
+
         /// <summary>
         /// Test whether a StringBuilder contains a particular character.
         /// </summary>
@@ -184,7 +194,7 @@ namespace DotNetCommons.Text
 
             if (long.TryParse(value, out var longresult))
                 return longresult != 0;
-                
+
             throw new ArgumentOutOfRangeException(nameof(value), $"String '{value}' can not recognized as a boolean.");
         }
 
