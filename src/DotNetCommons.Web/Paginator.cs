@@ -35,8 +35,6 @@ namespace DotNetCommons.Web
         {
         }
 
-
-
         /// <summary>
         /// Calculate a layout for pagination. Assume that we have a sequence of 1..100 pages;
         /// depending on the current page number, we may have "previous" and "next" links to display;
@@ -45,7 +43,7 @@ namespace DotNetCommons.Web
         ///
         /// For instance, for current=36, count=100, mid=2:
         ///
-        ///    << 0 ..... 34 35 36 37 38 ...... 99 >>
+        ///    &lt;&lt; 0 ..... 34 35 36 37 38 ...... 99 &gt;&gt;
         ///                     ^current
         /// 
         /// </summary>
@@ -75,7 +73,7 @@ namespace DotNetCommons.Web
         ///
         /// For instance, for current=36, count=100, mid=2:
         ///
-        ///    << 0 ..... 34 35 36 37 38 ...... 99 >>
+        ///    &lt;&lt; 0 ..... 34 35 36 37 38 ...... 99 &gt;&gt;
         ///                     ^current
         /// 
         /// </summary>
@@ -108,22 +106,17 @@ namespace DotNetCommons.Web
             {
                 result.Add(new PaginatorLink(1, 0));
                 if (midStart > 1)
-                {
                     result.Add(new PaginatorLink(PaginatorLink.Ellipsis, null));
-                }
             }
 
             for (var i = midStart; i <= midEnd; i++)
-            {
                 result.Add(new PaginatorLink(i + 1, i));
-            }
 
             if (midEnd < Max)
             {
                 if (midEnd < Max - 1)
-                {
                     result.Add(new PaginatorLink(PaginatorLink.Ellipsis, null));
-                }
+
                 result.Add(new PaginatorLink(Max + 1, Max));
             }
 
@@ -136,29 +129,30 @@ namespace DotNetCommons.Web
             Layout = result;
         }
 
-        public HString Render()
+        public HString Render(string style = "pagination")
         {
             var result = new StringBuilder();
-            result.AppendLine("<ul class=\"pagination\">");
+            result.AppendLine($"<ul class=\"{style}\">");
 
             foreach (var link in Layout)
             {
-                if (link.Display == PaginatorLink.Previous)
+                switch (link.Display)
                 {
-                    result.AppendLine($"<li class=\"page-item\"><a class=\"page-link\" href=\"?p={link.Page}\">Previous</a></li>");
-                }
-                else if (link.Display == PaginatorLink.Next)
-                {
-                    result.AppendLine($"<li class=\"page-item\"><a class=\"page-link\" href=\"?p={link.Page}\">Next</a></li>");
-                }
-                else if (link.Display == PaginatorLink.Ellipsis)
-                {
-                    result.AppendLine("<li class=\"page-item\"><span>...</span></li>");
-                }
-                else
-                {
-                    var active = link.Page == Current ? "active" : "";
-                    result.AppendLine($"<li class=\"page-item {active}\"><a class=\"page-link\" href=\"?p={link.Page}\">{link.Display}</a></li>");
+                    case PaginatorLink.Previous:
+                        result.AppendLine($"<li class=\"page-item\"><a class=\"page-link\" href=\"?p={link.Page}\">Previous</a></li>");
+                        break;
+                    case PaginatorLink.Next:
+                        result.AppendLine($"<li class=\"page-item\"><a class=\"page-link\" href=\"?p={link.Page}\">Next</a></li>");
+                        break;
+                    case PaginatorLink.Ellipsis:
+                        result.AppendLine("<li class=\"page-item\"><span>...</span></li>");
+                        break;
+                    default:
+                        {
+                            var active = link.Page == Current ? "active" : "";
+                            result.AppendLine($"<li class=\"page-item {active}\"><a class=\"page-link\" href=\"?p={link.Page}\">{link.Display}</a></li>");
+                            break;
+                        }
                 }
             }
             result.AppendLine("</ul>");

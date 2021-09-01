@@ -48,6 +48,10 @@ namespace DotNetCommons.Text
             return n == -1 ? value : (value ?? "").Substring(0, n).Trim();
         }
 
+        public static bool IsEmpty(this string value) => string.IsNullOrEmpty(value);
+
+        public static bool IsSet(this string value) => !string.IsNullOrEmpty(value);
+
         /// <summary>
         /// Take the left n characters from a string, possibly returning less than
         /// the full number of characters if there aren't enough in the string. If the
