@@ -5,14 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Text\Parsers\name-test.csv.gz" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Text\Parsers\name-test.csv.gz" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.6" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.6" />
@@ -20,11 +12,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\DotNetCommons\DotNetCommons.csproj" />
+    <ProjectReference Include="..\..\src\DotNetCommons.Web\DotNetCommons.Web.csproj" />
   </ItemGroup>
 
 </Project>

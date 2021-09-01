@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons.WinForms.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons", "src\DotNetCommons\DotNetCommons.csproj", "{39571976-93FA-462A-BBE5-99A41B1C03B4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons.Web", "src\DotNetCommons.Web\DotNetCommons.Web.csproj", "{2264E536-C323-42CA-BD32-4BDC751A4E30}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.Web.Tests", "test\DotNetCommons.Web.Tests\DotNetCommons.Web.Tests.csproj", "{FCFA496A-9854-41E5-A106-0783DFC9EFF2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +41,14 @@ Global
 		{39571976-93FA-462A-BBE5-99A41B1C03B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39571976-93FA-462A-BBE5-99A41B1C03B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39571976-93FA-462A-BBE5-99A41B1C03B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2264E536-C323-42CA-BD32-4BDC751A4E30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2264E536-C323-42CA-BD32-4BDC751A4E30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2264E536-C323-42CA-BD32-4BDC751A4E30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2264E536-C323-42CA-BD32-4BDC751A4E30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCFA496A-9854-41E5-A106-0783DFC9EFF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCFA496A-9854-41E5-A106-0783DFC9EFF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCFA496A-9854-41E5-A106-0783DFC9EFF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCFA496A-9854-41E5-A106-0783DFC9EFF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +58,8 @@ Global
 		{2C9C8956-5E96-4F6B-940A-E78CE55A7183} = {3B5E0F1C-3195-454F-9270-0FF1525418EF}
 		{61032A0F-FFC3-41B1-958B-605E5FDB6980} = {3B5E0F1C-3195-454F-9270-0FF1525418EF}
 		{39571976-93FA-462A-BBE5-99A41B1C03B4} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
+		{2264E536-C323-42CA-BD32-4BDC751A4E30} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
+		{FCFA496A-9854-41E5-A106-0783DFC9EFF2} = {3B5E0F1C-3195-454F-9270-0FF1525418EF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ACF2AE89-03F6-4E0F-BB13-5576A5D994EF}

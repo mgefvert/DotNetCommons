@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using DotNetCommons.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,6 +7,12 @@ namespace DotNetCommons.Test.Text
     [TestClass]
     public class TextToolsTest
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
         [TestMethod]
         public void TestAsciify()
         {
@@ -20,7 +25,7 @@ namespace DotNetCommons.Test.Text
         public void TestDetermineEncoding()
         {
             Assert.AreEqual(Encoding.ASCII, TextTools.DetermineEncoding(Encoding.Default.GetBytes("Abcdefgh")));
-            Assert.AreEqual(Encoding.Default, TextTools.DetermineEncoding(Encoding.Default.GetBytes("Åäurg!")));
+            Assert.AreEqual(Encoding.GetEncoding(1252), TextTools.DetermineEncoding(Encoding.GetEncoding(1252).GetBytes("Åäurg!")));
             Assert.AreEqual(Encoding.UTF8, TextTools.DetermineEncoding(Encoding.UTF8.GetBytes("Åäurg!")));
         }
 
@@ -41,9 +46,9 @@ namespace DotNetCommons.Test.Text
         public void WordWrap()
         {
             var s =
-                //            1    1    2    2    3    3    4
-                //   1---5----0----5----0----5----0----5----0
-                    "This is a random string. This is a " + 
+                    //            1    1    2    2    3    3    4
+                    //   1---5----0----5----0----5----0----5----0
+                    "This is a random string. This is a " +
                     "random string. This is a random string. " +
                     "This is a random string. This is the " +
                     "end.";

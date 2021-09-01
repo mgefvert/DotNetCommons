@@ -35,19 +35,19 @@ namespace DotNetCommons.Net
                 return null;
 
             var query = new List<string>();
-            foreach(DictionaryEntry pair in parameters)
+            foreach (DictionaryEntry pair in parameters)
                 query.Add(pair.Key + "=" + WebUtility.UrlEncode(pair.Value?.ToString()));
 
             return string.Join("&", query);
         }
 
-        public static string EncodeQuery(string source, IDictionary parameters)
+        public static string EncodeQuery(string url, IDictionary parameters)
         {
             var query = EncodeQuery(parameters);
-            if (source == null)
+            if (url == null)
                 return query;
 
-            return source + (source.Contains("?") ? "&" : "?") + query;
+            return url + (url.Contains("?") ? "&" : "?") + query;
         }
 
         // Internal methods
@@ -159,7 +159,7 @@ namespace DotNetCommons.Net
             http.Headers.Add("Origin", request.Uri.GetLeftPart(UriPartial.Authority));
             http.MaximumAutomaticRedirections = 5;
             http.Method = request.Method;
-            http.Timeout = (int) request.Timeout.TotalMilliseconds;
+            http.Timeout = (int)request.Timeout.TotalMilliseconds;
 
             if (!string.IsNullOrEmpty(request.Accept))
                 http.Accept = request.Accept;

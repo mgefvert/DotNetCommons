@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DotNetCommons.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -87,17 +86,17 @@ namespace DotNetCommons.Test.Collections
         }
 
         [TestMethod]
-        public void TestIncreaseInteger()
+        public void TestIncrementInteger()
         {
-            Assert.AreEqual(2, _dictI.Increase("A"));
-            Assert.AreEqual(2, _dictI.Increase("Z", 2));
+            Assert.AreEqual(2, _dictI.Increment("A"));
+            Assert.AreEqual(2, _dictI.Increment("Z", 2));
         }
 
         [TestMethod]
-        public void TestIncreaseDecimal()
+        public void TestIncrementDecimal()
         {
-            Assert.AreEqual(2.99M, _dictD.Increase("A", 1.99M));
-            Assert.AreEqual(2.45M, _dictD.Increase("Z", 2.45M));
+            Assert.AreEqual(2.99M, _dictD.Increment("A", 1.99M));
+            Assert.AreEqual(2.45M, _dictD.Increment("Z", 2.45M));
         }
     }
 }

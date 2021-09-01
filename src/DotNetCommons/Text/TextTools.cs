@@ -11,8 +11,9 @@ namespace DotNetCommons.Text
 {
     public static class TextTools
     {
-        private static readonly Encoding Win1252 = Encoding.GetEncoding(1252);
-        private static readonly string[] HighBitsXlate = 
+        public static readonly Encoding Win1252 = Encoding.GetEncoding(1252);
+
+        private static readonly string[] HighBitsXlate =
         {
             /* 0x80 */ null, null, "\'", "f",  "\"", "...", null, null, "^",  null,   "S",  "<", "OE",  null,  "Z",   null,
             /* 0x90 */ null, "\'", "\'", "\"", "\"", "*",   "-",  "-",  "~",  "(tm)", "s",  ">", "oe",  null,  "z",   "Y",
@@ -67,7 +68,7 @@ namespace DotNetCommons.Text
 
         /// <summary>
         /// Try to determine the encoding for text stored in a byte buffer. Differentiates
-        /// between ASCII, ANSI and UTF8.
+        /// between ASCII, Win1252 and UTF8.
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>
@@ -89,7 +90,7 @@ namespace DotNetCommons.Text
             if (InternalValidateUtf8(buffer, offset, length))
                 return Encoding.UTF8;
 
-            return Encoding.Default;
+            return Win1252;
         }
 
         /// <summary>
