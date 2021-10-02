@@ -9,9 +9,23 @@ namespace DotNetCommons.Security
 {
     public static class Crypt
     {
+        public const int KeyLength = 32;
+
+        public static byte[] CreateKey(byte[] masterKey, byte[] messageKey)
+        {
+            using var hmac = new HMACSHA256(masterKey);
+            return hmac.ComputeHash(messageKey);
+        }
+
+        public static byte[] CreateKey(string masterKey, string messageKey)
+        {
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(masterKey));
+            return hmac.ComputeHash(Encoding.UTF8.GetBytes(messageKey));
+        }
+
         public static byte[] Decrypt(byte[] key, byte[] data)
         {
-            using var aes = new AesManaged { Key = PadKey(key, 32) };
+            using var aes = new AesManaged { Key = PadKey(key, KeyLength) };
 
             using var mem = new MemoryStream(data);
             byte[] result;
@@ -38,7 +52,7 @@ namespace DotNetCommons.Security
         {
             using var aes = new AesManaged();
             aes.GenerateIV();
-            aes.Key = PadKey(key, 32);
+            aes.Key = PadKey(key, KeyLength);
 
             using var mem = new MemoryStream();
             mem.Write(BitConverter.GetBytes(aes.IV.Length), 0, 4);
@@ -59,7 +73,7 @@ namespace DotNetCommons.Security
             return Convert.ToBase64String(Encrypt(key, bytes));
         }
 
-        public static byte[] PadKey(byte[] key, int length)
+        private static byte[] PadKey(byte[] key, int length)
         {
             var result = new byte[length];
             var maxlen = Math.Max(length, key.Length);

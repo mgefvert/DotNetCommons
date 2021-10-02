@@ -4,11 +4,14 @@ namespace DotNetCommons.Temporal
 {
     public class EasterHoliday : Holiday
     {
-        public EasterHoliday(string name, HolidayType type) : base(name, type)
+        public int Offset { get; }
+
+        public EasterHoliday(string name, HolidayType type, int offset = 0) : base(name, type)
         {
+            Offset = offset;
         }
 
-        public override string TextDefinition() => $"[easter,{Name},{Type}]";
+        public override string TextDefinition() => $"[easter,{Name},{Type}{(Offset == 0 ? "" : "," + Offset)}]";
 
         protected internal override DateTime InternalCalculateDate(int year)
         {
@@ -27,7 +30,7 @@ namespace DotNetCommons.Temporal
             var n = (h + l - 7 * m + 114) / 31;
             var p = (h + l - 7 * m + 114) % 31;
 
-            return new DateTime(year, n, p + 1);
+            return new DateTime(year, n, p + 1).AddDays(Offset);
         }
     }
 }

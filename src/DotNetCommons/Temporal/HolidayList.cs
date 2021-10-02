@@ -11,6 +11,15 @@ namespace DotNetCommons.Temporal
     /// </summary>
     public class HolidayList : List<Holiday>
     {
+        public HolidayList()
+        {
+        }
+
+        public HolidayList(IEnumerable<Holiday> holidays)
+        {
+            AddRange(holidays);
+        }
+
         /// <summary>
         /// Tests whether a particular day is a holiday.
         /// </summary>

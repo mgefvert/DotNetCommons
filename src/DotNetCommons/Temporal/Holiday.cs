@@ -36,6 +36,7 @@ namespace DotNetCommons.Temporal
             RegisterHolidayClass<EasterHoliday>("easter");
             RegisterHolidayClass<LastDayHoliday>("last");
             RegisterHolidayClass<NthDayHoliday>("nth");
+            RegisterHolidayClass<BetweenDaysHoliday>("between");
         }
 
         /// <summary>
