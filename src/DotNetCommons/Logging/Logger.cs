@@ -14,7 +14,7 @@ namespace DotNetCommons.Logging
     {
         public static LogConfiguration Configuration => LogSystem.Configuration;
         public static LogChannel LogChannel => LogSystem.DefaultLogger;
-            
+
         [Obsolete]
         public static void Warn(string text) => LogChannel.Write(LogSeverity.Warning, text);
         [Obsolete]
@@ -58,7 +58,7 @@ namespace DotNetCommons.Logging
 
         public static void Error(Exception ex)
         {
-            Error(ex.GetDetailedInformation());
+            Error(ex.GetDetailedInformation(false));
         }
 
         /// <summary>
@@ -117,12 +117,12 @@ namespace DotNetCommons.Logging
         public static string ExposeWeb(object obj)
         {
             var result = Expose(obj);
-            return 
-                "<pre>" + 
+            return
+                "<pre>" +
                 result
                     .Replace("<", "&lt;")
                     .Replace(">", "&gt;")
-                    .Replace("\r\n", "<br>") + 
+                    .Replace("\r\n", "<br>") +
                 "</pre>";
         }
 
