@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Security.Policy;
 using System.Text;
-using DotNetCommons.Text;
 using DotNetCommons.Temporal;
+using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -18,7 +15,7 @@ namespace DotNetCommons.Net
     {
         public static IEnumerable<Cookie> GetAllCookies(this CookieContainer container)
         {
-            var domains = (Hashtable) container?.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(container);
+            var domains = (Hashtable)container?.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(container);
             if (domains == null)
                 yield break;
 
