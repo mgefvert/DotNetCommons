@@ -10,7 +10,7 @@ namespace DotNetCommons.WinForms
     public class HotKeys
     {
         private readonly IntPtr _handle;
-        private readonly Dictionary<int, Action> _hotkeys = new Dictionary<int, Action>();
+        private readonly Dictionary<int, Action> _hotkeys = new();
         private int _counter = 1;
         private bool _succeeded = true;
 

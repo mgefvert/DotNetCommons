@@ -6,19 +6,18 @@ using System.Text;
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Security
+namespace DotNetCommons.Security;
+
+public static class HashExtensions
 {
-    public static class HashExtensions
+    public static string ComputeString(this HashAlgorithm hashAlgorithm, byte[] buffer, string format = "x2")
     {
-        public static string ComputeString(this HashAlgorithm hashAlgorithm, byte[] buffer, string format = "x2")
-        {
-            var hash = hashAlgorithm.ComputeHash(buffer);
+        var hash = hashAlgorithm.ComputeHash(buffer);
 
-            var result = new StringBuilder(hash.Length * 2);
-            foreach (var b in hash)
-                result.Append(b.ToString(format));
+        var result = new StringBuilder(hash.Length * 2);
+        foreach (var b in hash)
+            result.Append(b.ToString(format));
 
-            return result.ToString();
-        }
+        return result.ToString();
     }
 }

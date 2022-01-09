@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace DotNetCommons.Text.Parsers
+namespace DotNetCommons.Text.Parsers;
+
+public class CsvException : Exception
 {
-    public class CsvException : Exception
+    public CsvException(string message) : base(message)
     {
-        public CsvException(string message) : base(message)
-        {
-        }
     }
 }

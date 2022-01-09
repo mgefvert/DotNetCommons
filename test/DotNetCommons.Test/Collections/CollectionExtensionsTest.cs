@@ -80,9 +80,9 @@ namespace DotNetCommons.Test.Collections
         [TestMethod]
         public void TestGetOrDefault()
         {
-            Assert.AreEqual(1, _dictI.GetOrDefault("A"));
-            Assert.AreEqual(0, _dictI.GetOrDefault("B"));
-            Assert.AreEqual(0, _dictI.GetOrDefault("C"));
+            Assert.AreEqual(1, _dictI.GetValueOrDefault("A"));
+            Assert.AreEqual(0, _dictI.GetValueOrDefault("B"));
+            Assert.AreEqual(0, _dictI.GetValueOrDefault("C"));
         }
 
         [TestMethod]

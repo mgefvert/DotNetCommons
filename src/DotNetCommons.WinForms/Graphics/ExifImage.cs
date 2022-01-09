@@ -124,42 +124,42 @@ namespace DotNetCommons.WinForms.Graphics
 
         public sbyte? ReadInt8(int id)
         {
-            return Exists(id) ? (sbyte)Read(id)[0] : (sbyte?)null;
+            return Exists(id) ? (sbyte)Read(id)[0] : null;
         }
 
         public short? ReadInt16(int id)
         {
-            return Exists(id) ? BitConverter.ToInt16(Read(id), 0) : (short?)null;
+            return Exists(id) ? BitConverter.ToInt16(Read(id), 0) : null;
         }
 
         public int? ReadInt32(int id)
         {
-            return Exists(id) ? BitConverter.ToInt32(Read(id), 0) : (int?)null;
+            return Exists(id) ? BitConverter.ToInt32(Read(id), 0) : null;
         }
 
         public long? ReadInt64(int id)
         {
-            return Exists(id) ? BitConverter.ToInt64(Read(id), 0) : (long?)null;
+            return Exists(id) ? BitConverter.ToInt64(Read(id), 0) : null;
         }
 
         public byte? ReadUInt8(int id)
         {
-            return Exists(id) ? Read(id)[0] : (byte?)null;
+            return Exists(id) ? Read(id)[0] : null;
         }
 
         public ushort? ReadUInt16(int id)
         {
-            return Exists(id) ? BitConverter.ToUInt16(Read(id), 0) : (ushort?)null;
+            return Exists(id) ? BitConverter.ToUInt16(Read(id), 0) : null;
         }
 
         public uint? ReadUInt32(int id)
         {
-            return Exists(id) ? BitConverter.ToUInt32(Read(id), 0) : (uint?)null;
+            return Exists(id) ? BitConverter.ToUInt32(Read(id), 0) : null;
         }
 
         public ulong? ReadUInt64(int id)
         {
-            return Exists(id) ? BitConverter.ToUInt64(Read(id), 0) : (ulong?)null;
+            return Exists(id) ? BitConverter.ToUInt64(Read(id), 0) : null;
         }
 
         public string ReadString(int id, Encoding encoding)
@@ -230,7 +230,7 @@ namespace DotNetCommons.WinForms.Graphics
 
         public void Write(int id, byte? value)
         {
-            Write(id, value != null ? new [] { value.Value } : null);
+            Write(id, value != null ? new[] { value.Value } : null);
         }
 
         public void Write(int id, ushort? value)

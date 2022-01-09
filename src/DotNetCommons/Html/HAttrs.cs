@@ -2,105 +2,103 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetCommons.Collections;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Html
+namespace DotNetCommons.Html;
+
+public class HAttrs : HElement, IEnumerable<HAttr>
 {
-    public class HAttrs : HElement, IEnumerable<HAttr>
+    private readonly Dictionary<string, HAttr> _attrs = new();
+
+    public HAttrs()
     {
-        private readonly Dictionary<string, HAttr> _attrs = new Dictionary<string, HAttr>();
+    }
 
-        public HAttrs()
+    public HAttrs(params HAttr[] attributes)
+    {
+        foreach (var attr in attributes)
+            Add(attr);
+    }
+
+    public static HAttrs Merge(params HAttrs[] attributelists)
+    {
+        var result = new HAttrs();
+        if (attributelists != null)
+            foreach (var attributes in attributelists)
+            foreach (var attribute in attributes)
+                result.Add(attribute);
+
+        return result;
+    }
+
+    public HAttrs Add(HAttr attribute)
+    {
+        return Add(attribute.Key, attribute.Values.ToArray());
+    }
+
+    public HAttrs Add(string key, params string[] values)
+    {
+        var attr = _attrs.GetValueOrDefault(key);
+        if (attr == null)
         {
+            attr = new HAttr(key);
+            _attrs[key] = attr;
         }
 
-        public HAttrs(params HAttr[] attributes)
-        {
-            foreach(var attr in attributes)
-                Add(attr);
-        }
+        attr.Add(values);
+        return this;
+    }
 
-        public static HAttrs Merge(params HAttrs[] attributelists)
-        {
-            var result = new HAttrs();
-            if (attributelists != null)
-                foreach (var attributes in attributelists)
-                    foreach (var attribute in attributes)
-                        result.Add(attribute);
+    public HAttr Get(string key)
+    {
+        return _attrs.GetValueOrDefault(key);
+    }
 
-            return result;
-        }
+    public string GetString(string key)
+    {
+        return _attrs.ContainsKey(key) ? _attrs[key].GetString() : null;
+    }
 
-        public HAttrs Add(HAttr attribute)
-        {
-            return Add(attribute.Key, attribute.Values.ToArray());
-        }
+    public IEnumerator<HAttr> GetEnumerator()
+    {
+        return _attrs.Values.GetEnumerator();
+    }
 
-        public HAttrs Add(string key, params string[] values)
-        {
-            var attr = _attrs.GetOrDefault(key);
-            if (attr == null)
-            {
-                attr = new HAttr(key);
-                _attrs[key] = attr;
-            }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
-            attr.Add(values);
-            return this;
-        }
+    public override string Render()
+    {
+        return string.Join(" ", _attrs.Values.OrderBy(x => x.Key).Select(x => x.Render()));
+    }
 
-        public HAttr Get(string key)
-        {
-            return _attrs.GetOrDefault(key);
-        }
+    public HAttrs Set(HAttr attribute)
+    {
+        _attrs.Remove(attribute.Key);
+        Add(attribute);
+        return this;
+    }
 
-        public string GetString(string key)
-        {
-            return _attrs.ContainsKey(key) ? _attrs[key].GetString() : null;
-        }
+    public HAttrs Set(string key)
+    {
+        return Set(new HAttr(key));
+    }
 
-        public IEnumerator<HAttr> GetEnumerator()
-        {
-            return _attrs.Values.GetEnumerator();
-        }
+    public HAttrs Set(string key, string value)
+    {
+        return Set(new HAttr(key, value));
+    }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+    public HAttrs Set(string key, params string[] values)
+    {
+        return Set(new HAttr(key, values));
+    }
 
-        public override string Render()
-        {
-            return string.Join(" ", _attrs.Values.OrderBy(x => x.Key).Select(x => x.Render()));
-        }
-
-        public HAttrs Set(HAttr attribute)
-        {
-            _attrs.Remove(attribute.Key);
-            Add(attribute);
-            return this;
-        }
-
-        public HAttrs Set(string key)
-        {
-            return Set(new HAttr(key));
-        }
-
-        public HAttrs Set(string key, string value)
-        {
-            return Set(new HAttr(key, value));
-        }
-
-        public HAttrs Set(string key, params string[] values)
-        {
-            return Set(new HAttr(key, values));
-        }
-
-        public override string ToString()
-        {
-            return Render();
-        }
+    public override string ToString()
+    {
+        return Render();
     }
 }

@@ -2,16 +2,15 @@ using System;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Html
+namespace DotNetCommons.Html;
+
+public enum HVerb
 {
-    public enum HVerb
-    {
-        Get,
-        Post,
-        Head,
-        Put,
-        Patch,
-        Delete,
-        Any
-    }
+    Get,
+    Post,
+    Head,
+    Put,
+    Patch,
+    Delete,
+    Any
 }

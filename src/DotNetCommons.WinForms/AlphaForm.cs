@@ -102,7 +102,7 @@ namespace DotNetCommons.WinForms
 
             var zero = IntPtr.Zero;
             if (Thread.CurrentThread.IsThreadPoolThread || Thread.CurrentThread.IsBackground)
-                Invoke((Action)delegate { WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA); });
+                Invoke(delegate { WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA); });
             else
                 WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA);
         }

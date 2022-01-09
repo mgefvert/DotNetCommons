@@ -5,126 +5,125 @@ using System.Threading;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Net.Cache
+namespace DotNetCommons.Net.Cache;
+
+public class MemoryCache : IWebCache
 {
-    public class MemoryCache : IWebCache
+    protected readonly Dictionary<string, CacheItem> InternalStore = new();
+    protected readonly ReaderWriterLockSlim InternalLock = new(LockRecursionPolicy.SupportsRecursion);
+
+    public bool Changed { get; protected set; }
+
+    public void Clear()
     {
-        protected readonly Dictionary<string, CacheItem> InternalStore = new Dictionary<string, CacheItem>();
-        protected readonly ReaderWriterLockSlim InternalLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
-        public bool Changed { get; protected set; }
-
-        public void Clear()
+        InternalLock.EnterWriteLock();
+        try
         {
-            InternalLock.EnterWriteLock();
-            try
+            InternalStore.Clear();
+            Changed = true;
+        }
+        finally
+        {
+            InternalLock.ExitWriteLock();
+        }
+    }
+
+    public void Clean(TimeSpan age)
+    {
+        InternalLock.EnterWriteLock();
+        try
+        {
+            var now = DateTime.UtcNow;
+            foreach (var item in InternalStore.ToList())
             {
-                InternalStore.Clear();
+                if (now - item.Value.Timestamp > age)
+                    Changed = Changed || InternalStore.Remove(item.Key);
+            }
+        }
+        finally
+        {
+            InternalLock.ExitWriteLock();
+        }
+    }
+
+    public bool Exists(string uri)
+    {
+        InternalLock.EnterReadLock();
+        try
+        {
+            return InternalStore.ContainsKey(uri);
+        }
+        finally
+        {
+            InternalLock.ExitReadLock();
+        }
+    }
+
+    public CommonWebResult Fetch(string uri)
+    {
+        InternalLock.EnterReadLock();
+        try
+        {
+            return InternalStore.TryGetValue(uri, out var result) ? result.Result : null;
+        }
+        finally
+        {
+            InternalLock.ExitReadLock();
+        }
+    }
+
+    public bool Remove(string uri)
+    {
+        InternalLock.EnterWriteLock();
+        try
+        {
+            var result = InternalStore.Remove(uri);
+            if (result)
                 Changed = true;
-            }
-            finally
-            {
-                InternalLock.ExitWriteLock();
-            }
+            return result;
         }
-
-        public void Clean(TimeSpan age)
+        finally
         {
-            InternalLock.EnterWriteLock();
-            try
-            {
-                var now = DateTime.UtcNow;
-                foreach (var item in InternalStore.ToList())
-                {
-                    if (now - item.Value.Timestamp > age)
-                        Changed = Changed || InternalStore.Remove(item.Key);
-                }
-            }
-            finally
-            {
-                InternalLock.ExitWriteLock();
-            }
+            InternalLock.ExitWriteLock();
         }
+    }
 
-        public bool Exists(string uri)
+    public void Store(string uri, CommonWebResult result)
+    {
+        InternalLock.EnterWriteLock();
+        try
         {
-            InternalLock.EnterReadLock();
-            try
+            InternalStore[uri] = new CacheItem
             {
-                return InternalStore.ContainsKey(uri);
-            }
-            finally
-            {
-                InternalLock.ExitReadLock();
-            }
+                Uri = uri,
+                Timestamp = DateTime.UtcNow,
+                Result = result
+            };
+            Changed = true;
         }
-
-        public CommonWebResult Fetch(string uri)
+        finally
         {
-            InternalLock.EnterReadLock();
-            try
-            {
-                return InternalStore.TryGetValue(uri, out var result) ? result.Result : null;
-            }
-            finally
-            {
-                InternalLock.ExitReadLock();
-            }
+            InternalLock.ExitWriteLock();
         }
+    }
 
-        public bool Remove(string uri)
+    public bool TryFetch(string uri, out CommonWebResult result)
+    {
+        InternalLock.EnterReadLock();
+        try
         {
-            InternalLock.EnterWriteLock();
-            try
+            if (InternalStore.TryGetValue(uri, out var item))
             {
-                var result = InternalStore.Remove(uri);
-                if (result)
-                    Changed = true;
-                return result;
+                result = item.Result;
+                return true;
             }
-            finally
-            {
-                InternalLock.ExitWriteLock();
-            }
+
+            result = null;
+            return false;
         }
-
-        public void Store(string uri, CommonWebResult result)
+        finally
         {
-            InternalLock.EnterWriteLock();
-            try
-            {
-                InternalStore[uri] = new CacheItem
-                {
-                    Uri = uri,
-                    Timestamp = DateTime.UtcNow,
-                    Result = result
-                };
-                Changed = true;
-            }
-            finally
-            {
-                InternalLock.ExitWriteLock();
-            }
-        }
-
-        public bool TryFetch(string uri, out CommonWebResult result)
-        {
-            InternalLock.EnterReadLock();
-            try
-            {
-                if (InternalStore.TryGetValue(uri, out var item))
-                {
-                    result = item.Result;
-                    return true;
-                }
-
-                result = null;
-                return false;
-            }
-            finally
-            {
-                InternalLock.ExitReadLock();
-            }
+            InternalLock.ExitReadLock();
         }
     }
 }

@@ -3,72 +3,71 @@ using System.Collections.Generic;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Collections
+namespace DotNetCommons.Collections;
+
+public class DrawList<T>
 {
-    public class DrawList<T>
+    private readonly object _lock = new();
+    private readonly Random _rnd = new();
+    private readonly List<T> _source = new();
+    private readonly List<T> _current = new();
+
+    public bool Repeat { get; set; } = true;
+
+    public DrawList()
     {
-        private readonly object _lock = new object();
-        private readonly Random _rnd = new Random();
-        private readonly List<T> _source = new List<T>();
-        private readonly List<T> _current = new List<T>();
+    }
 
-        public bool Repeat { get; set; } = true;
+    public DrawList(IEnumerable<T> source)
+    {
+        Seed(source);
+    }
 
-        public DrawList()
+    public int Count()
+    {
+        lock (_lock)
         {
+            return _source.Count;
         }
+    }
 
-        public DrawList(IEnumerable<T> source)
+    public T Draw()
+    {
+        lock (_lock)
         {
-            Seed(source);
-        }
+            if (_source.Count == 0)
+                return default;
 
-        public int Count()
-        {
-            lock (_lock)
+            if (_current.Count == 0)
             {
-                return _source.Count;
-            }
-        }
-
-        public T Draw()
-        {
-            lock (_lock)
-            {
-                if (_source.Count == 0)
+                if (Repeat)
+                    _current.AddRange(_source);
+                else
                     return default;
-
-                if (_current.Count == 0)
-                {
-                    if (Repeat)
-                        _current.AddRange(_source);
-                    else
-                        return default;
-                }
-
-                var n = _rnd.Next(_current.Count);
-                var s = _current[n];
-                _current.RemoveAt(n);
-
-                return s;
             }
+
+            var n = _rnd.Next(_current.Count);
+            var s = _current[n];
+            _current.RemoveAt(n);
+
+            return s;
         }
+    }
 
-        public int Left()
+    public int Left()
+    {
+        lock (_lock)
         {
-            lock (_lock)
-            {
-                return _current.Count;
-            }
+            return _current.Count;
         }
+    }
 
-        public void Seed(IEnumerable<T> items)
+    public void Seed(IEnumerable<T> items)
+    {
+        lock (_lock)
         {
-            lock (_lock)
-            {
-                _source.Clear();
-                _source.AddRange(items);
-            }
+            _source.Clear();
+            _source.AddRange(items);
         }
     }
 }

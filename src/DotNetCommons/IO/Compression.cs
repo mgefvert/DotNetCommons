@@ -5,64 +5,63 @@ using System.Text;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.IO
+namespace DotNetCommons.IO;
+
+public static class Compression
 {
-    public static class Compression
+    /// <summary>
+    /// Compress a byte buffer using the Deflate algorithm.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public static byte[] Pack(byte[] data)
     {
-        /// <summary>
-        /// Compress a byte buffer using the Deflate algorithm.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static byte[] Pack(byte[] data)
+        using var plain = new MemoryStream(data);
+        using var packed = new MemoryStream();
+
+        using (var compress = new DeflateStream(packed, CompressionMode.Compress, true))
         {
-            using var plain = new MemoryStream(data);
-            using var packed = new MemoryStream();
-
-            using (var compress = new DeflateStream(packed, CompressionMode.Compress, true))
-            {
-                plain.CopyTo(compress);
-            }
-
-            return packed.ToArray();
+            plain.CopyTo(compress);
         }
 
-        /// <summary>
-        /// Compress a string using the Deflate algorithm.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="encoding"></param>
-        /// <returns></returns>
-        public static byte[] PackString(string data, Encoding encoding = null)
-        {
-            return Pack((encoding ?? Encoding.UTF8).GetBytes(data));
-        }
+        return packed.ToArray();
+    }
 
-        /// <summary>
-        /// Decompress a byte buffer using the Deflate algorithm.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static byte[] Unpack(byte[] data)
-        {
-            using var packed = new MemoryStream(data);
-            using var plain = new MemoryStream();
+    /// <summary>
+    /// Compress a string using the Deflate algorithm.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    public static byte[] PackString(string data, Encoding encoding = null)
+    {
+        return Pack((encoding ?? Encoding.UTF8).GetBytes(data));
+    }
 
-            using (var compress = new DeflateStream(packed, CompressionMode.Decompress, true))
-                compress.CopyTo(plain);
+    /// <summary>
+    /// Decompress a byte buffer using the Deflate algorithm.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public static byte[] Unpack(byte[] data)
+    {
+        using var packed = new MemoryStream(data);
+        using var plain = new MemoryStream();
 
-            return plain.ToArray();
-        }
+        using (var compress = new DeflateStream(packed, CompressionMode.Decompress, true))
+            compress.CopyTo(plain);
 
-        /// <summary>
-        /// Decompress a string using the Deflate algorithm.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="encoding"></param>
-        /// <returns></returns>
-        public static string UnpackString(byte[] data, Encoding encoding = null)
-        {
-            return (encoding ?? Encoding.UTF8).GetString(Unpack(data));
-        }
+        return plain.ToArray();
+    }
+
+    /// <summary>
+    /// Decompress a string using the Deflate algorithm.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    public static string UnpackString(byte[] data, Encoding encoding = null)
+    {
+        return (encoding ?? Encoding.UTF8).GetString(Unpack(data));
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -18,13 +17,13 @@ namespace DotNetCommons.WinForms.Graphics
         public delegate bool ColorMatchDelegate(Color color);
 
         private Bitmap _bitmap;
-        private readonly Random _rnd = new Random();
+        private readonly Random _rnd = new();
 
         public Bitmap Bitmap => _bitmap;
         public int Height => _bitmap.Height;
         public int Width => _bitmap.Width;
         public int PixelCount => Height * Width;
-        public Size Size => new Size(_bitmap.Width, _bitmap.Height);
+        public Size Size => new(_bitmap.Width, _bitmap.Height);
         public InterpolationMode InterpolationMode { get; set; }
 
         public ImageProcessor(Image image, bool forceCopy = false)

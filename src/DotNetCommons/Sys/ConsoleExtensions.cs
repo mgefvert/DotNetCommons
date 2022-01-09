@@ -2,24 +2,23 @@
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Sys
-{
-    public static class ConsoleExtensions
-    {
-        private static bool? _hasConsole;
-        public static bool HasConsole => _hasConsole ?? (bool)(_hasConsole = CheckForConsole());
+namespace DotNetCommons.Sys;
 
-        private static bool CheckForConsole()
+public static class ConsoleExtensions
+{
+    private static bool? _hasConsole;
+    public static bool HasConsole => _hasConsole ?? (bool)(_hasConsole = CheckForConsole());
+
+    private static bool CheckForConsole()
+    {
+        try
         {
-            try
-            {
-                var _ = Console.KeyAvailable;
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            var _ = Console.KeyAvailable;
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
         }
     }
 }

@@ -2,10 +2,9 @@ using System;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Html
+namespace DotNetCommons.Html;
+
+public abstract class HElement
 {
-    public abstract class HElement
-    {
-        public abstract string Render();
-    }
+    public abstract string Render();
 }
