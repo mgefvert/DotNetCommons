@@ -23,14 +23,33 @@ namespace DotNetCommons.IO
             return result;
         }
 
-        public static byte[] ReadToEnd(Stream stream)
+        public static int ReadIntoBuffer(Stream stream, byte[] buffer)
+        {
+            var span = buffer.AsSpan();
+            var totalRead = 0;
+
+            while (totalRead < buffer.Length)
+            {
+                var len = stream.Read(span[totalRead..]);
+                if (len == 0)
+                    return totalRead;
+
+                totalRead += len;
+            }
+
+            return totalRead;
+        }
+
+        public static byte[] ReadToEnd(Stream stream) => ReadToEnd(stream, 16384);
+
+        public static byte[] ReadToEnd(Stream stream, int bufferSize)
         {
             var result = new MemoryStream();
-            var buffer = new byte[16384];
+            var buffer = new byte[bufferSize];
 
-            for (;;)
+            for (; ; )
             {
-                var len = stream.Read(buffer, 0, 16384);
+                var len = stream.Read(buffer, 0, bufferSize);
                 if (len == 0)
                     return result.ToArray();
 

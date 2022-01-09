@@ -2,6 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using DotNetCommons.IO;
 
 // ReSharper disable UnusedMember.Global
 
@@ -26,20 +27,23 @@ namespace DotNetCommons.Security
         public static byte[] Decrypt(byte[] key, byte[] data)
         {
             using var aes = new AesManaged { Key = PadKey(key, KeyLength) };
-
             using var mem = new MemoryStream(data);
-            byte[] result;
+            byte[] buffer;
 
             using (var reader = new BinaryReader(mem, Encoding.UTF8, true))
             {
                 var ivlen = reader.ReadInt32();
                 aes.IV = reader.ReadBytes(ivlen);
-                result = new byte[reader.ReadInt32()];
+                buffer = new byte[reader.ReadInt32()];
             }
 
             using var crypto = new CryptoStream(mem, aes.CreateDecryptor(), CryptoStreamMode.Read);
-            crypto.Read(result, 0, result.Length);
-            return result;
+
+            var read = StreamTools.ReadIntoBuffer(crypto, buffer);
+            if (read != buffer.Length)
+                throw new Exception($"Expected {buffer.Length} of decrypted data, got {read}.");
+
+            return buffer;
         }
 
         public static string Decrypt(byte[] key, string data)
