@@ -150,7 +150,7 @@ public class DictionarySerializer
             writer.Write(data.Length);
             writer.Write(data);
         }
-
-        throw new SerializationException($"{type.Name} is a complex object and cannot be serialized");
+        else
+            throw new SerializationException($"{type.Name} is a complex object and cannot be serialized");
     }
 }
