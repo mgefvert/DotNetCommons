@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 using System.Text;
 
 // ReSharper disable UnusedMember.Global
@@ -12,7 +11,6 @@ namespace DotNetCommons.Collections;
 public class DictionarySerializer
 {
     public Encoding Encoding { get; set; } = Encoding.UTF8;
-    private readonly BinaryFormatter _fmt = new();
 
     public Dictionary<TKey, TValue> Load<TKey, TValue>(string filename)
     {
@@ -84,18 +82,7 @@ public class DictionarySerializer
             return reader.ReadBytes(count);
         }
 
-        // Generic object
-        {
-            var count = reader.ReadInt32();
-            var data = reader.ReadBytes(count);
-
-            using var mem = new MemoryStream(data);
-            var obj = _fmt.Deserialize(mem);
-            if (obj is T)
-                return obj;
-        }
-
-        return default(T);
+        throw new SerializationException($"{typeof(T).Name} is a complex object and cannot be serialized");
     }
 
     public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, string filename)
@@ -164,14 +151,6 @@ public class DictionarySerializer
             writer.Write(data);
         }
 
-        // Generic object
-        else
-        {
-            using var mem = new MemoryStream();
-            _fmt.Serialize(mem, value);
-
-            writer.Write((int)mem.Length);
-            writer.Write(mem.ToArray());
-        }
+        throw new SerializationException($"{type.Name} is a complex object and cannot be serialized");
     }
 }

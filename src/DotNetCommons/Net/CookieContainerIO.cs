@@ -15,7 +15,7 @@ public static class CookieContainerIO
 {
     public static IEnumerable<Cookie> GetAllCookies(this CookieContainer container)
     {
-        var domains = (Hashtable)container?.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(container);
+            var domains = (Hashtable) container?.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(container);
         if (domains == null)
             yield break;
 

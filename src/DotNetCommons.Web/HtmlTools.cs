@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using DotNetCommons.Net;
 using DotNetCommons.Security;
+using Microsoft.AspNetCore.Html;
 
 namespace DotNetCommons.Web
 {
@@ -39,6 +40,14 @@ namespace DotNetCommons.Web
             var b = (int)(255 * pct + color.B * (1 - pct));
 
             return Color.FromArgb(r, g, b);
+        }
+
+        public static HtmlString Nl2Br(string text)
+        {
+            return new HtmlString(text
+                .Replace("\r\n", "<br>")
+                .Replace("\n", "<br>")
+                .Replace("\r", ""));
         }
 
         public static string ToCss(this Color color)

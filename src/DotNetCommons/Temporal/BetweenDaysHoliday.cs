@@ -43,7 +43,7 @@ public class BetweenDaysHoliday : Holiday
         var d1 = new DateTime(year, MaxMonth, MaxDay);
         var d = d0;
 
-        while (d < d1)
+        while (d <= d1)
         {
             if (d.DayOfWeek == DayOfWeek)
                 return d;
