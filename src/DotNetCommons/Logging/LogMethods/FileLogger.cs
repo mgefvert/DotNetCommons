@@ -9,211 +9,210 @@ using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Logging.LogMethods
+namespace DotNetCommons.Logging.LogMethods;
+
+public class FileLogger : ILogMethod
 {
-    public class FileLogger : ILogMethod
+    private readonly object _lock = new();
+    private readonly ILogFileNaming _provider;
+    private readonly string _logName;
+    private readonly string _extension;
+    private readonly DirectoryInfo _directory;
+    private readonly int _maxRotations;
+    private readonly bool _compress;
+    private DateTime _lastDate = DateTime.MinValue;
+    private Stream _stream;
+
+    public FileLogger(LogRotation rotation, string directory, string logname, string extension, int maxRotations, bool compress)
     {
-        private readonly object _lock = new object();
-        private readonly ILogFileNaming _provider;
-        private readonly string _logName;
-        private readonly string _extension;
-        private readonly DirectoryInfo _directory;
-        private readonly int _maxRotations;
-        private readonly bool _compress;
-        private DateTime _lastDate = DateTime.MinValue;
-        private Stream _stream;
+        _directory = new DirectoryInfo(directory);
+        _logName = logname;
+        _extension = extension.StartsWith(".") ? extension : "." + extension;
+        _compress = compress;
+        _maxRotations = maxRotations;
 
-        public FileLogger(LogRotation rotation, string directory, string logname, string extension, int maxRotations, bool compress)
+        switch (rotation)
         {
-            _directory = new DirectoryInfo(directory);
-            _logName = logname;
-            _extension = extension.StartsWith(".") ? extension : "." + extension;
-            _compress = compress;
-            _maxRotations = maxRotations;
+            case LogRotation.Daily:
+                _provider = new LogFileDaily();
+                break;
 
-            switch (rotation)
+            case LogRotation.Monthly:
+                _provider = new LogFileMonthly();
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null);
+        }
+    }
+
+    internal interface ILogFileNaming
+    {
+        IEnumerable<string> GetAllowedFiles(string name, string extension, int rotations, DateTime? date = null);
+        string GetCurrentFileName(string name, string extension, DateTime? date = null);
+        string GetFileSpec(string name, string extension);
+    }
+
+    internal class LogFileDaily : ILogFileNaming
+    {
+        public IEnumerable<string> GetAllowedFiles(string name, string extension, int rotations, DateTime? date = null)
+        {
+            var dt = date ?? DateTime.Today;
+
+            for (var i = 0; i <= rotations; i++)
             {
-                case LogRotation.Daily:
-                    _provider = new LogFileDaily();
-                    break;
+                var filename = GetCurrentFileName(name, extension, dt);
+                yield return filename;
+                yield return filename + ".gz";
 
-                case LogRotation.Monthly:
-                    _provider = new LogFileMonthly();
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null);
+                dt = dt.AddDays(-1);
             }
         }
 
-        internal interface ILogFileNaming
+        public string GetCurrentFileName(string name, string extension, DateTime? date)
         {
-            IEnumerable<string> GetAllowedFiles(string name, string extension, int rotations, DateTime? date = null);
-            string GetCurrentFileName(string name, string extension, DateTime? date = null);
-            string GetFileSpec(string name, string extension);
+            return name + "-" + (date ?? DateTime.Today).ToString("yyyy-MM-dd") + extension;
         }
 
-        internal class LogFileDaily : ILogFileNaming
+        public string GetFileSpec(string name, string extension)
         {
-            public IEnumerable<string> GetAllowedFiles(string name, string extension, int rotations, DateTime? date = null)
+            return name + "-????-??-??" + extension;
+        }
+    }
+
+    internal class LogFileMonthly : ILogFileNaming
+    {
+        public IEnumerable<string> GetAllowedFiles(string name, string extension, int rotations, DateTime? date = null)
+        {
+            var dt = date ?? DateTime.Today;
+
+            for (var i = 0; i <= rotations; i++)
             {
-                var dt = date ?? DateTime.Today;
+                var filename = GetCurrentFileName(name, extension, dt);
+                yield return filename;
+                yield return filename + ".gz";
 
-                for (var i = 0; i <= rotations; i++)
-                {
-                    var filename = GetCurrentFileName(name, extension, dt);
-                    yield return filename;
-                    yield return filename + ".gz";
-
-                    dt = dt.AddDays(-1);
-                }
-            }
-
-            public string GetCurrentFileName(string name, string extension, DateTime? date)
-            {
-                return name + "-" + (date ?? DateTime.Today).ToString("yyyy-MM-dd") + extension;
-            }
-
-            public string GetFileSpec(string name, string extension)
-            {
-                return name + "-????-??-??" + extension;
+                dt = dt.AddMonths(-1);
             }
         }
 
-        internal class LogFileMonthly : ILogFileNaming
+        public string GetCurrentFileName(string name, string extension, DateTime? date = null)
         {
-            public IEnumerable<string> GetAllowedFiles(string name, string extension, int rotations, DateTime? date = null)
-            {
-                var dt = date ?? DateTime.Today;
-
-                for (var i = 0; i <= rotations; i++)
-                {
-                    var filename = GetCurrentFileName(name, extension, dt);
-                    yield return filename;
-                    yield return filename + ".gz";
-
-                    dt = dt.AddMonths(-1);
-                }
-            }
-
-            public string GetCurrentFileName(string name, string extension, DateTime? date = null)
-            {
-                return name + "-" + (date ?? DateTime.Today).ToString("yyyy-MM") + extension;
-            }
-
-            public string GetFileSpec(string name, string extension)
-            {
-                return name + "-????-??" + extension;
-            }
+            return name + "-" + (date ?? DateTime.Today).ToString("yyyy-MM") + extension;
         }
 
-        internal void CompressFile(FileInfo file)
+        public string GetFileSpec(string name, string extension)
         {
-            var oldFileName = file.FullName;
-            var newFileName = file.FullName + ".gz";
+            return name + "-????-??" + extension;
+        }
+    }
 
-            // If new file already exists and has data, skip the compression step
-            if (!File.Exists(newFileName) || new FileInfo(newFileName).Length == 0)
-            {
-                using var oldFile = new FileStream(oldFileName, FileMode.Open, FileAccess.Read);
-                using var newFile = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
-                using var gz = new GZipStream(newFile, CompressionMode.Compress);
-                oldFile.CopyTo(gz);
-            }
+    internal void CompressFile(FileInfo file)
+    {
+        var oldFileName = file.FullName;
+        var newFileName = file.FullName + ".gz";
 
-            try
-            {
-                File.Delete(oldFileName);
-            }
-            catch (Exception)
-            {
-                // Couldn't delete old file... strange; just leave for now
-            }
+        // If new file already exists and has data, skip the compression step
+        if (!File.Exists(newFileName) || new FileInfo(newFileName).Length == 0)
+        {
+            using var oldFile = new FileStream(oldFileName, FileMode.Open, FileAccess.Read);
+            using var newFile = new FileStream(newFileName, FileMode.Create, FileAccess.Write);
+            using var gz = new GZipStream(newFile, CompressionMode.Compress);
+            oldFile.CopyTo(gz);
         }
 
-        public FileInfo GetCurrentLogfile()
+        try
         {
-            return new FileInfo(Path.Combine(_directory.FullName, _provider.GetCurrentFileName(_logName, _extension)));
+            File.Delete(oldFileName);
         }
-
-        public Stream OpenCurrent()
+        catch (Exception)
         {
-            var filename = GetCurrentLogfile();
-
-            var dir = filename.Directory;
-            if (dir != null && !dir.Exists)
-                dir.Create();
-
-            var stream = filename.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
-            stream.Seek(0, SeekOrigin.End);
-            return stream;
+            // Couldn't delete old file... strange; just leave for now
         }
+    }
 
-        public void Rotate()
-        {
-            var fileSpec = _provider.GetFileSpec(_logName, _extension);
-            var allowedFiles = _provider.GetAllowedFiles(_logName, _extension, _maxRotations).ToList();
-            var currentFile = _provider.GetCurrentFileName(_logName, _extension);
+    public FileInfo GetCurrentLogfile()
+    {
+        return new FileInfo(Path.Combine(_directory.FullName, _provider.GetCurrentFileName(_logName, _extension)));
+    }
 
-            var oldFiles =
-                _directory.EnumerateFiles(fileSpec)
+    public Stream OpenCurrent()
+    {
+        var filename = GetCurrentLogfile();
+
+        var dir = filename.Directory;
+        if (dir != null && !dir.Exists)
+            dir.Create();
+
+        var stream = filename.Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+        stream.Seek(0, SeekOrigin.End);
+        return stream;
+    }
+
+    public void Rotate()
+    {
+        var fileSpec = _provider.GetFileSpec(_logName, _extension);
+        var allowedFiles = _provider.GetAllowedFiles(_logName, _extension, _maxRotations).ToList();
+        var currentFile = _provider.GetCurrentFileName(_logName, _extension);
+
+        var oldFiles =
+            _directory.EnumerateFiles(fileSpec)
                 .Concat(_directory.EnumerateFiles(fileSpec + ".gz"))
                 .ToList();
 
-            oldFiles.RemoveAll(x => x.Name.Like(currentFile));
+        oldFiles.RemoveAll(x => x.Name.Like(currentFile));
 
-            // Delete old log files
-            var toDelete = oldFiles.ExtractAll(f => !allowedFiles.Contains(f.Name));
-            foreach (var file in toDelete)
-                file.Delete();
+        // Delete old log files
+        var toDelete = oldFiles.ExtractAll(f => !allowedFiles.Contains(f.Name));
+        foreach (var file in toDelete)
+            file.Delete();
 
-            // Compress files if needed
-            if (_compress)
-            {
-                foreach (var file in oldFiles.Where(f => !f.Name.EndsWith(".gz", StringComparison.CurrentCultureIgnoreCase)))
-                    CompressFile(file);
-            }
-        }
-
-        public IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush)
+        // Compress files if needed
+        if (_compress)
         {
-            var rotate = false;
+            foreach (var file in oldFiles.Where(f => !f.Name.EndsWith(".gz", StringComparison.CurrentCultureIgnoreCase)))
+                CompressFile(file);
+        }
+    }
 
-            lock (_lock)
+    public IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush)
+    {
+        var rotate = false;
+
+        lock (_lock)
+        {
+            if (_lastDate != DateTime.Today || _stream == null)
             {
-                if (_lastDate != DateTime.Today || _stream == null)
-                {
-                    _lastDate = DateTime.Today;
-                    _stream?.Dispose();
-                    rotate = true;
-                    _stream = OpenCurrent();
-                }
-
-                if (_stream == null)
-                    return entries;
-
-                var encoding = Encoding.UTF8;
-                using (var mem = new MemoryStream())
-                {
-                    foreach (var entry in entries)
-                    {
-                        var buffer = encoding.GetBytes(entry.ToString(LogFormat.Long));
-                        mem.Write(buffer, 0, buffer.Length);
-                        mem.WriteByte(13);
-                        mem.WriteByte(10);
-                    }
-
-                    mem.Position = 0;
-                    mem.CopyTo(_stream);
-                }
-
-                _stream.Flush();
+                _lastDate = DateTime.Today;
+                _stream?.Dispose();
+                rotate = true;
+                _stream = OpenCurrent();
             }
 
-            if (rotate)
-                Rotate();
+            if (_stream == null)
+                return entries;
 
-            return entries;
+            var encoding = Encoding.UTF8;
+            using (var mem = new MemoryStream())
+            {
+                foreach (var entry in entries)
+                {
+                    var buffer = encoding.GetBytes(entry.ToString(LogFormat.Long));
+                    mem.Write(buffer, 0, buffer.Length);
+                    mem.WriteByte(13);
+                    mem.WriteByte(10);
+                }
+
+                mem.Position = 0;
+                mem.CopyTo(_stream);
+            }
+
+            _stream.Flush();
         }
+
+        if (rotate)
+            Rotate();
+
+        return entries;
     }
 }

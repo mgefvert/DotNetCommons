@@ -30,8 +30,8 @@ namespace DotNetCommons.WinForms.Graphics
         /// <summary>
         /// cache of all the font used not to create same font again and again
         /// </summary>
-        private static readonly Dictionary<string, Dictionary<float, Dictionary<FontStyle, IntPtr>>> FontsCache 
-            = new Dictionary<string, Dictionary<float, Dictionary<FontStyle, IntPtr>>>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly Dictionary<string, Dictionary<float, Dictionary<FontStyle, IntPtr>>> FontsCache
+            = new(StringComparer.InvariantCultureIgnoreCase);
 
         /// <summary>
         /// The wrapped WinForms graphics object
@@ -183,7 +183,7 @@ namespace DotNetCommons.WinForms.Graphics
         /// </summary>
         public void Dispose()
         {
-            if (_hdc == IntPtr.Zero) 
+            if (_hdc == IntPtr.Zero)
                 return;
 
             SelectClipRgn(_hdc, IntPtr.Zero);
@@ -219,7 +219,7 @@ namespace DotNetCommons.WinForms.Graphics
             {
                 FontsCache[font.Name] = new Dictionary<float, Dictionary<FontStyle, IntPtr>>
                 {
-                    [font.Size] = new Dictionary<FontStyle, IntPtr>()
+                    [font.Size] = new()
                 };
             }
 
@@ -251,7 +251,7 @@ namespace DotNetCommons.WinForms.Graphics
         private static extern int GetTextExtentPoint32(IntPtr hdc, [MarshalAs(UnmanagedType.LPWStr)] string str, int len, ref Size size);
 
         [DllImport("gdi32.dll", EntryPoint = "GetTextExtentExPointW")]
-        private static extern bool GetTextExtentExPoint(IntPtr hDc, [MarshalAs(UnmanagedType.LPWStr)]string str, int nLength, int nMaxExtent, int[] lpnFit, int[] alpDx, ref Size size);
+        private static extern bool GetTextExtentExPoint(IntPtr hDc, [MarshalAs(UnmanagedType.LPWStr)] string str, int nLength, int nMaxExtent, int[] lpnFit, int[] alpDx, ref Size size);
 
         [DllImport("gdi32.dll", EntryPoint = "TextOutW")]
         private static extern bool TextOut(IntPtr hdc, int x, int y, [MarshalAs(UnmanagedType.LPWStr)] string str, int len);

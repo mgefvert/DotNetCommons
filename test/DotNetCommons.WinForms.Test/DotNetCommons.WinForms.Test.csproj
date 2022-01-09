@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,17 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.6" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.6" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotNetCommons.WinForms\DotNetCommons.WinForms.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Windows" />
-    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
 </Project>

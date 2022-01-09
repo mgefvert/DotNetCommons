@@ -6,72 +6,71 @@ using DotNetCommons.Collections;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Html
+namespace DotNetCommons.Html;
+
+public class HAttr : HElement
 {
-    public class HAttr : HElement
+    public string Key { get; set; }
+    public SortedSet<string> Values { get; } = new();
+
+    public HAttr()
     {
-        public string Key { get; set; }
-        public SortedSet<string> Values { get; } = new SortedSet<string>();
+    }
 
-        public HAttr()
-        {
-        }
+    public HAttr(string key, params string[] values)
+    {
+        Key = key.ToLower();
+        Values.AddRangeIfNotNull(values);
+    }
 
-        public HAttr(string key, params string[] values)
-        {
-            Key = key.ToLower();
-            Values.AddRangeIfNotNull(values);
-        }
+    public static HAttr IfNotEmpty(string key, string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) ? new HAttr(key, value) : null;
+    }
 
-        public static HAttr IfNotEmpty(string key, string value)
-        {
-            return !string.IsNullOrWhiteSpace(value) ? new HAttr(key, value) : null;
-        }
+    public void Add(string value)
+    {
+        Values.AddIfNotNull(value);
+    }
 
-        public void Add(string value)
-        {
-            Values.AddIfNotNull(value);
-        }
+    public void Add(params string[] values)
+    {
+        Values.AddRangeIfNotNull(values);
+    }
 
-        public void Add(params string[] values)
-        {
-            Values.AddRangeIfNotNull(values);
-        }
+    public void Clear()
+    {
+        Values.Clear();
+    }
 
-        public void Clear()
-        {
-            Values.Clear();
-        }
+    public string GetString()
+    {
+        return string.Join(" ", Values);
+    }
 
-        public string GetString()
-        {
-            return string.Join(" ", Values);
-        }
+    public override string Render()
+    {
+        var result = WebUtility.HtmlEncode(Key);
+        if (Values.Any())
+            result += "=\"" + string.Join(" ", Values.Select(WebUtility.HtmlEncode)) + '"';
 
-        public override string Render()
-        {
-            var result = WebUtility.HtmlEncode(Key);
-            if (Values.Any())
-                result += "=\"" + string.Join(" ", Values.Select(WebUtility.HtmlEncode)) + '"';
+        return result;
+    }
 
-            return result;
-        }
+    public void Set(string value)
+    {
+        Values.Clear();
+        Add(value);
+    }
 
-        public void Set(string value)
-        {
-            Values.Clear();
-            Add(value);
-        }
+    public void Set(params string[] values)
+    {
+        Values.Clear();
+        Add(values);
+    }
 
-        public void Set(params string[] values)
-        {
-            Values.Clear();
-            Add(values);
-        }
-
-        public override string ToString()
-        {
-            return Render();
-        }
+    public override string ToString()
+    {
+        return Render();
     }
 }

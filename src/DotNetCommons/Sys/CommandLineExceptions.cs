@@ -4,68 +4,67 @@
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Sys
+namespace DotNetCommons.Sys;
+
+public class CommandLineException : Exception
 {
-    public class CommandLineException : Exception
+    public CommandLineException(string message) : base(message)
     {
-        public CommandLineException(string message) : base(message)
-        {
-        }
-
-        public CommandLineException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 
-    public class CommandLineDisplayHelpException : CommandLineException
+    public CommandLineException(string message, Exception innerException) : base(message, innerException)
     {
-        public CommandLineDisplayHelpException(Type type) : base(CommandLine.GetFormattedHelpText(type))
-        {
-        }
+    }
+}
+
+public class CommandLineDisplayHelpException : CommandLineException
+{
+    public CommandLineDisplayHelpException(Type type) : base(CommandLine.GetFormattedHelpText(type))
+    {
+    }
+}
+
+public enum CommandLineParameterError
+{
+    UndefinedParameter,
+    ValueRequired,
+    BooleanParameterDoesNotTakeValue
+}
+
+public class CommandLineParameterException : CommandLineException
+{
+    public string Parameter { get; }
+    public CommandLineParameterError Error { get; }
+
+    public CommandLineParameterException(string parameter, CommandLineParameterError error)
+        : base(GetMessage(error) + ": " + parameter)
+    {
+        Parameter = parameter;
+        Error = error;
     }
 
-    public enum CommandLineParameterError
+    private static string GetMessage(CommandLineParameterError error)
     {
-        UndefinedParameter,
-        ValueRequired,
-        BooleanParameterDoesNotTakeValue
-    }
-
-    public class CommandLineParameterException : CommandLineException
-    {
-        public string Parameter { get; }
-        public CommandLineParameterError Error { get; }
-
-        public CommandLineParameterException(string parameter, CommandLineParameterError error)
-          : base(GetMessage(error) + ": " + parameter)
+        switch (error)
         {
-            Parameter = parameter;
-            Error = error;
-        }
+            case CommandLineParameterError.BooleanParameterDoesNotTakeValue:
+                return "Parameter does not take a value";
 
-        private static string GetMessage(CommandLineParameterError error)
-        {
-            switch (error)
-            {
-                case CommandLineParameterError.BooleanParameterDoesNotTakeValue:
-                    return "Parameter does not take a value";
+            case CommandLineParameterError.UndefinedParameter:
+                return "Undefined parameter";
 
-                case CommandLineParameterError.UndefinedParameter:
-                    return "Undefined parameter";
+            case CommandLineParameterError.ValueRequired:
+                return "Parameter requires a value";
 
-                case CommandLineParameterError.ValueRequired:
-                    return "Parameter requires a value";
-
-                default:
-                    return "Error";
-            }
+            default:
+                return "Error";
         }
     }
+}
 
-    public class CommandLineNoParameters : CommandLineException
+public class CommandLineNoParameters : CommandLineException
+{
+    public CommandLineNoParameters() : base("No parameters specified.")
     {
-        public CommandLineNoParameters() : base("No parameters specified.")
-        {
-        }
     }
 }

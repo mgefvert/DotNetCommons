@@ -3,10 +3,9 @@ using System.Collections.Generic;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Logging
+namespace DotNetCommons.Logging;
+
+public interface ILogMethod
 {
-    public interface ILogMethod
-    {
-        IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush);
-    }
+    IReadOnlyList<LogEntry> Handle(IReadOnlyList<LogEntry> entries, bool flush);
 }

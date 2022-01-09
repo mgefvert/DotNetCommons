@@ -5,98 +5,97 @@ using System.Text;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Html
+namespace DotNetCommons.Html;
+
+public class HTag : HElement
 {
-    public class HTag : HElement
+    public HAttrs Attributes { get; } = new();
+    public string Name { get; set; }
+    public List<HElement> Children { get; } = new();
+
+    public HTag()
     {
-        public HAttrs Attributes { get; } = new HAttrs();
-        public string Name { get; set; }
-        public List<HElement> Children { get; } = new List<HElement>();
+    }
 
-        public HTag()
+    public HTag(string name)
+    {
+        Name = name;
+    }
+
+    public HTag(string name, params HElement[] elements) : this(name)
+    {
+        Add(elements);
+    }
+
+    public HTag Add(IEnumerable<HElement> elements)
+    {
+        if (elements != null)
+            foreach (var element in elements)
+                Add(element);
+
+        return this;
+    }
+
+    public HTag Add(params HElement[] elements)
+    {
+        if (elements != null)
+            foreach (var element in elements)
+                Add(element);
+
+        return this;
+    }
+
+    public HTag Add(HElement element)
+    {
+        if (element is HAttr attr)
+            Attributes.Add(attr);
+        else if (element is HAttrs attrs)
         {
+            foreach (var x in attrs)
+                Attributes.Add(x);
         }
+        else if (element != null)
+            Children.Add(element);
 
-        public HTag(string name)
-        {
-            Name = name;
-        }
+        return this;
+    }
 
-        public HTag(string name, params HElement[] elements) : this(name)
-        {
-            Add(elements);
-        }
+    public override string Render()
+    {
+        if (!Children.Any())
+            return RenderEmptyTag();
 
-        public HTag Add(IEnumerable<HElement> elements)
-        {
-            if (elements != null)
-                foreach (var element in elements)
-                    Add(element);
+        var sb = new StringBuilder();
+        sb.Append(RenderOpenTag());
 
-            return this;
-        }
+        foreach (var child in Children)
+            sb.Append(child.Render());
 
-        public HTag Add(params HElement[] elements)
-        {
-            if (elements != null)
-                foreach (var element in elements)
-                    Add(element);
+        sb.Append(RenderCloseTag());
+        return sb.ToString();
+    }
 
-            return this;
-        }
+    public string RenderOpenTag()
+    {
+        return $"<{RenderTagAndAttributes()}>";
+    }
 
-        public HTag Add(HElement element)
-        {
-            if (element is HAttr attr)
-                Attributes.Add(attr);
-            else if (element is HAttrs attrs)
-            {
-                foreach (var x in attrs)
-                    Attributes.Add(x);
-            }
-            else if (element != null)
-                Children.Add(element);
+    public string RenderCloseTag()
+    {
+        return "</" + Name + ">";
+    }
 
-            return this;
-        }
+    public string RenderEmptyTag()
+    {
+        return $"<{RenderTagAndAttributes()}/>";
+    }
 
-        public override string Render()
-        {
-            if (!Children.Any())
-                return RenderEmptyTag();
+    public string RenderTagAndAttributes()
+    {
+        var result = Name;
+        if (Attributes.Any())
+            result += " " + Attributes.Render();
 
-            var sb = new StringBuilder();
-            sb.Append(RenderOpenTag());
-
-            foreach (var child in Children)
-                sb.Append(child.Render());
-
-            sb.Append(RenderCloseTag());
-            return sb.ToString();
-        }
-
-        public string RenderOpenTag()
-        {
-            return $"<{RenderTagAndAttributes()}>";
-        }
-
-        public string RenderCloseTag()
-        {
-            return "</" + Name + ">";
-        }
-
-        public string RenderEmptyTag()
-        {
-            return $"<{RenderTagAndAttributes()}/>";
-        }
-
-        public string RenderTagAndAttributes()
-        {
-            var result = Name;
-            if (Attributes.Any())
-                result += " " + Attributes.Render();
-
-            return result;
-        }
+        return result;
     }
 }

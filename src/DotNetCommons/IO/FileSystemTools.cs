@@ -6,41 +6,40 @@ using DotNetCommons.Collections;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.IO
+namespace DotNetCommons.IO;
+
+public static class FileSystemTools
 {
-    public static class FileSystemTools
+    private static IEnumerable<FileSystemInfo> InternalFind(string path, List<string> groups)
     {
-        private static IEnumerable<FileSystemInfo> InternalFind(string path, List<string> groups)
-        {
-            if (!Directory.Exists(path) || !groups.Any())
-                return new FileInfo[0];
+        if (!Directory.Exists(path) || !groups.Any())
+            return Array.Empty<FileInfo>();
 
-            var group = groups.ExtractFirst();
+        var group = groups.ExtractFirst();
 
-            if (!group.Contains("*") && !group.Contains("?") && groups.Any())
-                return InternalFind(path + "\\" + group, groups);
+        if (!group.Contains("*") && !group.Contains("?") && groups.Any())
+            return InternalFind(path + "\\" + group, groups);
 
-            if (!groups.Any())
-                return Directory.EnumerateFileSystemEntries(path, group)
-                    .Select(x => Directory.Exists(x) ? (FileSystemInfo)new DirectoryInfo(x) : new FileInfo(x));
+        if (!groups.Any())
+            return Directory.EnumerateFileSystemEntries(path, group)
+                .Select(x => Directory.Exists(x) ? (FileSystemInfo)new DirectoryInfo(x) : new FileInfo(x));
 
-            var result = new List<FileSystemInfo>();
-            foreach (var entry in Directory.EnumerateDirectories(path, group))
-                result.AddRange(InternalFind(path + "\\" + Path.GetFileName(entry), groups.ToList()));
+        var result = new List<FileSystemInfo>();
+        foreach (var entry in Directory.EnumerateDirectories(path, group))
+            result.AddRange(InternalFind(path + "\\" + Path.GetFileName(entry), groups.ToList()));
 
-            return result;
-        }
+        return result;
+    }
 
-        public static IEnumerable<FileSystemInfo> Glob(string pattern)
-        {
-            if (string.IsNullOrEmpty(pattern))
-                pattern = "*";
+    public static IEnumerable<FileSystemInfo> Glob(string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern))
+            pattern = "*";
 
-            var cwd = new Uri(Directory.GetCurrentDirectory() + "\\");
-            var groups = new Uri(cwd, pattern).LocalPath.Split('\\').ToList();
-            var path = groups.ExtractFirst();
+        var cwd = new Uri(Directory.GetCurrentDirectory() + "\\");
+        var groups = new Uri(cwd, pattern).LocalPath.Split('\\').ToList();
+        var path = groups.ExtractFirst();
 
-            return InternalFind(path, groups);
-        }
+        return InternalFind(path, groups);
     }
 }

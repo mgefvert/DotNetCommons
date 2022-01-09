@@ -4,28 +4,27 @@ using System.Linq;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Logging
+namespace DotNetCommons.Logging;
+
+public class LogChain : Stack<ILogMethod>
 {
-    public class LogChain : Stack<ILogMethod>
+    public string Name { get; }
+
+    public LogChain(string name)
     {
-        public string Name { get; }
+        Name = name;
+    }
 
-        public LogChain(string name)
-        {
-            Name = name;
-        }
+    public LogChain(LogChain chain)
+        : this(chain.Name)
+    {
+        foreach(var link in chain.Reverse())
+            Push(link);
+    }
 
-        public LogChain(LogChain chain)
-            : this(chain.Name)
-        {
-            foreach(var link in chain.Reverse())
-                Push(link);
-        }
-
-        public void Process(IReadOnlyList<LogEntry> entries, bool flush)
-        {
-            foreach (var link in this)
-                entries = link.Handle(entries, flush);
-        }
+    public void Process(IReadOnlyList<LogEntry> entries, bool flush)
+    {
+        foreach (var link in this)
+            entries = link.Handle(entries, flush);
     }
 }

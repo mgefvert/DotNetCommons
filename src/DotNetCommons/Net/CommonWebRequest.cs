@@ -11,254 +11,253 @@ using DotNetCommons.Net.Cache;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Net
+namespace DotNetCommons.Net;
+
+public class CommonWebRequest
 {
-    public class CommonWebRequest
+    private readonly CommonWebClient _client;
+
+    public delegate void ProgressDelegate(object sender, ProgressArgs args);
+
+    public string Accept { get; set; }
+    public bool AllowRedirect { get; set; }
+    public IWebCache Cache { get; set; }
+    public byte[] ContentData { get; set; }
+    public string ContentType { get; set; }
+    public CookieContainer CookieContainer { get; set; } = new();
+    public Encoding Encoding { get; set; } = Encoding.UTF8;
+    public Dictionary<string, string> Headers { get; } = new();
+    public string Method { get; set; }
+    public Uri Referer { get; set; }
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
+    public bool ThrowExceptions { get; set; } = true;
+    public Uri Uri { get; set; }
+    public string UserAgent { get; set; }
+
+    public event ProgressDelegate TransferStarted;
+    public event ProgressDelegate TransferProgress;
+    public event ProgressDelegate TransferCompleted;
+
+    internal void FireTransferStarted(ProgressArgs args) => TransferStarted?.Invoke(this, args);
+    internal void FireTransferProgress(ProgressArgs args) => TransferProgress?.Invoke(this, args);
+    internal void FireTransferCompleted(ProgressArgs args) => TransferCompleted?.Invoke(this, args);
+
+    public CommonWebRequest(CommonWebClient client, CommonWebRequest settings)
     {
-        private readonly CommonWebClient _client;
+        _client = client;
 
-        public delegate void ProgressDelegate(object sender, ProgressArgs args);
+        if (settings == null || settings == this)
+            return;
 
-        public string Accept { get; set; }
-        public bool AllowRedirect { get; set; }
-        public IWebCache Cache { get; set; }
-        public byte[] ContentData { get; set; }
-        public string ContentType { get; set; }
-        public CookieContainer CookieContainer { get; set; } = new CookieContainer();
-        public Encoding Encoding { get; set; } = Encoding.UTF8;
-        public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
-        public string Method { get; set; }
-        public Uri Referer { get; set; }
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60);
-        public bool ThrowExceptions { get; set; } = true;
-        public Uri Uri { get; set; }
-        public string UserAgent { get; set; }
+        Accept = settings.Accept;
+        AllowRedirect = settings.AllowRedirect;
+        Cache = settings.Cache;
+        CookieContainer = settings.CookieContainer;
+        Encoding = settings.Encoding;
+        Headers = settings.Headers.ToDictionary(x => x.Key, x => x.Value);
+        Method = settings.Method;
+        Timeout = settings.Timeout;
+        ThrowExceptions = settings.ThrowExceptions;
+        UserAgent = settings.UserAgent;
+    }
 
-        public event ProgressDelegate TransferStarted;
-        public event ProgressDelegate TransferProgress;
-        public event ProgressDelegate TransferCompleted;
+    public CommonWebRequest AsJson()
+    {
+        WithAccept(ContentTypes.Json);
+        WithContentType(ContentTypes.Json);
+        return this;
+    }
 
-        internal void FireTransferStarted(ProgressArgs args) => TransferStarted?.Invoke(this, args);
-        internal void FireTransferProgress(ProgressArgs args) => TransferProgress?.Invoke(this, args);
-        internal void FireTransferCompleted(ProgressArgs args) => TransferCompleted?.Invoke(this, args);
+    public CommonWebResult Delete()
+    {
+        WithMethod("DELETE");
+        return _client.Request(this);
+    }
 
-        public CommonWebRequest(CommonWebClient client, CommonWebRequest settings)
-        {
-            _client = client;
+    public async Task<CommonWebResult> DeleteAsync()
+    {
+        WithMethod("DELETE");
+        return await _client.RequestAsync(this);
+    }
 
-            if (settings == null || settings == this)
-                return;
+    public CommonWebResult Execute()
+    {
+        return _client.Request(this);
+    }
 
-            Accept = settings.Accept;
-            AllowRedirect = settings.AllowRedirect;
-            Cache = settings.Cache;
-            CookieContainer = settings.CookieContainer;
-            Encoding = settings.Encoding;
-            Headers = settings.Headers.ToDictionary(x => x.Key, x => x.Value);
-            Method = settings.Method;
-            Timeout = settings.Timeout;
-            ThrowExceptions = settings.ThrowExceptions;
-            UserAgent = settings.UserAgent;
-        }
+    public async Task<CommonWebResult> ExecuteAsync()
+    {
+        return await _client.RequestAsync(this);
+    }
 
-        public CommonWebRequest AsJson()
-        {
-            WithAccept(ContentTypes.Json);
-            WithContentType(ContentTypes.Json);
-            return this;
-        }
+    public CommonWebResult Get()
+    {
+        WithMethod("GET");
+        return _client.Request(this);
+    }
 
-        public CommonWebResult Delete()
-        {
-            WithMethod("DELETE");
-            return _client.Request(this);
-        }
+    public async Task<CommonWebResult> GetAsync()
+    {
+        WithMethod("GET");
+        return await _client.RequestAsync(this);
+    }
 
-        public async Task<CommonWebResult> DeleteAsync()
-        {
-            WithMethod("DELETE");
-            return await _client.RequestAsync(this);
-        }
+    public CommonWebResult Head()
+    {
+        WithMethod("HEAD");
+        return _client.Request(this);
+    }
 
-        public CommonWebResult Execute()
-        {
-            return _client.Request(this);
-        }
+    public async Task<CommonWebResult> HeadAsync()
+    {
+        WithMethod("HEAD");
+        return await _client.RequestAsync(this);
+    }
 
-        public async Task<CommonWebResult> ExecuteAsync()
-        {
-            return await _client.RequestAsync(this);
-        }
+    public CommonWebResult Options()
+    {
+        WithMethod("OPTIONS");
+        return _client.Request(this);
+    }
 
-        public CommonWebResult Get()
-        {
-            WithMethod("GET");
-            return _client.Request(this);
-        }
+    public async Task<CommonWebResult> OptionsAsync()
+    {
+        WithMethod("OPTIONS");
+        return await _client.RequestAsync(this);
+    }
 
-        public async Task<CommonWebResult> GetAsync()
-        {
-            WithMethod("GET");
-            return await _client.RequestAsync(this);
-        }
+    public CommonWebResult Post()
+    {
+        WithMethod("POST");
+        return _client.Request(this);
+    }
 
-        public CommonWebResult Head()
-        {
-            WithMethod("HEAD");
-            return _client.Request(this);
-        }
+    public async Task<CommonWebResult> PostAsync()
+    {
+        WithMethod("POST");
+        return await _client.RequestAsync(this);
+    }
 
-        public async Task<CommonWebResult> HeadAsync()
-        {
-            WithMethod("HEAD");
-            return await _client.RequestAsync(this);
-        }
+    public CommonWebRequest WithAccept(string accept)
+    {
+        Accept = accept;
+        return this;
+    }
 
-        public CommonWebResult Options()
-        {
-            WithMethod("OPTIONS");
-            return _client.Request(this);
-        }
+    public CommonWebRequest WithAllowRedirect(bool allowRedirect)
+    {
+        AllowRedirect = allowRedirect;
+        return this;
+    }
 
-        public async Task<CommonWebResult> OptionsAsync()
-        {
-            WithMethod("OPTIONS");
-            return await _client.RequestAsync(this);
-        }
+    public CommonWebRequest WithCache(IWebCache cache)
+    {
+        Cache = cache;
+        return this;
+    }
 
-        public CommonWebResult Post()
-        {
-            WithMethod("POST");
-            return _client.Request(this);
-        }
+    public CommonWebRequest WithCookieContainer(CookieContainer container)
+    {
+        CookieContainer = container;
+        return this;
+    }
 
-        public async Task<CommonWebResult> PostAsync()
-        {
-            WithMethod("POST");
-            return await _client.RequestAsync(this);
-        }
+    public CommonWebRequest WithContent(byte[] data)
+    {
+        ContentData = data;
+        return this;
+    }
 
-        public CommonWebRequest WithAccept(string accept)
-        {
-            Accept = accept;
-            return this;
-        }
+    public CommonWebRequest WithContent(IDictionary<string, string> formdata)
+    {
+        WithContent(CommonWebClient.EncodeQuery(formdata as IDictionary));
+        return this;
+    }
 
-        public CommonWebRequest WithAllowRedirect(bool allowRedirect)
-        {
-            AllowRedirect = allowRedirect;
-            return this;
-        }
+    public CommonWebRequest WithContent(string data)
+    {
+        ContentData = Encoding.GetBytes(data);
+        return this;
+    }
 
-        public CommonWebRequest WithCache(IWebCache cache)
-        {
-            Cache = cache;
-            return this;
-        }
+    public CommonWebRequest WithContent(Stream stream)
+    {
+        ContentData = StreamTools.ReadToEnd(stream);
+        return this;
+    }
 
-        public CommonWebRequest WithCookieContainer(CookieContainer container)
-        {
-            CookieContainer = container;
-            return this;
-        }
+    public CommonWebRequest WithContentType(string contentType)
+    {
+        ContentType = contentType;
+        return this;
+    }
 
-        public CommonWebRequest WithContent(byte[] data)
-        {
-            ContentData = data;
-            return this;
-        }
+    public CommonWebRequest WithEncoding(Encoding encoding)
+    {
+        Encoding = encoding;
+        return this;
+    }
 
-        public CommonWebRequest WithContent(IDictionary<string, string> formdata)
-        {
-            WithContent(CommonWebClient.EncodeQuery(formdata as IDictionary));
-            return this;
-        }
+    public CommonWebRequest WithHeader(string name, string value)
+    {
+        Headers[name] = value;
+        return this;
+    }
 
-        public CommonWebRequest WithContent(string data)
-        {
-            ContentData = Encoding.GetBytes(data);
-            return this;
-        }
+    public CommonWebRequest WithHeaders(IEnumerable<KeyValuePair<string, string>> headers)
+    {
+        foreach (var header in headers)
+            Headers[header.Key] = header.Value;
+        return this;
+    }
 
-        public CommonWebRequest WithContent(Stream stream)
-        {
-            ContentData = StreamTools.ReadToEnd(stream);
-            return this;
-        }
+    public CommonWebRequest WithMethod(string method)
+    {
+        Method = method;
+        return this;
+    }
 
-        public CommonWebRequest WithContentType(string contentType)
-        {
-            ContentType = contentType;
-            return this;
-        }
+    public CommonWebRequest WithReferer(string referer)
+    {
+        Referer = new Uri(referer);
+        return this;
+    }
 
-        public CommonWebRequest WithEncoding(Encoding encoding)
-        {
-            Encoding = encoding;
-            return this;
-        }
+    public CommonWebRequest WithReferer(Uri referer)
+    {
+        Referer = referer;
+        return this;
+    }
 
-        public CommonWebRequest WithHeader(string name, string value)
-        {
-            Headers[name] = value;
-            return this;
-        }
+    public CommonWebRequest WithTimeout(TimeSpan timeout)
+    {
+        Timeout = timeout;
+        return this;
+    }
 
-        public CommonWebRequest WithHeaders(IEnumerable<KeyValuePair<string, string>> headers)
-        {
-            foreach(var header in headers)
-                Headers[header.Key] = header.Value;
-            return this;
-        }
+    public CommonWebRequest WithThrowExceptions(bool throwExceptions)
+    {
+        ThrowExceptions = throwExceptions;
+        return this;
+    }
 
-        public CommonWebRequest WithMethod(string method)
-        {
-            Method = method;
-            return this;
-        }
+    public CommonWebRequest WithUri(string uri, IDictionary<string, string> query = null)
+    {
+        return WithUri(new Uri(uri), query);
+    }
 
-        public CommonWebRequest WithReferer(string referer)
-        {
-            Referer = new Uri(referer);
-            return this;
-        }
+    public CommonWebRequest WithUri(Uri uri, IDictionary<string, string> query = null)
+    {
+        Uri = query == null
+            ? uri
+            : new Uri(CommonWebClient.EncodeQuery(uri.ToString(), query as IDictionary));
 
-        public CommonWebRequest WithReferer(Uri referer)
-        {
-            Referer = referer;
-            return this;
-        }
+        return this;
+    }
 
-        public CommonWebRequest WithTimeout(TimeSpan timeout)
-        {
-            Timeout = timeout;
-            return this;
-        }
-
-        public CommonWebRequest WithThrowExceptions(bool throwExceptions)
-        {
-            ThrowExceptions = throwExceptions;
-            return this;
-        }
-
-        public CommonWebRequest WithUri(string uri, IDictionary<string, string> query = null)
-        {
-            return WithUri(new Uri(uri), query);
-        }
-
-        public CommonWebRequest WithUri(Uri uri, IDictionary<string, string> query = null)
-        {
-            Uri = query == null
-                ? uri
-                : new Uri(CommonWebClient.EncodeQuery(uri.ToString(), query as IDictionary));
-
-            return this;
-        }
-
-        public CommonWebRequest WithUserAgent(string userAgent)
-        {
-            UserAgent = userAgent;
-            return this;
-        }
+    public CommonWebRequest WithUserAgent(string userAgent)
+    {
+        UserAgent = userAgent;
+        return this;
     }
 }
