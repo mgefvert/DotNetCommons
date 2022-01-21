@@ -45,7 +45,7 @@ public static class StringExtensions
     public static string FirstLine(this string value)
     {
         var n = (value ?? "").IndexOfAny(new[] { '\r', '\n' });
-        return n == -1 ? value : (value ?? "").Substring(0, n).Trim();
+        return n == -1 ? value : (value ?? "")[..n].Trim();
     }
 
     public static bool IsEmpty(this string value) => string.IsNullOrEmpty(value);
@@ -133,7 +133,7 @@ public static class StringExtensions
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        return offset < value.Length ? value.Substring(offset) : string.Empty;
+        return offset < value.Length ? value[offset..] : string.Empty;
     }
 
     /// <summary>
@@ -277,12 +277,12 @@ public static class StringExtensions
             case 0: return "";
             case 1: return value;
             default:
-            {
-                var sb = new StringBuilder(value.Length * count);
-                for (var i = 0; i < count; i++)
-                    sb.Append(value);
-                return sb.ToString();
-            }
+                {
+                    var sb = new StringBuilder(value.Length * count);
+                    for (var i = 0; i < count; i++)
+                        sb.Append(value);
+                    return sb.ToString();
+                }
         }
     }
 
