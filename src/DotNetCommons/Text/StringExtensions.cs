@@ -12,8 +12,14 @@ namespace DotNetCommons.Text;
 
 public static class StringExtensions
 {
+    /// <summary>
+    /// Break up a string in chunks of a given length.
+    /// </summary>
     public static IEnumerable<string> BreakUp(this string value, int length)
     {
+        if (string.IsNullOrEmpty(value))
+            yield break;
+
         if (length <= 0)
             throw new ArgumentOutOfRangeException(nameof(length), "Length must be positive.");
 
@@ -21,6 +27,45 @@ public static class StringExtensions
             yield return value.Mid(pos, length);
     }
 
+    /// <summary>
+    /// Chomp off the first word from a string. Quoted substring are regarded as a single word.
+    /// </summary>
+    /// <param name="remaining">The new string lacking the first word</param>
+    /// <param name="value">Input string</param>
+    /// <param name="separator">Separator to use, default space</param>
+    /// <param name="quote">Quote character to use, default "</param>
+    /// <returns>Chopped off word or quoted phrase (without quotes)</returns>
+    public static string Chomp(this string value, out string remaining, char separator = ' ', char quote = '"')
+    {
+        remaining = null;
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        if (value[0] == quote)
+        {
+            var n = value.IndexOf(quote, 1);
+            if (n == -1)
+            {
+                remaining = "";
+                return value.Mid(1);
+            }
+
+            remaining = value.Mid(n + 1).Trim();
+            return value.Mid(1, n - 1);
+        }
+        else
+        {
+            var n = value.IndexOf(separator);
+            if (n == -1)
+            {
+                remaining = "";
+                return value;
+            }
+
+            remaining = value.Mid(n + 1).Trim();
+            return value.Left(n);
+        }
+    }
 
     /// <summary>
     /// Test whether a StringBuilder contains a particular character.
