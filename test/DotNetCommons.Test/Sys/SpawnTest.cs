@@ -75,11 +75,20 @@ public class SpawnTest
     {
         var result = new Spawn("cmd /c pause").Start();
 
-        result.Wait(TimeSpan.FromSeconds(1));
+        for (var i = 0; i < 10; i++)
+        {
+            if (result.IsRunning)
+                break;
+
+            Thread.Sleep(1000);
+        }
+
         result.IsRunning.Should().BeTrue();
         result.ExitCode.Should().BeNull();
-
         result.Kill();
+
+        result.Wait(TimeSpan.FromSeconds(10));
+
         result.IsRunning.Should().BeFalse();
         result.ExitCode.Should().NotBeNull();
     }
