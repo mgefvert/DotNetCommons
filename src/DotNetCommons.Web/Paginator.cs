@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using DotNetCommons.Html;
 
 namespace DotNetCommons.Web
 {
@@ -129,7 +128,7 @@ namespace DotNetCommons.Web
             Layout = result;
         }
 
-        public HString Render(string style = "pagination")
+        public string Render(string style = "pagination")
         {
             var result = new StringBuilder();
             result.AppendLine($"<ul class=\"{style}\">");
@@ -157,7 +156,7 @@ namespace DotNetCommons.Web
             }
             result.AppendLine("</ul>");
 
-            return HString.Raw(result.ToString());
+            return result.ToString();
         }
     }
 }
