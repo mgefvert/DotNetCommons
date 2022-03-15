@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DotNetCommons.Text;
 
-public static class StringExtensions
+public static partial class StringExtensions
 {
     public static IEnumerable<string> BreakUp(this string value, int length)
     {
