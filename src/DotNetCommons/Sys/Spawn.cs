@@ -1,101 +1,41 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Sys;
 
-public class Spawn
+public class Spawn : IDisposable
 {
-    public class SpawnResult
+    public string Command { get; set; }
+    public bool Echo { get; set; }
+    public string Parameters { get; set; }
+    public bool RedirectInput { get; set; }
+    public string StartDirectory { get; set; }
+
+    public Process Process { get; private set; }
+
+    public int? ExitCode => IsFinished ? Process.ExitCode : null;
+    public StreamWriter InputStream => Process.StandardInput;
+    public bool IsRunning => Process is { HasExited: false };
+    public bool IsFinished => Process is { HasExited: true };
+    public List<string> Output { get; } = new();
+    public string Text => string.Join(Environment.NewLine, Output);
+
+    public Spawn(string command)
     {
-        public string Text { get; set; }
-        public int ExitCode { get; set; }
-    }
-
-    public static void ExtractCommand(string cmd, out string executable, out string parameters)
-    {
-        executable = "";
-        parameters = "";
-
-        cmd = cmd?.Trim();
-        if (string.IsNullOrEmpty(cmd))
-            return;
-
-        if (cmd[0] == '"')
-        {
-            var n = cmd.IndexOf('"', 1);
-            if (n == -1)
-                executable = cmd.Mid(1);
-            else
-            {
-                executable = cmd.Mid(1, n - 1);
-                parameters = cmd.Mid(n + 1).Trim();
-            }
-        }
-        else
-        {
-            var n = cmd.IndexOf(' ');
-            if (n == -1)
-                executable = cmd;
-            else
-            {
-                executable = cmd.Left(n);
-                parameters = cmd.Mid(n + 1).Trim();
-            }
-        }
-    }
-
-    public static SpawnResult Run(string cmd, string parameters = null, string startDirectory = null)
-    {
-        var startInfo = new ProcessStartInfo(cmd, parameters)
-        {
-            CreateNoWindow = true,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            WorkingDirectory = startDirectory ?? Directory.GetCurrentDirectory()
-        };
-
-        var process = new Process { StartInfo = startInfo };
-
-        try
-        {
-            var result = new StringBuilder();
-            process.ErrorDataReceived += (sender, args) => result.AppendLine(args.Data);
-            process.OutputDataReceived += (sender, args) => result.AppendLine(args.Data);
-
-            if (!process.Start())
-                throw new Exception($"No process started: {cmd} {parameters}");
-
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
-
-            process.WaitForExit();
-            Thread.Sleep(10);
-
-            process.CancelErrorRead();
-            process.CancelOutputRead();
-
-            return new SpawnResult
-            {
-                Text = result.ToString(),
-                ExitCode = process.ExitCode
-            };
-        }
-        finally
-        {
-            process.Dispose();
-        }
+        Command = command.Chomp(out var remains);
+        Parameters = remains;
     }
 
     /// <summary>
     /// Expands environment variables and, if unqualified, locates the exe in the working directory
-    /// or the evironment's path.
+    /// or the environment's path.
     /// </summary>
     /// <param name="exe">The name of the executable file</param>
     public static string FindExePath(string exe)
@@ -110,11 +50,153 @@ public class Spawn
 
         foreach (var path in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';').TrimAndFilter())
         {
-            var exepath = Path.Combine(path, exe);
-            if (File.Exists(exepath))
-                return Path.GetFullPath(exepath);
+            var exePath = Path.Combine(path, exe);
+            if (File.Exists(exePath))
+                return Path.GetFullPath(exePath);
         }
 
         return null;
+    }
+
+    private void OnReceivedEventHandler(object sender, DataReceivedEventArgs args)
+    {
+        if (args.Data == null)
+            return;
+
+        Output.Add(args.Data);
+        if (Echo)
+            Console.WriteLine(args.Data);
+    }
+
+    /// <summary>
+    /// Finalize process handles.
+    /// </summary>
+    public void Dispose()
+    {
+        Process?.Dispose();
+        Process = null;
+    }
+
+    /// <summary>
+    /// Kill the process immediately.
+    /// </summary>
+    public void Kill()
+    {
+        Process.Kill();
+    }
+
+    /// <summary>
+    /// Run the process and wait for exit.
+    /// </summary>
+    public Spawn Run()
+    {
+        Start();
+        Wait();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Run the process asynchronously and wait for exit.
+    /// </summary>
+    public async Task<Spawn> RunAsync()
+    {
+        Start();
+        await WaitAsync();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Start the process.
+    /// </summary>
+    public Spawn Start()
+    {
+        Process = new Process
+        {
+            StartInfo = new ProcessStartInfo(Command, Parameters)
+            {
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = RedirectInput,
+                UseShellExecute = false,
+                WorkingDirectory = StartDirectory ?? Directory.GetCurrentDirectory()
+            }
+        };
+
+        Process.ErrorDataReceived += OnReceivedEventHandler;
+        Process.OutputDataReceived += OnReceivedEventHandler;
+
+        if (!Process.Start())
+            throw new Exception($"No process started: {Command} {Parameters}");
+
+        Process.BeginErrorReadLine();
+        Process.BeginOutputReadLine();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Wait synchronously for the process to exit.
+    /// </summary>
+    /// <returns>The exit code.</returns>
+    public int? Wait(TimeSpan? timeout = null)
+    {
+        Process.WaitForExit((int?)timeout?.TotalMilliseconds ?? -1);
+
+        // Give the process a chance to finish up
+        Thread.Sleep(10);
+
+        Process.CancelErrorRead();
+        Process.CancelOutputRead();
+
+        return ExitCode;
+    }
+
+    /// <summary>
+    /// Wait asynchronously for the process to exit.
+    /// </summary>
+    /// <returns>The exit code.</returns>
+    public async Task<int?> WaitAsync(TimeSpan? timeout = null)
+    {
+        var cancel = timeout != null ? new CancellationTokenSource(timeout.Value).Token : CancellationToken.None;
+        await Process.WaitForExitAsync(cancel);
+
+        // Give the process a chance to finish up
+        // ReSharper disable once MethodSupportsCancellation
+        await Task.Delay(10);
+
+        Process.CancelErrorRead();
+        Process.CancelOutputRead();
+
+        return ExitCode;
+    }
+
+    /// <summary>
+    /// Echo the output to the console.
+    /// </summary>
+    public Spawn WithEcho(bool echo = true)
+    {
+        Echo = echo;
+        return this;
+    }
+
+    /// <summary>
+    /// Redirect the standard input and make the InputStream property available to the caller.
+    /// </summary>
+    public Spawn WithRedirectInput(bool redirect = true)
+    {
+        RedirectInput = redirect;
+        return this;
+    }
+
+    /// <summary>
+    /// Start the program in a given directory.
+    /// </summary>
+    public Spawn WithStartDirectory(string startDirectory)
+    {
+        StartDirectory = startDirectory;
+        return this;
     }
 }

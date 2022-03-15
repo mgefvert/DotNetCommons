@@ -1,105 +1,95 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using DotNetCommons.Sys;
-using DotNetCommons.Text;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Test.Sys
+namespace DotNetCommons.Test.Sys;
+
+[TestClass]
+public class SpawnTest
 {
-    [TestClass]
-    public class SpawnTest
+    [TestMethod]
+    public void Run_Works()
     {
-        [TestMethod]
-        public void TestExtractCommand()
+        var result = new Spawn("cmd /c echo Hello World!").Run();
+
+        result.Command.Should().Be("cmd");
+        result.Parameters.Should().Be("/c echo Hello World!");
+        result.ExitCode.Should().Be(0);
+        result.IsFinished.Should().BeTrue();
+        result.IsRunning.Should().BeFalse();
+        result.Output.Count.Should().Be(1);
+        result.Output[0].Should().Be("Hello World!");
+        result.Text.Should().Be("Hello World!");
+    }
+
+    [TestMethod]
+    public void Run_WithEcho_Works()
+    {
+        Console.WriteLine("There should be 'dir' output below:");
+        new Spawn("cmd /c dir").WithEcho().Run();
+    }
+
+    [TestMethod]
+    public void Run_WithRedirectInput_Works()
+    {
+        var result = new Spawn("cmd /c pause").WithRedirectInput().Start();
+
+        result.IsRunning.Should().BeTrue();
+        result.IsFinished.Should().BeFalse();
+
+        result.InputStream.Write('X');
+        Thread.Sleep(100);
+        result.IsRunning.Should().BeFalse();
+        result.IsFinished.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void Run_WithStartDirectory_Works()
+    {
+        var result = new Spawn("cmd /c cd").WithStartDirectory("c:\\windows").Run();
+        result.Text.Should().Be("c:\\windows");
+    }
+
+    [TestMethod]
+    public async Task RunAsync_Works()
+    {
+        var result = await new Spawn("cmd /c echo Hello World!").RunAsync();
+
+        result.Command.Should().Be("cmd");
+        result.Parameters.Should().Be("/c echo Hello World!");
+        result.ExitCode.Should().Be(0);
+        result.IsFinished.Should().BeTrue();
+        result.IsRunning.Should().BeFalse();
+        result.Output.Count.Should().Be(1);
+        result.Output[0].Should().Be("Hello World!");
+        result.Text.Should().Be("Hello World!");
+    }
+
+    [TestMethod]
+    public void Wait_TimeoutAndKillWorks()
+    {
+        var result = new Spawn("cmd /c pause").Start();
+
+        for (var i = 0; i < 10; i++)
         {
-            Spawn.ExtractCommand("cmd", out var exe, out var p);
-            Assert.AreEqual("cmd", exe);
-            Assert.AreEqual("", p);
+            if (result.IsRunning)
+                break;
 
-            Spawn.ExtractCommand("cmd hello, world", out exe, out p);
-            Assert.AreEqual("cmd", exe);
-            Assert.AreEqual("hello, world", p);
-
-            Spawn.ExtractCommand("cmd \"hello, world\"", out exe, out p);
-            Assert.AreEqual("cmd", exe);
-            Assert.AreEqual("\"hello, world\"", p);
-
-            Spawn.ExtractCommand("\"c:\\program files\\test.exe\"", out exe, out p);
-            Assert.AreEqual("c:\\program files\\test.exe", exe);
-            Assert.AreEqual("", p);
-
-            Spawn.ExtractCommand("\"c:\\program files\\test.exe\" hello, world", out exe, out p);
-            Assert.AreEqual("c:\\program files\\test.exe", exe);
-            Assert.AreEqual("hello, world", p);
+            Thread.Sleep(1000);
         }
 
-        public static string Run(string cmd, string parameters = null, string startDirectory = null)
-        {
-            var startInfo = new ProcessStartInfo(cmd, parameters)
-            {
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                WorkingDirectory = startDirectory ?? Directory.GetCurrentDirectory()
-            };
+        result.IsRunning.Should().BeTrue();
+        result.ExitCode.Should().BeNull();
+        result.Kill();
 
-            var process = new Process { StartInfo = startInfo };
+        result.Wait(TimeSpan.FromSeconds(10));
 
-            try
-            {
-                var result = new StringBuilder();
-                process.ErrorDataReceived += (sender, args) => result.AppendLine(args.Data);
-                process.OutputDataReceived += (sender, args) => result.AppendLine(args.Data);
-
-                if (!process.Start())
-                    throw new Exception($"No process started: {cmd} {parameters}");
-
-                process.BeginErrorReadLine();
-                process.BeginOutputReadLine();
-
-                process.WaitForExit();
-                Thread.Sleep(10);
-
-                process.CancelErrorRead();
-                process.CancelOutputRead();
-
-                return result.ToString();
-            }
-            finally
-            {
-                process.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Expands environment variables and, if unqualified, locates the exe in the working directory
-        /// or the evironment's path.
-        /// </summary>
-        /// <param name="exe">The name of the executable file</param>
-        public static string FindExePath(string exe)
-        {
-            exe = Environment.ExpandEnvironmentVariables(exe);
-
-            if (File.Exists(exe))
-                return Path.GetFullPath(exe);
-
-            if (!string.IsNullOrEmpty(Path.GetDirectoryName(exe)))
-                return null;
-
-            foreach (var path in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';').TrimAndFilter())
-            {
-                var exepath = Path.Combine(path, exe);
-                if (File.Exists(exepath))
-                    return Path.GetFullPath(exepath);
-            }
-
-            return null;
-        }
+        result.IsRunning.Should().BeFalse();
+        result.ExitCode.Should().NotBeNull();
     }
 }
