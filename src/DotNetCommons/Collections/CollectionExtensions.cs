@@ -16,13 +16,13 @@ public static class CollectionExtensions
     public class Intersection<T>
     {
         public readonly List<T> Left;
-        public readonly List<Tuple<T, T>> Both;
+        public readonly List<(T, T)> Both;
         public readonly List<T> Right;
 
         public Intersection()
         {
             Left = new List<T>();
-            Both = new List<Tuple<T, T>>();
+            Both = new List<(T, T)>();
             Right = new List<T>();
         }
     }
@@ -43,6 +43,9 @@ public static class CollectionExtensions
             collection.Add(item);
     }
 
+    /// <summary>
+    /// Copy values from one dictionary to another.
+    /// </summary>
     public static void AddRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IEnumerable<KeyValuePair<TKey, TValue>> items)
     {
         foreach (var item in items)
@@ -84,88 +87,6 @@ public static class CollectionExtensions
 
         if (batch.Any())
             yield return batch.ToArray();
-    }
-
-    /// <summary>
-    /// Generate a list of distinct values from a collection of objects using a select function.
-    /// </summary>
-    /// <param name="list">List of objects.</param>
-    /// <param name="func">Selector function that extracts a value from the object.</param>
-    /// <returns>A distinct list of the values returned from the selector function.</returns>
-    public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult> func) where TResult : struct
-    {
-        var result = new HashSet<TResult>();
-        foreach (var item in list)
-            result.Add(func(item));
-
-        return result.ToList();
-    }
-
-    /// <summary>
-    /// Generate a list of distinct values from a collection of objects using two select functions.
-    /// </summary>
-    /// <param name="list">List of objects.</param>
-    /// <param name="func1">First selector function</param>
-    /// <param name="func2">Second selector function</param>
-    /// <returns>A distinct combined list of the values returned from the two selector functions.</returns>
-    public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult> func1, Func<T, TResult> func2) where TResult : struct
-    {
-        var result = new HashSet<TResult>();
-        foreach (var item in list)
-        {
-            result.Add(func1(item));
-            result.Add(func2(item));
-        }
-
-        return result.ToList();
-    }
-
-    /// <summary>
-    /// Generate a list of distinct values from a collection of objects using a select function, and checking for null values.
-    /// </summary>
-    /// <param name="list">List of objects.</param>
-    /// <param name="func">Selector function that extracts a value from the object.</param>
-    /// <returns>A distinct list of the values returned from the selector function.</returns>
-    public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult?> func) where TResult : struct
-    {
-        var result = new HashSet<TResult>();
-        foreach (var item in list)
-        {
-            var x = func(item);
-            if (x != null)
-                result.Add(x.Value);
-        }
-
-        return result.ToList();
-    }
-
-    /// <summary>
-    /// Generate a list of distinct values from a collection of objects using two select functions, and checking for null values.
-    /// </summary>
-    /// <param name="list">List of objects.</param>
-    /// <param name="func1">First selector function</param>
-    /// <param name="func2">Second selector function</param>
-    /// <returns>A distinct combined list of the values returned from the two selector functions.</returns>
-    public static List<TResult> DistinctValues<T, TResult>(this IEnumerable<T> list, Func<T, TResult?> func1, Func<T, TResult?> func2) where TResult : struct
-    {
-        var result = new HashSet<TResult>();
-        foreach (var item in list)
-        {
-            var x = func1(item);
-            if (x != null)
-                result.Add(x.Value);
-            x = func2(item);
-            if (x != null)
-                result.Add(x.Value);
-        }
-
-        return result.ToList();
-    }
-
-    public static void Each<T>(this IEnumerable<T> items, Action<T> action)
-    {
-        foreach (var item in items)
-            action(item);
     }
 
     /// <summary>
@@ -252,92 +173,6 @@ public static class CollectionExtensions
         var result = list.GetRange(offset, count);
         list.RemoveRange(offset, count);
 
-        return result;
-    }
-
-    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> list,
-        int maxDegreeOfParallelism, Func<TSource, Task> func)
-    {
-        var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
-        var tasks = list.Select(async item =>
-        {
-            try
-            {
-                await throttler.WaitAsync();
-                await func(item);
-            }
-            finally
-            {
-                throttler.Release();
-            }
-        });
-
-        await Task.WhenAll(tasks);
-    }
-
-    public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> list,
-        int maxDegreeOfParallelism, Func<TSource, int, Task> func)
-    {
-        var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
-        var tasks = list.Select(async (item, index) =>
-        {
-            try
-            {
-                await throttler.WaitAsync();
-                await func(item, index);
-            }
-            finally
-            {
-                throttler.Release();
-            }
-        });
-
-        await Task.WhenAll(tasks);
-    }
-
-    public static async Task<ConcurrentDictionary<TSource, TResult>> ForEachAsync<TSource, TResult>(this IEnumerable<TSource> list,
-        int maxDegreeOfParallelism, Func<TSource, Task<TResult>> func)
-    {
-        var result = new ConcurrentDictionary<TSource, TResult>();
-        var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
-        var tasks = list.Select(async item =>
-        {
-            try
-            {
-                await throttler.WaitAsync();
-                var response = await func(item);
-                result.TryAdd(item, response);
-            }
-            finally
-            {
-                throttler.Release();
-            }
-        });
-
-        await Task.WhenAll(tasks);
-        return result;
-    }
-
-    public static async Task<ConcurrentDictionary<TSource, TResult>> ForEachAsync<TSource, TResult>(this IEnumerable<TSource> list,
-        int maxDegreeOfParallelism, Func<TSource, int, Task<TResult>> func)
-    {
-        var result = new ConcurrentDictionary<TSource, TResult>();
-        var throttler = new SemaphoreSlim(initialCount: maxDegreeOfParallelism);
-        var tasks = list.Select(async (item, index) =>
-        {
-            try
-            {
-                await throttler.WaitAsync();
-                var response = await func(item, index);
-                result.TryAdd(item, response);
-            }
-            finally
-            {
-                throttler.Release();
-            }
-        });
-
-        await Task.WhenAll(tasks);
         return result;
     }
 
@@ -468,7 +303,7 @@ public static class CollectionExtensions
             }
             else
             {
-                result.Both.Add(new Tuple<T, T>(item1, search2[n]));
+                result.Both.Add((item1, search2[n]));
                 search2.RemoveAt(n);
             }
         }
@@ -553,28 +388,5 @@ public static class CollectionExtensions
         for (var i = 0; i < times; i++)
             foreach (var item in collection)
                 yield return item;
-    }
-
-    /// <summary>
-    /// Swap position for two items in a list
-    /// </summary>
-    public static bool Swap<T>(this IList<T> list, int pos1, int pos2)
-    {
-        if (pos1 < 0 || pos2 < 0 || pos1 >= list.Count || pos2 >= list.Count)
-            return false;
-
-        var item = list[pos1];
-        list[pos1] = list[pos2];
-        list[pos2] = item;
-
-        return true;
-    }
-
-    /// <summary>
-    /// Iterate through an enumerable and bring along an index counter
-    /// </summary>
-    public static IEnumerable<(T Item, int Index)> WithIndex<T>(this IEnumerable<T> source)
-    {
-        return source.Select((item, index) => (item, index));
     }
 }

@@ -35,20 +35,15 @@ public class DrawList<T>
     {
         lock (_lock)
         {
-            if (_source.Count == 0)
+            if (_source.Count == 0 || (!Repeat && _current.Count == 0))
                 return default;
-
-            if (_current.Count == 0)
-            {
-                if (Repeat)
-                    _current.AddRange(_source);
-                else
-                    return default;
-            }
 
             var n = _rnd.Next(_current.Count);
             var s = _current[n];
             _current.RemoveAt(n);
+
+            if (Repeat && _current.Count == 0)
+                _current.AddRange(_source);
 
             return s;
         }
@@ -68,6 +63,8 @@ public class DrawList<T>
         {
             _source.Clear();
             _source.AddRange(items);
+            _current.Clear();
+            _current.AddRange(_source);
         }
     }
 }
