@@ -5,7 +5,7 @@ namespace DotNetCommons;
 
 public static class ExceptionExtensions
 {
-        public static string GetDetailedInformation(this Exception ex, bool stackTrace)
+    public static string GetDetailedInformation(this Exception ex, bool stackTrace)
     {
         var sb = new StringBuilder();
 
@@ -24,11 +24,11 @@ public static class ExceptionExtensions
         if (ex.TargetSite != null)
             sb.AppendLine("TargetSite: " + ex.TargetSite);
 
-            if (stackTrace)
-            {
+        if (stackTrace)
+        {
             sb.AppendLine("Stack trace:");
             sb.AppendLine(ex.StackTrace);
-            }
+        }
 
         return sb.ToString();
     }

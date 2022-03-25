@@ -13,7 +13,7 @@ public static class TextTools
 {
     public static readonly Encoding Win1252 = Encoding.GetEncoding(1252);
 
-    private static readonly string[] HighBitsXlate =
+    private static readonly string[] HighBitsTranslate =
     {
         /* 0x80 */ null, null, "\'", "f",  "\"", "...", null, null, "^",  null,   "S",  "<", "OE",  null,  "Z",   null,
         /* 0x90 */ null, "\'", "\'", "\"", "\"", "*",   "-",  "-",  "~",  "(tm)", "s",  ">", "oe",  null,  "z",   "Y",
@@ -35,21 +35,21 @@ public static class TextTools
         if (string.IsNullOrEmpty(text))
             return text;
 
-        var textbuffer = Encoding.UTF8.GetBytes(text);
-        if (textbuffer.All(x => x <= 127))
+        var textBuffer = Encoding.UTF8.GetBytes(text);
+        if (textBuffer.All(x => x <= 127))
             return text;
 
         // First, convert the string down to ANSI.
-        var resultbuffer = Encoding.Convert(Encoding.UTF8, Win1252, textbuffer);
+        var resultBuffer = Encoding.Convert(Encoding.UTF8, Win1252, textBuffer);
 
         // Now translate all characters down to ASCII.
-        var result = new StringBuilder(resultbuffer.Length);
-        foreach (var c in resultbuffer)
+        var result = new StringBuilder(resultBuffer.Length);
+        foreach (var c in resultBuffer)
         {
             if (c <= 127)
                 result.Append((char)c);
             else
-                result.Append(HighBitsXlate[c - 128]);
+                result.Append(HighBitsTranslate[c - 128]);
         }
 
         return result.ToString();
@@ -76,15 +76,15 @@ public static class TextTools
     /// <returns></returns>
     public static Encoding DetermineEncoding(byte[] buffer, int offset, int length)
     {
-        var highbits = false;
+        var highBits = false;
         for (int i = offset; i < offset + length; i++)
             if (buffer[i] >= 128)
             {
-                highbits = true;
+                highBits = true;
                 break;
             }
 
-        if (highbits == false)
+        if (highBits == false)
             return Encoding.ASCII;
 
         if (InternalValidateUtf8(buffer, offset, length))
@@ -98,11 +98,11 @@ public static class TextTools
     /// For instance, can break down text to fit on an 80-column wide screen.
     /// </summary>
     /// <param name="text"></param>
-    /// <param name="maxlen"></param>
+    /// <param name="maxLength"></param>
     /// <returns></returns>
-    public static int FindWordBreak(string text, int maxlen)
+    public static int FindWordBreak(string text, int maxLength)
     {
-        var i = Math.Min(text.Length - 1, maxlen);
+        var i = Math.Min(text.Length - 1, maxLength);
 
         while (i > 1)
         {
@@ -111,7 +111,7 @@ public static class TextTools
             i--;
         }
 
-        return maxlen;
+        return maxLength;
     }
 
     /// <summary>
@@ -195,8 +195,8 @@ public static class TextTools
         var indentFirst = indent < 0 ? new string(' ', -indent) : "";
         var indentNext = indent > 0 ? new string(' ', indent) : "";
 
-        var maxlen = width - 1;
-        if (string.IsNullOrEmpty(text) || text.Length < maxlen)
+        var maxLength = width - 1;
+        if (string.IsNullOrEmpty(text) || text.Length < maxLength)
             return new List<string> { indentFirst + text };
 
         var result = new List<string>();
@@ -204,13 +204,13 @@ public static class TextTools
         {
             var indentString = result.Count == 0 ? indentFirst : indentNext;
 
-            if (text.Length + indentString.Length < maxlen)
+            if (text.Length + indentString.Length < maxLength)
             {
                 result.Add(indentString + text);
                 break;
             }
 
-            var n = FindWordBreak(text, maxlen - indentString.Length);
+            var n = FindWordBreak(text, maxLength - indentString.Length);
             result.Add(indentString + text.Mid(0, n).TrimEnd());
             text = text.Mid(n).TrimStart();
         }

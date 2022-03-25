@@ -221,10 +221,10 @@ public static partial class StringExtensions
     /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
     /// the common "true"/"false" case.
     /// </summary>
-    public static bool ParseBoolean(this string? value)
+    public static bool? ParseBoolean(this string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentNullException(nameof(value), "Null or empty string can not recognized as a boolean.");
+            return null;
 
         if (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
             value.Equals("t", StringComparison.OrdinalIgnoreCase) ||
@@ -241,10 +241,19 @@ public static partial class StringExtensions
         if (bool.TryParse(value, out var result))
             return result;
 
-        if (long.TryParse(value, out var longresult))
-            return longresult != 0;
+        if (long.TryParse(value, out var longResult))
+            return longResult != 0;
 
-        throw new ArgumentOutOfRangeException(nameof(value), $"String '{value}' can not recognized as a boolean.");
+        return null;
+    }
+
+    /// <summary>
+    /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
+    /// the common "true"/"false" case.
+    /// </summary>
+    public static bool ParseBoolean(this string value, bool defaultValue)
+    {
+        return ParseBoolean(value) ?? defaultValue;
     }
 
     /// <summary>
