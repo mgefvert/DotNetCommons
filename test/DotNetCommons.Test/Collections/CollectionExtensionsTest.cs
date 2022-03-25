@@ -10,9 +10,9 @@ namespace DotNetCommons.Test.Collections;
 [TestClass]
 public class CollectionExtensionsTest
 {
-    private List<string> _list;
-    private Dictionary<string, int> _dictI;
-    private Dictionary<string, decimal> _dictD;
+    private List<string> _list = null!;
+    private Dictionary<string, int> _dictI = null!;
+    private Dictionary<string, decimal> _dictD = null!;
 
     [TestInitialize]
     public void Setup()
@@ -27,7 +27,7 @@ public class CollectionExtensionsTest
     {
         var list = new List<string>();
 
-        ((List<string>)null).AddIfNotNull("hello");
+        ((List<string>?)null).AddIfNotNull("hello");
 
         list.AddIfNotNull("hello");
         list.AddIfNotNull("");
@@ -41,8 +41,8 @@ public class CollectionExtensionsTest
     {
         var list = new List<string>();
 
-        ((List<string>)null).AddRangeIfNotNull(null);
-        ((List<string>)null).AddRangeIfNotNull(list);
+        ((List<string>?)null).AddRangeIfNotNull(null);
+        ((List<string>?)null).AddRangeIfNotNull(list);
 
         list.AddRangeIfNotNull(null);
         list.AddRangeIfNotNull(new[] { "hello", "", null });

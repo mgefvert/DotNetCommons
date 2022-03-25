@@ -36,7 +36,7 @@ public static class Crc32
         return ~bytes.Aggregate(0xFFFF_FFFF, (c, t) => (c >> 8) ^ Data[(byte) ((c & 0xFF) ^ t)]);
     }
 
-    public static uint ComputeChecksum(string data, Encoding encoding = null)
+    public static uint ComputeChecksum(string data, Encoding? encoding = null)
     {
         return ComputeChecksum((encoding ?? Encoding.UTF8).GetBytes(data));
     }

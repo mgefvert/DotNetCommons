@@ -13,7 +13,7 @@ public static class TextTools
 {
     public static readonly Encoding Win1252 = Encoding.GetEncoding(1252);
 
-    private static readonly string[] HighBitsTranslate =
+    private static readonly string?[] HighBitsTranslate =
     {
         /* 0x80 */ null, null, "\'", "f",  "\"", "...", null, null, "^",  null,   "S",  "<", "OE",  null,  "Z",   null,
         /* 0x90 */ null, "\'", "\'", "\"", "\"", "*",   "-",  "-",  "~",  "(tm)", "s",  ">", "oe",  null,  "z",   "Y",
@@ -144,7 +144,7 @@ public static class TextTools
     /// <param name="b"></param>
     /// <param name="ignoreCase"></param>
     /// <returns></returns>
-    public static int Levenshtein(string a, string b, bool ignoreCase)
+    public static int Levenshtein(string? a, string? b, bool ignoreCase)
     {
         a ??= "";
         b ??= "";
@@ -190,7 +190,7 @@ public static class TextTools
     /// <param name="indent">If more than zero, will indent subsequent lines but not the first line.
     ///     If less than 0, will only indent the first line.</param>
     /// <returns></returns>
-    public static List<string> WordWrap(string text, int width, int indent = 0)
+    public static List<string> WordWrap(string? text, int width, int indent = 0)
     {
         var indentFirst = indent < 0 ? new string(' ', -indent) : "";
         var indentNext = indent > 0 ? new string(' ', indent) : "";

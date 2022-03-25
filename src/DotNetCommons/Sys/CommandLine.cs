@@ -21,10 +21,10 @@ public static class CommandLine
         return GetDefinitionList(type).Where(x => x.IsAttribute).ToList();
     }
 
-    public static List<KeyValuePair<string, string>> GetHelpText(Type type)
+    public static List<KeyValuePair<string, string?>> GetHelpText(Type type)
     {
         return GetParameters(type)
-            .Select(x => new KeyValuePair<string, string>(x.OptionString, x.Description))
+            .Select(x => new KeyValuePair<string, string?>(x.OptionString, x.Description))
             .ToList();
     }
 
@@ -33,7 +33,7 @@ public static class CommandLine
         var result = new StringBuilder();
 
         var help = GetHelpText(type);
-        var keylen = help.Max(x => x.Key.Length);
+        var keyLength = help.Max(x => x.Key.Length);
 
         int consoleWidth;
         try
@@ -45,7 +45,7 @@ public static class CommandLine
             consoleWidth = 80;
         }
 
-        if (keylen > 20)
+        if (keyLength > 20)
         {
             foreach (var item in help)
             {
@@ -60,9 +60,9 @@ public static class CommandLine
             foreach (var item in help)
             {
                 var key = item.Key;
-                foreach (var line in TextTools.WordWrap(item.Value, consoleWidth - keylen - 5))
+                foreach (var line in TextTools.WordWrap(item.Value, consoleWidth - keyLength - 5))
                 {
-                    result.AppendLine(key.PadRight(keylen) + "   " + line);
+                    result.AppendLine(key.PadRight(keyLength) + "   " + line);
                     key = "";
                 }
             }
@@ -81,12 +81,7 @@ public static class CommandLine
         if (args.Length == 0 && DisplayHelpOnEmpty)
             throw new CommandLineDisplayHelpException(typeof(T));    
 
-        var processor = new CommandLineProcessor<T>
-        {
-            Arguments = args.ToList(),
-            Definitions = GetDefinitionList(typeof(T)),
-            Result = new T()
-        };
+        var processor = new CommandLineProcessor<T>(args.ToList(), GetDefinitionList(typeof(T)));
 
         processor.Process();
 
@@ -100,7 +95,7 @@ public static class CommandLine
             var result = new List<CommandLineDefinition>();
             foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
-                var definition = new CommandLineDefinition();
+                var definition = new CommandLineDefinition(property);
 
                 var option = property.GetCustomAttribute<CommandLineOptionAttribute>();
                 if (option != null)
@@ -121,8 +116,6 @@ public static class CommandLine
                 if (!definition.HasInfo)
                     continue;
 
-                definition.Property = property;
-                definition.BooleanValue = property.PropertyType == typeof(bool);
                 result.Add(definition);
             }
 

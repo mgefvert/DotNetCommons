@@ -15,21 +15,22 @@ public static class CookieContainerIO
 {
     public static IEnumerable<Cookie> GetAllCookies(this CookieContainer container)
     {
-            var domains = (Hashtable) container?.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(container);
+        var domains = (Hashtable?)container.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(container);
         if (domains == null)
             yield break;
 
         foreach (DictionaryEntry element in domains)
         {
-            var items = (SortedList)element.Value.GetType().GetField("m_list", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(element.Value);
+            var items = (SortedList?)element.Value?.GetType().GetField("m_list", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(element.Value);
             if (items == null)
                 continue;
 
             foreach (var item in items)
             {
-                var collection = (CookieCollection)((DictionaryEntry)item).Value;
-                foreach (Cookie cookie in collection)
-                    yield return cookie;
+                var collection = (CookieCollection?)((DictionaryEntry)item).Value;
+                if (collection != null)
+                    foreach (Cookie cookie in collection)
+                        yield return cookie;
             }
         }
     }
@@ -55,14 +56,14 @@ public static class CookieContainerIO
                 Secure = items[3].Like("TRUE"),
                 Expires = DateTimeExtensions.FromUnixSeconds(long.Parse(items[4])),
                 Name = items[5],
-                Value = ReencodeHtmlString(items[6])
+                Value = ReEncodeHtmlString(items[6])
             };
 
             container.Add(cookie);
         }
     }
 
-    private static string ReencodeHtmlString(string s)
+    private static string ReEncodeHtmlString(string s)
     {
         return s.Replace("&amp;", "%26");
     }

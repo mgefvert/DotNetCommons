@@ -10,7 +10,7 @@ using DotNetCommons.Collections;
 
 namespace DotNetCommons.Sys;
 
-internal class CommandLineProcessor<T>
+internal class CommandLineProcessor<T> where T : class, new()
 {
     private enum OptionType
     {
@@ -21,8 +21,15 @@ internal class CommandLineProcessor<T>
 
     public List<string> Arguments;
     public List<CommandLineDefinition> Definitions;
-    public T Result;
+    public T Result = new();
     private int _position;
+
+    public CommandLineProcessor(List<string> args, List<CommandLineDefinition> definitions)
+    {
+        Arguments = args;
+        Definitions = definitions;
+    }
+
 
     public void Process()
     {
@@ -40,7 +47,7 @@ internal class CommandLineProcessor<T>
 
     private void ProcessOption(string arg, OptionType type)
     {
-        string value = null;
+        string? value = null;
 
         if (arg.Contains("="))
         {
@@ -115,12 +122,12 @@ internal class CommandLineProcessor<T>
         remainder.Add(arg);
     }
 
-    private CommandLineDefinition FindDefinition(string key)
+    private CommandLineDefinition? FindDefinition(string key)
     {
         return Definitions.FirstOrDefault(x => x.MatchesShortOption(key) || x.MatchesLongOption(key));
     }
 
-    private CommandLineDefinition FindDefinition(int position)
+    private CommandLineDefinition? FindDefinition(int position)
     {
         return Definitions.FirstOrDefault(x => x.Position == position);
     }
@@ -145,7 +152,7 @@ internal class CommandLineProcessor<T>
         return OptionType.None;
     }
 
-    private CommandLineDefinition FindRemainder()
+    private CommandLineDefinition? FindRemainder()
     {
         return Definitions.FirstOrDefault(x => x.Remainder);
     }

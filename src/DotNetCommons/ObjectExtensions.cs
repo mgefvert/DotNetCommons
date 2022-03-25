@@ -16,7 +16,7 @@ public static class ObjectExtensions
     /// Set the value of a property to a specific value, handling conversions from a number
     /// of recognized formats in the process.
     /// </summary>
-    public static void SetPropertyValue(this object obj, PropertyInfo property, object value)
+    public static void SetPropertyValue(this object obj, PropertyInfo property, object? value)
     {
         SetPropertyValue(obj, property, value, CultureInfo.CurrentCulture);
     }
@@ -25,9 +25,9 @@ public static class ObjectExtensions
     /// Set the value of a property to a specific value, handling conversions from a number
     /// of recognized formats in the process.
     /// </summary>
-    public static void SetPropertyValue(this object obj, PropertyInfo property, object value, CultureInfo culture)
+    public static void SetPropertyValue(this object obj, PropertyInfo property, object? value, CultureInfo culture)
     {
-        bool ValueIsNull(object v) => v == null || v is string s && string.IsNullOrEmpty(s);
+        bool ValueIsNull(object? v) => v == null || v is string s && string.IsNullOrEmpty(s);
 
         var propertyType = property.PropertyType;
 
@@ -46,7 +46,7 @@ public static class ObjectExtensions
         }
 
         // Type conversion required?
-        if (ValueIsNull(value) || !value.GetType().DescendantOfOrEqual(propertyType))
+        if (ValueIsNull(value) || !value!.GetType().DescendantOfOrEqual(propertyType))
         {
             if (propertyType.IsEnum)
             {
@@ -59,17 +59,17 @@ public static class ObjectExtensions
                 }
             }
             else if (propertyType == typeof(DateTimeOffset))
-                value = !ValueIsNull(value) ? DateTimeOffset.Parse(value.ToString()!, culture) : DateTimeOffset.MinValue;
+                value = !ValueIsNull(value) ? DateTimeOffset.Parse(value!.ToString()!, culture) : DateTimeOffset.MinValue;
             else if (propertyType == typeof(DateTime))
-                value = !ValueIsNull(value) ? DateTime.Parse(value.ToString()!, culture) : DateTime.MinValue;
+                value = !ValueIsNull(value) ? DateTime.Parse(value!.ToString()!, culture) : DateTime.MinValue;
             else if (propertyType == typeof(TimeSpan))
-                value = !ValueIsNull(value) ? TimeSpan.Parse(value.ToString()!, culture) : TimeSpan.Zero;
+                value = !ValueIsNull(value) ? TimeSpan.Parse(value!.ToString()!, culture) : TimeSpan.Zero;
             else if (propertyType == typeof(Guid))
-                value = !ValueIsNull(value) ? Guid.Parse(value.ToString()!) : Guid.Empty;
+                value = !ValueIsNull(value) ? Guid.Parse(value!.ToString()!) : Guid.Empty;
             else if (propertyType == typeof(Uri))
-                value = !ValueIsNull(value) ? new Uri(value.ToString()!) : null;
+                value = !ValueIsNull(value) ? new Uri(value!.ToString()!) : null;
             else if (propertyType == typeof(bool))
-                value = !ValueIsNull(value) && value.ToString().ParseBoolean(false);
+                value = !ValueIsNull(value) && value!.ToString()!.ParseBoolean(false);
             else
                 value = Convert.ChangeType(value, propertyType, culture);
         }

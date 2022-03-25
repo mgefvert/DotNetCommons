@@ -6,7 +6,7 @@ namespace DotNetCommons.Test.Temporal;
 [TestClass]
 public class UnitedStatesHolidaysTests
 {
-    private UnitedStatesHolidays _holidays;
+    private UnitedStatesHolidays _holidays = null!;
     private const string Fmt = "yyyy-MM-dd";
 
     [TestInitialize]

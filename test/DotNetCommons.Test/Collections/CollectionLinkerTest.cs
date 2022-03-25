@@ -11,18 +11,18 @@ public class CollectionLinkerTest
     public class Post
     {
         public int ID { get; set; }
-        public Comment[] Comments { get; set; }
+        public Comment[]? Comments { get; set; }
     }
 
     public class Comment
     {
         public int ID { get; set; }
         public int PostID { get; set; }
-        public Post Post { get; set; }
+        public Post? Post { get; set; }
     }
 
-    private Post[] _posts;
-    private Comment[] _comments;
+    private Post[] _posts = null!;
+    private Comment[] _comments = null!;
 
     [TestInitialize]
     public void Setup()
@@ -49,14 +49,14 @@ public class CollectionLinkerTest
         CollectionLinker.LinkToMany(_posts, _comments, x => x.ID, x => x.PostID,
             (post, comments) => post.Comments = comments.ToArray());
 
-        Assert.AreEqual(3, _posts[0].Comments.Length);
-        Assert.AreEqual(0, _posts[1].Comments.Length);
-        Assert.AreEqual(1, _posts[2].Comments.Length);
+        Assert.AreEqual(3, _posts[0].Comments!.Length);
+        Assert.AreEqual(0, _posts[1].Comments!.Length);
+        Assert.AreEqual(1, _posts[2].Comments!.Length);
 
-        Assert.AreEqual(1000, _posts[0].Comments[0].ID);
-        Assert.AreEqual(1001, _posts[0].Comments[1].ID);
-        Assert.AreEqual(1002, _posts[0].Comments[2].ID);
-        Assert.AreEqual(1003, _posts[2].Comments[0].ID);
+        Assert.AreEqual(1000, _posts[0].Comments![0].ID);
+        Assert.AreEqual(1001, _posts[0].Comments![1].ID);
+        Assert.AreEqual(1002, _posts[0].Comments![2].ID);
+        Assert.AreEqual(1003, _posts[2].Comments![0].ID);
     }
 
     [TestMethod]
@@ -65,9 +65,9 @@ public class CollectionLinkerTest
         CollectionLinker.LinkToOne(_comments, _posts, x => x.PostID, x => x.ID, 
             (comment, post) => comment.Post = post);
 
-        Assert.AreEqual(1, _comments[0].Post.ID);
-        Assert.AreEqual(1, _comments[1].Post.ID);
-        Assert.AreEqual(1, _comments[2].Post.ID);
-        Assert.AreEqual(3, _comments[3].Post.ID);
+        Assert.AreEqual(1, _comments[0].Post!.ID);
+        Assert.AreEqual(1, _comments[1].Post!.ID);
+        Assert.AreEqual(1, _comments[2].Post!.ID);
+        Assert.AreEqual(3, _comments[3].Post!.ID);
     }
 }

@@ -15,8 +15,14 @@ public static class Passwords
 {
     private class PasswordLayout
     {
-        public string Alphabet;
+        public readonly string Alphabet;
         public int Repeat;
+
+        public PasswordLayout(string alphabet, int repeat)
+        {
+            Alphabet = alphabet;
+            Repeat = repeat;
+        }
     }
 
     private static readonly RandomNumberGenerator Rng = RandomNumberGenerator.Create();
@@ -183,7 +189,7 @@ public static class Passwords
                     throw new InvalidOperationException($"Invalid character '{c}' in password template.");
             }
 
-            layout.Add(new PasswordLayout { Alphabet = alphabet, Repeat = -1 });
+            layout.Add(new PasswordLayout(alphabet, -1));
         }
 
         layout.ForEach(x => x.Repeat = Math.Abs(x.Repeat));

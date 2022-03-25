@@ -10,10 +10,10 @@ public class LastDayHolidayTests
     [TestMethod]
     public void Test()
     {
-        var holiday = new LastDayHoliday("Bork Day", HolidayType.Halfday, 12, DayOfWeek.Wednesday);
+        var holiday = new LastDayHoliday("Bork Day", HolidayType.HalfDay, 12, DayOfWeek.Wednesday);
 
         Assert.AreEqual("Bork Day", holiday.Name);
-        Assert.AreEqual(HolidayType.Halfday, holiday.Type);
+        Assert.AreEqual(HolidayType.HalfDay, holiday.Type);
 
         Assert.AreEqual(new DateTime(2020, 12, 30), holiday.InternalCalculateDate(2020));
         Assert.AreEqual(new DateTime(2021, 12, 29), holiday.InternalCalculateDate(2021));

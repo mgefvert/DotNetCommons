@@ -6,13 +6,15 @@ using DotNetCommons.Net;
 using DotNetCommons.Security;
 using Microsoft.AspNetCore.Html;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Web;
 
 public static class HtmlTools
 {
     public static Color Darken(this Color color, float pct) => Lighten(color, -pct);
 
-    public static string GravatarUrl(string email, int? size = null, string mode = null, string rating = null)
+    public static string GravatarUrl(string email, int? size = null, string? mode = null, string? rating = null)
     {
         using var md5 = MD5.Create();
 
@@ -22,7 +24,7 @@ public static class HtmlTools
         var parameters = new Dictionary<string, string>();
 
         if (size != null)
-            parameters["s"] = size.ToString();
+            parameters["s"] = size.ToString()!;
         if (mode != null)
             parameters["d"] = mode;
         if (rating != null)

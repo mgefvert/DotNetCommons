@@ -52,7 +52,7 @@ public class IPAccessList
             return;
         }
 
-        if (IPNetwork.TryParse(address, out var range))
+        if (IPNetwork.TryParse(address, out var range) && range != null)
         {
             Add(range);
             return;

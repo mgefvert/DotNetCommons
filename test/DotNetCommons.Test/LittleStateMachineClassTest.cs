@@ -9,18 +9,23 @@ public class LittleStateMachineClassTest
 {
     public class State: IComparable<State>
     {
-        public string Title { get; set; }
+        public string Title { get; }
 
-        public int CompareTo(State other) => string.CompareOrdinal(Title, other.Title);
+        public State(string title)
+        {
+            Title = title;
+        }
+
+        public int CompareTo(State? other) => string.CompareOrdinal(Title, other?.Title);
         public override string ToString() => Title;
     }
 
-    private readonly State _initialized = new State { Title = "Initialized" };
-    private readonly State _running = new State { Title = "Running" };
-    private readonly State _stopped = new State { Title = "Stopped" };
+    private readonly State _initialized = new("Initialized");
+    private readonly State _running = new("Running");
+    private readonly State _stopped = new("Stopped");
 
-    private List<string> _log;
-    private LittleStateMachine<State> _lsm;
+    private List<string> _log = null!;
+    private LittleStateMachine<State> _lsm = null!;
 
     [TestInitialize]
     public void Setup()
@@ -55,13 +60,7 @@ public class LittleStateMachineClassTest
     [TestMethod, ExpectedException(typeof(StateMachineException))]
     public void TestInvalidState()
     {
-        _lsm.Initialize(new State());
-    }
-
-    [TestMethod, ExpectedException(typeof(StateMachineException))]
-    public void TestNullState()
-    {
-        _lsm.Initialize(null);
+        _lsm.Initialize(new State(null!));
     }
 
     [TestMethod, ExpectedException(typeof(StateMachineException))]

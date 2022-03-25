@@ -42,7 +42,7 @@ public class SpawnTest
         result.IsRunning.Should().BeTrue();
         result.IsFinished.Should().BeFalse();
 
-        result.InputStream.Write('X');
+        result.InputStream!.Write('X');
         Thread.Sleep(100);
         result.IsRunning.Should().BeFalse();
         result.IsFinished.Should().BeTrue();

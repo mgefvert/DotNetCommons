@@ -10,10 +10,10 @@ namespace DotNetCommons.Sys;
 public static class CtrlBreak
 {
     private static readonly ManualResetEvent Event = new(false);
-    private static Action _hook;
+    private static Action? _hook;
     private static bool _hooked;
 
-    private static void CancelKeypress(object sender, ConsoleCancelEventArgs args)
+    private static void CancelKeypress(object? sender, ConsoleCancelEventArgs args)
     {
         args.Cancel = true;
         Event.Set();

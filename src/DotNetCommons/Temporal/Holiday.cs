@@ -14,7 +14,7 @@ public enum HolidayType
     Holiday = 1,
     Unofficial = 2,
     Private = 4,
-    Halfday = 8
+    HalfDay = 8
 }
 
 /// <summary>
@@ -66,7 +66,7 @@ public abstract class Holiday
 
         try
         {
-            return (Holiday)Activator.CreateInstance(type, args.ToArray());
+            return (Holiday?)Activator.CreateInstance(type, args.ToArray()) ?? throw new InvalidDataException();
         }
         catch (Exception e)
         {
@@ -99,12 +99,12 @@ public abstract class Holiday
     /// <summary>
     /// Name of the holiday.
     /// </summary>
-    public string Name { get; }
+    public string? Name { get; }
 
     /// <summary>
     /// Rule for determining observed dates (when the holiday is shifted due to weekdays etc).
     /// </summary>
-    public Func<DateTime, DateTime> ObservedRule { get; set; }
+    public Func<DateTime, DateTime>? ObservedRule { get; set; }
 
     protected internal abstract DateTime InternalCalculateDate(int year);
     public abstract string TextDefinition();

@@ -12,25 +12,25 @@ public class StateMachineException : Exception
     }
 }
 
-public class LittleStateMachine<T>
+public class LittleStateMachine<T> where T : notnull
 {
     private class StateRecord
     {
-        public T State;
-        public T SubstateOf;
-        public Action<T> Arrive;
-        public Action<T> Leave;
-        public bool HasParent;
+        public T State { get; init; } = default!;
+        public T? SubStateOf { get; init; }
+        public Action<T>? Arrive { get; init; }
+        public Action<T>? Leave { get; init; }
+        public bool HasParent { get; init; }
     }
 
     private readonly Dictionary<T, StateRecord> _states = new();
     private readonly List<(T, T)> _transitions = new();
 
-    public T Current { get; set; }
+    public T? Current { get; set; }
     public DateTime LastTransition { get; private set; }
     public TimeSpan TimeSinceTransition => DateTime.Now - LastTransition;
 
-    public LittleStateMachine<T> ConfigureState(T state, Action<T> arrive = null, Action<T> leave = null)
+    public LittleStateMachine<T> ConfigureState(T state, Action<T>? arrive = null, Action<T>? leave = null)
     {
         if (_states.ContainsKey(state))
             throw new ArgumentException($"State {state} is already defined.");
@@ -46,17 +46,17 @@ public class LittleStateMachine<T>
         return this;
     }
 
-    public LittleStateMachine<T> ConfigureState(T state, T substateOf, Action<T> arrive = null, Action<T> leave = null)
+    public LittleStateMachine<T> ConfigureState(T state, T subStateOf, Action<T>? arrive = null, Action<T>? leave = null)
     {
         if (_states.ContainsKey(state))
             throw new ArgumentException($"State {state} is already defined.");
-        if (!_states.ContainsKey(substateOf))
-            throw new ArgumentException($"Parent state {substateOf} has not been defined.");
+        if (!_states.ContainsKey(subStateOf))
+            throw new ArgumentException($"Parent state {subStateOf} has not been defined.");
 
         _states.Add(state, new StateRecord
         {
             State = state,
-            SubstateOf = substateOf,
+            SubStateOf = subStateOf,
             HasParent = true,
             Arrive = arrive,
             Leave = leave
@@ -81,7 +81,7 @@ public class LittleStateMachine<T>
         return _states.TryGetValue(state, out var sr) ? sr : throw new StateMachineException($"State {state} has not been configured.");
     }
 
-    private List<T> GetStateHierarchy(T state)
+    private List<T> GetStateHierarchy(T? state)
     {
         if (state == null)
             return new List<T>();
@@ -97,7 +97,9 @@ public class LittleStateMachine<T>
             if (!sr.HasParent)
                 break;
 
-            sr = _states[sr.SubstateOf];
+            sr = sr.SubStateOf != null ? _states.GetValueOrDefault(sr.SubStateOf) : null;
+            if (sr == null)
+                break;
         }
 
         return result;

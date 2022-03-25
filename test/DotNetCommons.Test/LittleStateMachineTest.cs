@@ -18,8 +18,8 @@ public class LittleStateMachineTest
         Unconfigured
     }
 
-    private List<string> _log;
-    private LittleStateMachine<States> _lsm;
+    private List<string> _log = null!;
+    private LittleStateMachine<States> _lsm = null!;
 
     [TestInitialize]
     public void Setup()

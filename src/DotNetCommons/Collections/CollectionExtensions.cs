@@ -27,7 +27,7 @@ public static class CollectionExtensions
     /// <summary>
     /// Add a value to a collection if it is not null. If the collection itself is null, nothing is done.
     /// </summary>
-    public static void AddIfNotNull<T>(this ICollection<T>? collection, T item)
+    public static void AddIfNotNull<T>(this ICollection<T>? collection, T? item)
     {
         if (collection != null && item != null)
             collection.Add(item);
@@ -46,7 +46,7 @@ public static class CollectionExtensions
     /// Add a range of values to a collection, filtering for null values. If the collection itself is null,
     /// nothing is done.
     /// </summary>
-    public static void AddRangeIfNotNull<T>(this ICollection<T>? collection, IEnumerable<T>? items)
+    public static void AddRangeIfNotNull<T>(this ICollection<T>? collection, IEnumerable<T?>? items)
     {
         if (collection == null || items == null)
             return;

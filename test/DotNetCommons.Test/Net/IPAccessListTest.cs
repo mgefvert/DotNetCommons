@@ -27,8 +27,8 @@ public class IPAccessListTest
         al.Add(IPAddress.Parse("192.168.1.20"));
         al.Add(new[] { IPAddress.Parse("192.168.1.100"), IPAddress.Parse("192.168.1.101") });
 
-        al.Add(IPNetwork.Parse("10.47.1.0/24"));
-        al.Add(new[] { IPNetwork.Parse("10.47.2.0/24") });
+        al.Add(IPNetwork.Parse("10.47.1.0/24")!);
+        al.Add(new[] { IPNetwork.Parse("10.47.2.0/24")! });
 
         Assert.AreEqual(3, al.Addresses.Count);
         Assert.AreEqual(2, al.Ranges.Count);

@@ -10,25 +10,25 @@ namespace DotNetCommons.Net;
 public class IPNetwork
 {
     private readonly byte[] _bytes;
-    private readonly int _maxlen;
+    private readonly int _maxLength;
 
     public IPAddress Address { get; }
     public int MaskLen { get; }
-    public IPAddress Netmask => LengthToNetmask(MaskLen, _maxlen);
+    public IPAddress NetMask => LengthToNetMask(MaskLen, _maxLength);
 
-    public IPNetwork(IPAddress address, int masklen)
+    public IPNetwork(IPAddress address, int maskLength)
     {
-        Address = Mask(address, masklen);
-        MaskLen = masklen;
+        Address = Mask(address, maskLength);
+        MaskLen = maskLength;
         _bytes = Address.GetAddressBytes();
-        _maxlen = _bytes.Length * 8;
+        _maxLength = _bytes.Length * 8;
     }
 
     public IPNetwork(IPAddress address) : this(address, address.GetAddressBytes().Length * 8)
     {
     }
 
-    public IPNetwork(IPAddress address, IPAddress netmask) : this(address, NetmaskToLength(netmask))
+    public IPNetwork(IPAddress address, IPAddress netMask) : this(address, NetMaskToLength(netMask))
     {
     }
 
@@ -47,7 +47,7 @@ public class IPNetwork
         return true;
     }
 
-    public static IPNetwork Parse(string network)
+    public static IPNetwork? Parse(string network)
     {
         if (TryParse(network, out var range))
             return range;
@@ -55,7 +55,7 @@ public class IPNetwork
         throw new ArgumentException("Invalid IP network: " + network, nameof(network));
     }
 
-    public static bool TryParse(string network, out IPNetwork range)
+    public static bool TryParse(string network, out IPNetwork? range)
     {
         range = null;
 
@@ -64,7 +64,7 @@ public class IPNetwork
 
         var x = network.Split('/');
 
-        IPAddress address = null;
+        IPAddress? address = null;
         var mask = 0;
 
         if (x.Length >= 1)
@@ -81,7 +81,7 @@ public class IPNetwork
                 return false;
         }
 
-        range = new IPNetwork(address, mask);
+        range = new IPNetwork(address!, mask);
         return true;
     }
 
@@ -120,32 +120,32 @@ public class IPNetwork
             buffer[offset] = (byte)(buffer[offset] & ~mask);
     }
 
-    private static byte[] GetMaskedBytes(IPAddress address, int masklen)
+    private static byte[] GetMaskedBytes(IPAddress address, int maskLength)
     {
         var bytes = address.GetAddressBytes();
-        for (var i = masklen; i < bytes.Length * 8; i++)
+        for (var i = maskLength; i < bytes.Length * 8; i++)
             BitSet(bytes, i, false);
 
         return bytes;
     }
 
-    public static IPAddress LengthToNetmask(int masklen, int maxlen)
+    public static IPAddress LengthToNetMask(int maskLength, int maxLength)
     {
-        var bytes = new byte[maxlen / 8];
-        for (var i = 0; i < masklen; i++)
+        var bytes = new byte[maxLength / 8];
+        for (var i = 0; i < maskLength; i++)
             BitSet(bytes, i, true);
 
         return new IPAddress(bytes);
     }
 
-    public static IPAddress Mask(IPAddress address, int masklen)
+    public static IPAddress Mask(IPAddress address, int maskLength)
     {
-        return new IPAddress(GetMaskedBytes(address, masklen));
+        return new IPAddress(GetMaskedBytes(address, maskLength));
     }
 
-    public static int NetmaskToLength(IPAddress netmask)
+    public static int NetMaskToLength(IPAddress netMask)
     {
-        var bytes = netmask.GetAddressBytes();
+        var bytes = netMask.GetAddressBytes();
         for (var i = 0; i < bytes.Length * 8; i++)
             if (!BitGet(bytes, i))
                 return i;

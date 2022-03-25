@@ -221,7 +221,7 @@ public static partial class StringExtensions
     /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
     /// the common "true"/"false" case.
     /// </summary>
-    public static bool? ParseBoolean(this string value)
+    public static bool? ParseBoolean(this string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;

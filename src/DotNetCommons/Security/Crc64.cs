@@ -89,7 +89,7 @@ public static class Crc64
         return bytes.Aggregate(0ul, (current, b) => (current >> 8) ^ Data[(byte) current ^ b]);
     }
 
-    public static ulong ComputeChecksum(string data, Encoding encoding = null)
+    public static ulong ComputeChecksum(string data, Encoding? encoding = null)
     {
         return ComputeChecksum((encoding ?? Encoding.UTF8).GetBytes(data));
     }

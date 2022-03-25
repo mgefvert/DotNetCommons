@@ -12,25 +12,25 @@ public class CommandLineOptionAttribute : Attribute
 {
     public string[] ShortOptions { get; }
     public string[] LongOptions { get; }
-    public string Description { get; }
+    public string? Description { get; }
 
-    public CommandLineOptionAttribute(string longOption, string description = null)
+    public CommandLineOptionAttribute(string longOption, string? description = null)
     {
         ShortOptions = Array.Empty<string>();
         LongOptions = new[] { longOption };
         Description = description;
     }
 
-    public CommandLineOptionAttribute(char shortOption, string longOption = null, string description = null)
+    public CommandLineOptionAttribute(char shortOption, string? longOption = null, string? description = null)
     {
         ShortOptions = new[] { shortOption.ToString() };
-        LongOptions = new[] { longOption };
+        LongOptions = longOption != null ? new[] { longOption } : Array.Empty<string>();
         Description = description;
     }
 
-    public CommandLineOptionAttribute(char[] shortOptions, string[] longOption = null, string description = null)
+    public CommandLineOptionAttribute(char[] shortOptions, string[]? longOption = null, string? description = null)
     {
-        ShortOptions = shortOptions?.Select(x => x.ToString()).ToArray() ?? Array.Empty<string>();
+        ShortOptions = shortOptions.Select(x => x.ToString()).ToArray() ;
         LongOptions = longOption ?? Array.Empty<string>();
         Description = description;
     }

@@ -14,14 +14,14 @@ public class Spawn : IDisposable
 {
     public string Command { get; set; }
     public bool Echo { get; set; }
-    public string Parameters { get; set; }
+    public string? Parameters { get; set; }
     public bool RedirectInput { get; set; }
-    public string StartDirectory { get; set; }
+    public string? StartDirectory { get; set; }
 
-    public Process Process { get; private set; }
+    public Process? Process { get; private set; }
 
-    public int? ExitCode => IsFinished ? Process.ExitCode : null;
-    public StreamWriter InputStream => Process.StandardInput;
+    public int? ExitCode => IsFinished ? Process!.ExitCode : null;
+    public StreamWriter? InputStream => Process?.StandardInput;
     public bool IsRunning => Process is { HasExited: false };
     public bool IsFinished => Process is { HasExited: true };
     public List<string> Output { get; } = new();
@@ -29,8 +29,14 @@ public class Spawn : IDisposable
 
     public Spawn(string command)
     {
-        Command = command.Chomp(out var remains);
+        Command = command.Chomp(out var remains) ?? throw new ArgumentNullException(nameof(command));
         Parameters = remains;
+    }
+
+    private void AssertProcessStarted()
+    {
+        if (Process == null)
+            throw new InvalidOperationException("Process has not been started");
     }
 
     /// <summary>
@@ -38,7 +44,7 @@ public class Spawn : IDisposable
     /// or the environment's path.
     /// </summary>
     /// <param name="exe">The name of the executable file</param>
-    public static string FindExePath(string exe)
+    public static string? FindExePath(string exe)
     {
         exe = Environment.ExpandEnvironmentVariables(exe);
 
@@ -82,7 +88,7 @@ public class Spawn : IDisposable
     /// </summary>
     public void Kill()
     {
-        Process.Kill();
+        Process?.Kill();
     }
 
     /// <summary>
@@ -114,7 +120,7 @@ public class Spawn : IDisposable
     {
         Process = new Process
         {
-            StartInfo = new ProcessStartInfo(Command, Parameters)
+            StartInfo = new ProcessStartInfo(Command, Parameters ?? "")
             {
                 CreateNoWindow = true,
                 RedirectStandardError = true,
@@ -143,7 +149,9 @@ public class Spawn : IDisposable
     /// <returns>The exit code.</returns>
     public int? Wait(TimeSpan? timeout = null)
     {
-        Process.WaitForExit((int?)timeout?.TotalMilliseconds ?? -1);
+        AssertProcessStarted();
+
+        Process!.WaitForExit((int?)timeout?.TotalMilliseconds ?? -1);
 
         // Give the process a chance to finish up
         Thread.Sleep(10);
@@ -160,8 +168,10 @@ public class Spawn : IDisposable
     /// <returns>The exit code.</returns>
     public async Task<int?> WaitAsync(TimeSpan? timeout = null)
     {
+        AssertProcessStarted();
+
         var cancel = timeout != null ? new CancellationTokenSource(timeout.Value).Token : CancellationToken.None;
-        await Process.WaitForExitAsync(cancel);
+        await Process!.WaitForExitAsync(cancel);
 
         // Give the process a chance to finish up
         // ReSharper disable once MethodSupportsCancellation

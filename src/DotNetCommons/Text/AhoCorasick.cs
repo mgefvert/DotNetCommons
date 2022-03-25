@@ -21,6 +21,7 @@
 
 // Originally from https://github.com/pdonald/aho-corasick
 
+#nullable disable
 
 using System.Collections;
 using System.Collections.Generic;
