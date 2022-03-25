@@ -31,7 +31,7 @@ public class DrawList<T>
         }
     }
 
-    public T Draw()
+    public T? Draw()
     {
         lock (_lock)
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Text;
 
@@ -33,7 +32,7 @@ public static class Compression
     /// <param name="data"></param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public static byte[] PackString(string data, Encoding encoding = null)
+    public static byte[] PackString(string data, Encoding? encoding = null)
     {
         return Pack((encoding ?? Encoding.UTF8).GetBytes(data));
     }
@@ -60,7 +59,7 @@ public static class Compression
     /// <param name="data"></param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public static string UnpackString(byte[] data, Encoding encoding = null)
+    public static string UnpackString(byte[] data, Encoding? encoding = null)
     {
         return (encoding ?? Encoding.UTF8).GetString(Unpack(data));
     }

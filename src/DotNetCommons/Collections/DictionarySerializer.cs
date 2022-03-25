@@ -12,7 +12,7 @@ public class DictionarySerializer
 {
     public Encoding Encoding { get; set; } = Encoding.UTF8;
 
-    public Dictionary<TKey, TValue> Load<TKey, TValue>(string filename)
+    public Dictionary<TKey, TValue> Load<TKey, TValue>(string filename) where TKey : notnull
     {
         if (!File.Exists(filename))
             return new Dictionary<TKey, TValue>();
@@ -21,7 +21,7 @@ public class DictionarySerializer
         return Load<TKey, TValue>(fs);
     }
 
-    public Dictionary<TKey, TValue> Load<TKey, TValue>(Stream stream)
+    public Dictionary<TKey, TValue> Load<TKey, TValue>(Stream stream) where TKey : notnull
     {
         using var zip = new DeflateStream(stream, CompressionMode.Decompress, true);
         using var reader = new BinaryReader(zip, Encoding, true);
@@ -85,23 +85,24 @@ public class DictionarySerializer
         throw new SerializationException($"{typeof(T).Name} is a complex object and cannot be serialized");
     }
 
-    public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, string filename)
+    public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, string filename) where TKey : notnull
     {
         using var fs = new FileStream(filename, FileMode.Create);
         Save(dictionary, fs);
     }
 
-    public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, Stream stream)
+    public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, Stream stream) where TKey : notnull
     {
         using var zip = new DeflateStream(stream, CompressionMode.Compress, true);
         using var writer = new BinaryWriter(zip, Encoding, true);
         writer.Write(dictionary.Count);
 
         foreach (var item in dictionary)
-        {
-            SaveValue(writer, item.Key);
-            SaveValue(writer, item.Value);
-        }
+            if (item.Value != null)
+            {
+                SaveValue(writer, item.Key);
+                SaveValue(writer, item.Value);
+            }
     }
 
     public void SaveValue(BinaryWriter writer, object value)

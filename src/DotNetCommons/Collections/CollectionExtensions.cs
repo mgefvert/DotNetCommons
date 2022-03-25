@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -15,16 +12,9 @@ public static class CollectionExtensions
 {
     public class Intersection<T>
     {
-        public readonly List<T> Left;
-        public readonly List<(T, T)> Both;
-        public readonly List<T> Right;
-
-        public Intersection()
-        {
-            Left = new List<T>();
-            Both = new List<(T, T)>();
-            Right = new List<T>();
-        }
+        public List<T> Left { get; } = new();
+        public List<(T, T)> Both { get; } = new();
+        public List<T> Right { get; } = new();
     }
 
     private static int MinMax(int value, int min, int max)
@@ -37,7 +27,7 @@ public static class CollectionExtensions
     /// <summary>
     /// Add a value to a collection if it is not null. If the collection itself is null, nothing is done.
     /// </summary>
-    public static void AddIfNotNull<T>(this ICollection<T> collection, T item)
+    public static void AddIfNotNull<T>(this ICollection<T>? collection, T item)
     {
         if (collection != null && item != null)
             collection.Add(item);
@@ -56,7 +46,7 @@ public static class CollectionExtensions
     /// Add a range of values to a collection, filtering for null values. If the collection itself is null,
     /// nothing is done.
     /// </summary>
-    public static void AddRangeIfNotNull<T>(this ICollection<T> collection, IEnumerable<T> items)
+    public static void AddRangeIfNotNull<T>(this ICollection<T>? collection, IEnumerable<T>? items)
     {
         if (collection == null || items == null)
             return;
@@ -103,7 +93,7 @@ public static class CollectionExtensions
     /// <summary>
     /// Extract an item from a list at a given position, or return a default (null) value if the position is out of bounds.
     /// </summary>
-    public static T ExtractAtOrDefault<T>(this IList<T> list, int position, T defaultValue = default)
+    public static T? ExtractAtOrDefault<T>(this IList<T> list, int position, T? defaultValue = default)
     {
         return position < 0 || position >= list.Count ? defaultValue : ExtractAt(list, position);
     }
@@ -141,7 +131,7 @@ public static class CollectionExtensions
     /// <summary>
     /// Extract the first item from a list, or return a default (null) value if there are no items.
     /// </summary>
-    public static T ExtractFirstOrDefault<T>(this IList<T> list, T defaultValue = default)
+    public static T? ExtractFirstOrDefault<T>(this IList<T> list, T? defaultValue = default)
     {
         return list.Any() ? ExtractAt(list, 0) : defaultValue;
     }
@@ -157,7 +147,7 @@ public static class CollectionExtensions
     /// <summary>
     /// Extract the last item from a list, or return a default (null) value if there are no items.
     /// </summary>
-    public static T ExtractLastOrDefault<T>(this IList<T> list, T defaultValue = default)
+    public static T? ExtractLastOrDefault<T>(this IList<T> list, T? defaultValue = default)
     {
         return list.Any() ? ExtractAt(list, list.Count - 1) : defaultValue;
     }
@@ -180,7 +170,7 @@ public static class CollectionExtensions
     /// Increment the value of a given dictionary key, optionally creating the key with a default value of 0
     /// if it doesn't exist, and then incrementing it. Returns the new value.
     /// </summary>
-    public static decimal Increment<TKey>(this Dictionary<TKey, decimal> dictionary, TKey key, decimal value = 1)
+    public static decimal Increment<TKey>(this Dictionary<TKey, decimal> dictionary, TKey key, decimal value = 1) where TKey : notnull
     {
         value += dictionary.GetValueOrDefault(key);
         dictionary[key] = value;
@@ -191,7 +181,7 @@ public static class CollectionExtensions
     /// Increment the value of a given dictionary key, optionally creating the key with a default value of 0
     /// if it doesn't exist, and then incrementing it. Returns the new value.
     /// </summary>
-    public static int Increment<TKey>(this Dictionary<TKey, int> dictionary, TKey key, int value = 1)
+    public static int Increment<TKey>(this Dictionary<TKey, int> dictionary, TKey key, int value = 1) where TKey : notnull
     {
         value += dictionary.GetValueOrDefault(key);
         dictionary[key] = value;
@@ -254,7 +244,7 @@ public static class CollectionExtensions
         return Intersect(list1, list2, comparison, x => x);
     }
 
-    public static Intersection<T> Intersect<T, TKey>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<TKey> comparison, Func<T, TKey> selector)
+    public static Intersection<T> Intersect<T, TKey>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<TKey>? comparison, Func<T, TKey> selector)
     {
         bool DoCompare(T item1, T item2)
         {
@@ -273,8 +263,8 @@ public static class CollectionExtensions
 
         var result = new Intersection<T>();
 
-        bool empty1 = list1 == null || list1.Count == 0;
-        bool empty2 = list2 == null || list2.Count == 0;
+        var empty1 = list1.Count == 0;
+        var empty2 = list2.Count == 0;
 
         if (empty1 && empty2)
             return result;

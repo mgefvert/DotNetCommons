@@ -17,7 +17,7 @@ public class TreeCollection<T>
     {
         _roots = new List<TreeNode<T>>();
         Roots = _roots.AsReadOnly();
-    } 
+    }
 
     public TreeNode<T> AddRoot(T item)
     {
@@ -37,17 +37,17 @@ public class TreeCollection<T>
 
     public void RemoveRoot(T item)
     {
-        var nodes = _roots.ExtractAll(c => c.Item.Equals(item));
+        var nodes = _roots.ExtractAll(c => c.Item != null && c.Item.Equals(item));
         foreach (var node in nodes)
             NotifyRemove(node);
     }
 
-    public IEnumerable<T> Recurse()
+    public IEnumerable<T?> Recurse()
     {
         return _roots.SelectMany(c => c.InternalRecurse()).Select(c => c.Item);
     }
 
-    public IEnumerable<TResult> Recurse<TResult>(Func<int, T, TResult> selector)
+    public IEnumerable<TResult?> Recurse<TResult>(Func<int, T?, TResult?> selector)
     {
         return _roots.SelectMany(x => x.InternalRecurse(0, selector));
     }

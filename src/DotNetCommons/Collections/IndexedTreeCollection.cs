@@ -14,7 +14,7 @@ public enum AddChildOfMode
     AddToRoot
 }
 
-public class IndexedTreeCollection<T, TKey> : TreeCollection<T>
+public class IndexedTreeCollection<T, TKey> : TreeCollection<T> where TKey : notnull
 {
     private readonly Func<T, TKey> _keySelector;
     private readonly Dictionary<TKey, TreeNode<T>> _index;
@@ -50,7 +50,7 @@ public class IndexedTreeCollection<T, TKey> : TreeCollection<T>
         }
     }
 
-    public TreeNode<T> Find(TKey key)
+    public TreeNode<T>? Find(TKey key)
     {
         return _index.TryGetValue(key, out var node) ? node : null;
     }

@@ -25,7 +25,7 @@ public class IndexedCollection<T> : IEnumerable<T>
             _accessor = accessor;
         }
 
-        private List<T> Access(T item, bool createKey)
+        private List<T>? Access(T item, bool createKey)
         {
             var key = _accessor(item);
 
@@ -40,7 +40,7 @@ public class IndexedCollection<T> : IEnumerable<T>
 
         internal void Add(T item)
         {
-            Access(item, true).Add(item);
+            Access(item, true)!.Add(item);
         }
 
         internal void Clear()

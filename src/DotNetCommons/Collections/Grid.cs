@@ -20,11 +20,19 @@ namespace DotNetCommons.Collections;
 /// <typeparam name="TCol">Any generic type for column definitions.</typeparam>
 /// <typeparam name="TData">Any generic type for data elements.</typeparam>
 public class Grid<TRow, TCol, TData>
+    where TRow : notnull
+    where TCol : notnull
 {
     public class Element<T>
     {
-        public T Header { get; set; }
-        public TData Value { get; set; }
+        public T Header { get; }
+        public TData? Value { get; }
+
+        public Element(T header, TData? value)
+        {
+            Header = header;
+            Value = value;
+        }
     }
 
     private readonly char[] _csvEscapeChars = { '"' };
@@ -45,14 +53,14 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Data elements. Use [row, col] syntax to access these efficiently.
     /// </summary>
-    public Dictionary<Tuple<TRow, TCol>, TData> Data { get; } = new();
+    public Dictionary<(TRow, TCol), TData?> Data { get; } = new();
 
-    protected Tuple<TRow, TCol> Key(TRow row, TCol column) => new(row, column);
+    protected (TRow, TCol) Key(TRow row, TCol column) => new(row, column);
 
     /// <summary>
     /// Extract a given row/column item from the grid, removing it.
     /// </summary>
-    public TData Extract(TRow row, TCol column, TData defaultValue = default)
+    public TData? Extract(TRow row, TCol column, TData? defaultValue = default)
     {
         var key = Key(row, column);
         var result = Get(key, defaultValue);
@@ -60,7 +68,7 @@ public class Grid<TRow, TCol, TData>
         return result;
     }
 
-    protected TData Get(Tuple<TRow, TCol> key, TData defaultValue)
+    protected TData? Get((TRow, TCol) key, TData? defaultValue)
     {
         return Data.TryGetValue(key, out var result)
             ? result
@@ -70,7 +78,7 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Get a given row/column item from the grid.
     /// </summary>
-    public TData Get(TRow row, TCol column, TData defaultValue = default)
+    public TData? Get(TRow row, TCol column, TData? defaultValue = default)
     {
         return Get(Key(row, column), defaultValue);
     }
@@ -81,7 +89,7 @@ public class Grid<TRow, TCol, TData>
     public IEnumerable<Element<TCol>> GetColumnsForRow(TRow row)
     {
         foreach (var col in Columns)
-            yield return new Element<TCol> { Header = col, Value = Get(row, col) };
+            yield return new Element<TCol>(col, Get(row, col));
     }
 
     /// <summary>
@@ -90,7 +98,7 @@ public class Grid<TRow, TCol, TData>
     public IEnumerable<Element<TRow>> GetRowsForColumn(TCol column)
     {
         foreach (var row in Rows)
-            yield return new Element<TRow> { Header = row, Value = Get(row, column) };
+            yield return new Element<TRow>(row, Get(row, column));
     }
 
     public Grid<TCol, TRow, TData> Invert()
@@ -110,14 +118,14 @@ public class Grid<TRow, TCol, TData>
     /// Callback to manipulate the value of a given row/column item; main use is to cut down on
     /// allocations for multiple row/column pairs.
     /// </summary>
-    public TData Manipulate(TRow row, TCol column, Func<TData, TData> func, TData defaultValue = default)
+    public TData? Manipulate(TRow row, TCol column, Func<TData?, TData?> func, TData? defaultValue = default)
     {
         var key = Key(row, column);
         var value = func(Get(key, defaultValue));
         return Set(key, value);
     }
 
-    protected TData Set(Tuple<TRow, TCol> key, TData value)
+    protected TData? Set((TRow, TCol) key, TData? value)
     {
         if (!Columns.Contains(key.Item2))
             Columns.Add(key.Item2);
@@ -131,7 +139,7 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Set a row/column item to a given value.
     /// </summary>
-    public TData Set(TRow row, TCol column, TData value)
+    public TData? Set(TRow row, TCol column, TData? value)
     {
         return Set(Key(row, column), value);
     }
@@ -139,7 +147,7 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Efficient accessor for get/set operations.
     /// </summary>
-    public TData this[TRow row, TCol col]
+    public TData? this[TRow row, TCol col]
     {
         get => Get(row, col);
         set => Set(row, col, value);
@@ -148,13 +156,13 @@ public class Grid<TRow, TCol, TData>
 
     // --- EXPORT FUNCTIONS -----------------------------------------------
 
-    private bool IsNumeric(string result)
+    private bool IsNumeric(string? result)
     {
         return double.TryParse(result, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
             CultureInfo.InvariantCulture, out _);
     }
 
-    private string EscapeString(string value, char[] escapeChars, bool addQuotes)
+    private string EscapeString(string? value, char[] escapeChars, bool addQuotes)
     {
         var result = value ?? "";
         foreach (var ch in escapeChars)
@@ -170,13 +178,13 @@ public class Grid<TRow, TCol, TData>
         return result;
     }
 
-    private List<List<string>> RenderToStrings(bool rowHeader, bool colHeader, Func<string, string> formatter)
+    private List<List<string?>> RenderToStrings(bool rowHeader, bool colHeader, Func<string?, string?> formatter)
     {
-        var result = new List<List<string>>(Rows.Count + 1);
+        var result = new List<List<string?>>(Rows.Count + 1);
 
         if (colHeader)
         {
-            var header = new List<string>(Columns.Count + 1);
+            var header = new List<string?>(Columns.Count + 1);
             if (rowHeader)
                 header.Add(formatter("Row"));
             header.AddRange(Columns.Select(x => formatter(x.ToString())));
@@ -185,7 +193,7 @@ public class Grid<TRow, TCol, TData>
 
         foreach (var row in Rows)
         {
-            var strings = new List<string>(Columns.Count + 1);
+            var strings = new List<string?>(Columns.Count + 1);
             if (rowHeader)
                 strings.Add(formatter(row.ToString()));
             strings.AddRange(Columns.Select(c => formatter(Get(row, c)?.ToString())));
@@ -198,7 +206,7 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Generate a CSV string from the grid.
     /// </summary>
-    public string ToCsv(char separator = ',', bool includeRowHeader = false)
+    public string? ToCsv(char separator = ',', bool includeRowHeader = false)
     {
         if (!Columns.Any() || !Rows.Any())
             return null;
@@ -212,14 +220,14 @@ public class Grid<TRow, TCol, TData>
         return result.ToString();
     }
 
-    protected string RenderHtml(Func<TRow, string> rowFormatter, Func<TCol, string> columnFormatter, Func<TData, string> valueFormatter)
+    protected string? RenderHtml(Func<TRow, string?>? rowFormatter, Func<TCol, string?>? columnFormatter, Func<TData?, string?>? valueFormatter)
     {
         if (!Columns.Any() || !Rows.Any())
             return null;
 
         rowFormatter ??= row => row.ToString();
         columnFormatter ??= col => col.ToString();
-        valueFormatter ??= v => v.ToString();
+        valueFormatter ??= v => v?.ToString();
 
         var result = new StringBuilder();
         result.AppendLine("<table>");
@@ -249,7 +257,7 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Render grid to HTML.
     /// </summary>
-    public string ToHtml()
+    public string? ToHtml()
     {
         return RenderHtml(null, null, null);
     }
@@ -257,12 +265,12 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Render grid to HTML using a specific value formatter.
     /// </summary>
-    public string ToHtml(Func<TData, string> valueFormatter)
+    public string? ToHtml(Func<TData?, string?>? valueFormatter)
     {
         return RenderHtml(null, null, valueFormatter);
     }
 
-    public string ToHtml(Func<TRow, string> rowFormatter, Func<TCol, string> columnFormatter, Func<TData, string> valueFormatter)
+    public string? ToHtml(Func<TRow, string?>? rowFormatter, Func<TCol, string?>? columnFormatter, Func<TData?, string?>? valueFormatter)
     {
         return RenderHtml(rowFormatter, columnFormatter, valueFormatter);
     }
@@ -271,7 +279,7 @@ public class Grid<TRow, TCol, TData>
     /// Generate a MarkDown table (fields separated by pipe symbol).
     /// </summary>
     /// <returns></returns>
-    public string ToMarkup(bool includeRowHeader)
+    public string? ToMarkup(bool includeRowHeader)
     {
         if (!Columns.Any() || !Rows.Any())
             return null;
@@ -284,8 +292,8 @@ public class Grid<TRow, TCol, TData>
 
         var result = new StringBuilder();
 
-        void GenerateLine(IEnumerable<string> columns, string separator) =>
-            result.AppendLine(string.Join(separator, columns.Select((s, index) => s.PadRight(colLengths[index]))));
+        void GenerateLine(IEnumerable<string?> columns, string separator) =>
+            result.AppendLine(string.Join(separator, columns.Select((s, index) => s?.PadRight(colLengths[index]))));
 
         GenerateLine(strings.First(), " | ");
         GenerateLine(colLengths.Select(x => new string('-', x)), "-|-");

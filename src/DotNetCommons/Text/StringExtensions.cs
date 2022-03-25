@@ -15,7 +15,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Break up a string in chunks of a given length.
     /// </summary>
-    public static IEnumerable<string> BreakUp(this string value, int length)
+    public static IEnumerable<string> BreakUp(this string? value, int length)
     {
         if (string.IsNullOrEmpty(value))
             yield break;
@@ -35,7 +35,7 @@ public static partial class StringExtensions
     /// <param name="separator">Separator to use, default space</param>
     /// <param name="quote">Quote character to use, default "</param>
     /// <returns>Chopped off word or quoted phrase (without quotes)</returns>
-    public static string Chomp(this string value, out string remaining, char separator = ' ', char quote = '"')
+    public static string? Chomp(this string? value, out string? remaining, char separator = ' ', char quote = '"')
     {
         remaining = null;
         if (string.IsNullOrEmpty(value))
@@ -87,15 +87,15 @@ public static partial class StringExtensions
     /// </summary>
     /// <param name="value">Line to search</param>
     /// <returns>The first line.</returns>
-    public static string FirstLine(this string value)
+    public static string? FirstLine(this string? value)
     {
         var n = (value ?? "").IndexOfAny(new[] { '\r', '\n' });
         return n == -1 ? value : (value ?? "")[..n].Trim();
     }
 
-    public static bool IsEmpty(this string value) => string.IsNullOrEmpty(value);
+    public static bool IsEmpty(this string? value) => string.IsNullOrEmpty(value);
 
-    public static bool IsSet(this string value) => !string.IsNullOrEmpty(value);
+    public static bool IsSet(this string? value) => !string.IsNullOrEmpty(value);
 
     /// <summary>
     /// Take the left n characters from a string, possibly returning less than
@@ -106,7 +106,7 @@ public static partial class StringExtensions
     /// <param name="count">Number of characters to take. If this number is negative, it will
     ///     take all but the last n characters.</param>
     /// <returns>The n characters from the left of the source string.</returns>
-    public static string Left(this string value, int count)
+    public static string Left(this string? value, int count)
     {
         if (count < 0)
             count = (value?.Length ?? 0) + count;
@@ -123,7 +123,7 @@ public static partial class StringExtensions
     /// <param name="value"></param>
     /// <param name="count"></param>
     /// <returns></returns>
-    public static string LeftEllipsis(this string value, int count)
+    public static string LeftEllipsis(this string? value, int count)
     {
         var result = Left(value, count);
         if (value != null && value.Length > count)
@@ -138,7 +138,7 @@ public static partial class StringExtensions
     /// <param name="value"></param>
     /// <param name="compare"></param>
     /// <returns></returns>
-    public static bool Like(this string value, string compare)
+    public static bool Like(this string? value, string? compare)
     {
         return string.Equals(value, compare, StringComparison.CurrentCultureIgnoreCase);
     }
@@ -173,7 +173,7 @@ public static partial class StringExtensions
     /// </summary>
     /// <param name="value">String to work with</param>
     /// <param name="offset">Zero-based offset</param>
-    public static string Mid(this string value, int offset)
+    public static string Mid(this string? value, int offset)
     {
         if (string.IsNullOrEmpty(value))
             return string.Empty;
@@ -188,7 +188,7 @@ public static partial class StringExtensions
     /// <param name="value">String to work with</param>
     /// <param name="offset">Zero-based offset</param>
     /// <param name="count">Number of characters to extract</param>
-    public static string Mid(this string value, int offset, int count)
+    public static string Mid(this string? value, int offset, int count)
     {
         if (string.IsNullOrEmpty(value))
             return string.Empty;
@@ -212,7 +212,7 @@ public static partial class StringExtensions
     /// </summary>
     /// <param name="value">String to test.</param>
     /// <returns>Null if the string is empty, otherwise the original string.</returns>
-    public static string NullIfEmpty(this string value)
+    public static string? NullIfEmpty(this string? value)
     {
         return string.IsNullOrEmpty(value) ? null : value;
     }
@@ -221,7 +221,7 @@ public static partial class StringExtensions
     /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
     /// the common "true"/"false" case.
     /// </summary>
-    public static bool ParseBoolean(this string value)
+    public static bool ParseBoolean(this string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentNullException(nameof(value), "Null or empty string can not recognized as a boolean.");
@@ -250,7 +250,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a decimal value according to NumberStyles.Number and a given culture.
     /// </summary>
-    public static decimal ParseDecimal(this string value, CultureInfo culture, decimal defaultValue = 0)
+    public static decimal ParseDecimal(this string? value, CultureInfo culture, decimal defaultValue = 0)
     {
         return decimal.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result)
             ? result
@@ -260,7 +260,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a decimal value according to NumberStyles.Number and the current culture.
     /// </summary>
-    public static decimal ParseDecimal(this string value, decimal defaultValue = 0)
+    public static decimal ParseDecimal(this string? value, decimal defaultValue = 0)
     {
         return ParseDecimal(value, CultureInfo.CurrentCulture, defaultValue);
     }
@@ -268,7 +268,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a decimal value according to NumberStyles.Number and the invariant culture.
     /// </summary>
-    public static decimal ParseDecimalInvariant(this string value, decimal defaultValue = 0)
+    public static decimal ParseDecimalInvariant(this string? value, decimal defaultValue = 0)
     {
         return ParseDecimal(value, CultureInfo.InvariantCulture, defaultValue);
     }
@@ -276,7 +276,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a double value according to NumberStyles.Number and a given culture.
     /// </summary>
-    public static double ParseDouble(this string value, CultureInfo culture, double defaultValue = 0)
+    public static double ParseDouble(this string? value, CultureInfo culture, double defaultValue = 0)
     {
         return double.TryParse((value ?? "").Trim(), NumberStyles.Number, culture, out var result)
             ? result
@@ -286,7 +286,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a double value according to NumberStyles.Number and the current culture.
     /// </summary>
-    public static double ParseDouble(this string value, double defaultValue = 0)
+    public static double ParseDouble(this string? value, double defaultValue = 0)
     {
         return ParseDouble(value, CultureInfo.CurrentCulture, defaultValue);
     }
@@ -294,7 +294,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a double value according to NumberStyles.Number and the invariant culture.
     /// </summary>
-    public static double ParseDoubleInvariant(this string value, double defaultValue = 0)
+    public static double ParseDoubleInvariant(this string? value, double defaultValue = 0)
     {
         return ParseDouble(value, CultureInfo.InvariantCulture, defaultValue);
     }
@@ -302,7 +302,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a integer value.
     /// </summary>
-    public static int ParseInt(this string value, int defaultValue = 0)
+    public static int ParseInt(this string? value, int defaultValue = 0)
     {
         return int.TryParse((value ?? "").Trim(), out var result) ? result : defaultValue;
     }
@@ -310,7 +310,7 @@ public static partial class StringExtensions
     /// <summary>
     /// Parse a long value.
     /// </summary>
-    public static long ParseLong(this string value, long defaultValue = 0)
+    public static long ParseLong(this string? value, long defaultValue = 0)
     {
         return long.TryParse((value ?? "").Trim(), out var result) ? result : defaultValue;
     }
@@ -340,7 +340,7 @@ public static partial class StringExtensions
     /// <param name="count">Number of characters to take. If this number is negative, it will
     ///     take all but the first n characters.</param>
     /// <returns>The n characters from the right of the source string.</returns>
-    public static string Right(this string value, int count)
+    public static string Right(this string? value, int count)
     {
         if (count < 0)
             count = (value?.Length ?? 0) + count;
@@ -355,7 +355,7 @@ public static partial class StringExtensions
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static string StartUppercase(this string value)
+    public static string? StartUppercase(this string? value)
     {
         if (string.IsNullOrEmpty(value))
             return value;
@@ -368,10 +368,10 @@ public static partial class StringExtensions
     /// <summary>
     /// Combine Trim() and IsNullOrEmpty() on a sequence of strings.
     /// </summary>
-    public static IEnumerable<string> TrimAndFilter(this IEnumerable<string> strings)
+    public static IEnumerable<string> TrimAndFilter(this IEnumerable<string?> strings)
     {
         return strings
             .Select(x => x?.Trim())
-            .Where(x => !string.IsNullOrEmpty(x));
+            .Where(x => !string.IsNullOrEmpty(x))!;
     }
 }

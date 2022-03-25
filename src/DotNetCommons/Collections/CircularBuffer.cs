@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable UnusedMember.Global
+
 namespace DotNetCommons.Collections;
 
 public class CircularBufferFullException : Exception
@@ -66,7 +68,7 @@ public class CircularBuffer<T>
 
     public bool Contains(T result)
     {
-        return Values().Any(v => v.Equals(result));
+        return Values().Any(v => v != null && v.Equals(result));
     }
 
     public int Count
