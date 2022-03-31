@@ -44,8 +44,11 @@ public static class HtmlTools
         return Color.FromArgb(r, g, b);
     }
 
-    public static HtmlString Nl2Br(string text)
+    public static HtmlString Nl2Br(string? text)
     {
+        if (string.IsNullOrEmpty(text))
+            return new HtmlString(text);
+
         return new HtmlString(text
             .Replace("\r\n", "<br>")
             .Replace("\n", "<br>")

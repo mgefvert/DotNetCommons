@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -50,7 +51,7 @@ public class IndexedTreeCollection<T, TKey> : TreeCollection<T> where TKey : not
         }
     }
 
-    public TreeNode<T>? Find(TKey key)
+    public TreeNode<T> Find(TKey key)
     {
         return _index.TryGetValue(key, out var node) ? node : null;
     }

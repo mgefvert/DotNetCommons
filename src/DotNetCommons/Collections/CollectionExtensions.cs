@@ -379,4 +379,12 @@ public static class CollectionExtensions
             foreach (var item in collection)
                 yield return item;
     }
+
+    /// <summary>
+    /// Iterate through an enumerable and bring along an index counter
+    /// </summary>
+    public static IEnumerable<(T Item, int Index)> WithIndex<T>(this IEnumerable<T> source)
+    {
+        return source.Select((item, index) => (item, index));
+    }
 }
