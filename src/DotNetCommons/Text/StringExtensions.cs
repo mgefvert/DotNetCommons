@@ -50,7 +50,7 @@ public static partial class StringExtensions
                 return value.Mid(1);
             }
 
-            remaining = value.Mid(n + 1).Trim();
+            remaining = value.Mid(n + 1).Trim(separator);
             return value.Mid(1, n - 1);
         }
         else
@@ -59,11 +59,21 @@ public static partial class StringExtensions
             if (n == -1)
             {
                 remaining = "";
-                return value;
+                return value.Trim(separator);
             }
 
-            remaining = value.Mid(n + 1).Trim();
-            return value.Left(n);
+            remaining = value.Mid(n + 1).Trim(separator);
+            return value.Left(n).Trim(separator);
+        }
+    }
+
+    public static IEnumerable<string> ChompAll(this string? value, char separator = ' ', char quote = '"')
+    {
+        while (string.IsNullOrEmpty(value))
+        {
+            var word = value.Chomp(out value, separator, quote);
+            if (word != null)
+                yield return word;
         }
     }
 
