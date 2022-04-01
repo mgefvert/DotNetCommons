@@ -37,39 +37,47 @@ public static partial class StringExtensions
     /// <returns>Chopped off word or quoted phrase (without quotes)</returns>
     public static string? Chomp(this string? value, out string? remaining, char separator = ' ', char quote = '"')
     {
-        remaining = null;
+        remaining = "";
+        value = value?.Trim(separator);
         if (string.IsNullOrEmpty(value))
-            return value;
+            return null;
 
-        if (value[0] == quote)
+        var inQuote = false;
+        string? result = null;
+        for (var i = 0; i < value.Length; i++)
         {
-            var n = value.IndexOf(quote, 1);
-            if (n == -1)
+            if (inQuote)
             {
-                remaining = "";
-                return value.Mid(1);
+                if (value[i] == quote)
+                    inQuote = false;
+                continue;
             }
 
-            remaining = value.Mid(n + 1).Trim(separator);
-            return value.Mid(1, n - 1);
-        }
-        else
-        {
-            var n = value.IndexOf(separator);
-            if (n == -1)
+            if (value[i] == quote)
             {
-                remaining = "";
-                return value.Trim(separator);
+                inQuote = true;
+                continue;
             }
 
-            remaining = value.Mid(n + 1).Trim(separator);
-            return value.Left(n).Trim(separator);
+            if (value[i] == separator)
+            {
+                remaining = value.Mid(i + 1).Trim(separator);
+                result = value.Left(i);
+                break;
+            }
         }
+
+        result ??= value;
+
+        if (result.StartsWith(quote) && result.EndsWith(quote))
+            result = result.Mid(1, result.Length - 2);
+
+        return result;
     }
 
     public static IEnumerable<string> ChompAll(this string? value, char separator = ' ', char quote = '"')
     {
-        while (string.IsNullOrEmpty(value))
+        while (!string.IsNullOrEmpty(value))
         {
             var word = value.Chomp(out value, separator, quote);
             if (word != null)
