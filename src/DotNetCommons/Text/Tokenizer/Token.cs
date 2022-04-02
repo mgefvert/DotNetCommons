@@ -2,12 +2,12 @@
 
 public class Token<T>
 {
-    public TokenDefinition<T> Definition { get; }
+    public Definition<T> Definition { get; }
     public TokenList<T> Section { get; } = new();
     public string? Text { get; set; }
     public T ID => Definition.ID;
 
-    public Token(TokenDefinition<T> definition, string? text = null)
+    public Token(Definition<T> definition, string? text = null)
     {
         Definition = definition;
         Text = text;

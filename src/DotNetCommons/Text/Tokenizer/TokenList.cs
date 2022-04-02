@@ -134,7 +134,7 @@ public class TokenList<T> : List<Token<T>>
             if (token.Section.Any())
             {
                 result.Append(token.Section);
-                result.Append((token.Definition as TokenSectionDefinition<T>)?.EndText);
+                result.Append((token.Definition as Section<T>)?.EndText);
             }
         }
 
