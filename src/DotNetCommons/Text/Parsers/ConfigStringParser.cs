@@ -57,7 +57,8 @@ public class ConfigStringParser
             foreach (var token in item.ConsumeAll(Token.Text, Token.Quote))
                 sb.Append(token.Text);
 
-            result[key.Text] = sb.ToString();
+            if (!string.IsNullOrEmpty(key.Text))
+                result[key.Text] = sb.ToString();
         }
 
         return result;

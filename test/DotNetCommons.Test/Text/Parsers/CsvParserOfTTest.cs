@@ -1,18 +1,18 @@
-﻿using System;
+﻿using DotNetCommons.Text.Parsers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using DotNetCommons.Text.Parsers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Text.Parsers
 {
     [TestClass]
     public class CsvParserOfTTest
     {
-        private CsvParser<Name> _parser;
+        private CsvParser<Name> _parser = null!;
 
         [TestInitialize]
         public void Setup()

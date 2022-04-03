@@ -1,5 +1,5 @@
-﻿using System;
-using DotNetCommons.Text.Parsers;
+﻿using DotNetCommons.Text.Parsers;
+using System;
 
 namespace DotNetCommons.Test.Text.Parsers
 {
@@ -9,16 +9,16 @@ namespace DotNetCommons.Test.Text.Parsers
         public int Id { get; set; }
 
         [CsvField("GivenName", true)]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [CsvField("SurName", true)]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [CsvField("City", true)]
-        public string City { get; set; }
+        public string? City { get; set; }
 
         [CsvField("TelephoneNumber", true)]
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         [CsvField("Birthday", true)]
         public DateTime? Birthday { get; set; }
