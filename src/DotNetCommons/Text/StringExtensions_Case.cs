@@ -41,7 +41,10 @@ public static partial class StringExtensions
         foreach (var c in value)
         {
             if (char.IsLower(c) || char.IsDigit(c))
+            {
                 sb.Append(c);
+                lastUpper = false;
+            }
             else if (char.IsUpper(c))
             {
                 if (!lastUpper && sb.Length > 0)

@@ -22,13 +22,16 @@ public class TokenList<T> : List<Token<T>>
     /// <summary>
     /// Consume one token of a particular kind, throwing an exception if an illegal token was found.
     /// </summary>
+    /// <param name="required">Whether more tokens are required or not.</param>
     /// <param name="allowed">Allowed tokens.</param>
     /// <returns>A token, or null if at the end.</returns>
-    public Token<T>? Consume(params T[] allowed)
+    public Token<T>? Consume(bool required, params T[] allowed)
     {
         var result = this.ExtractFirstOrDefault();
+        if (required && result == null)
+            throw new StringTokenizerException("Unexpected end of text");
         if (result != null && allowed != null && allowed.Length > 0 && !allowed.Contains(result.ID))
-            throw new StringTokenizerException($"Illegal token '{result.Text}' in text.");
+            throw new StringTokenizerException($"Unexpected '{result.Text}' in text");
 
         return result;
     }
@@ -42,7 +45,7 @@ public class TokenList<T> : List<Token<T>>
     {
         while (Count > 0)
         {
-            var result = Consume(allowed);
+            var result = Consume(false, allowed);
             if (result != null)
                 yield return result;
         }
@@ -95,7 +98,7 @@ public class TokenList<T> : List<Token<T>>
         var count = 0;
         while (Peek(skipTokens))
         {
-            Consume();
+            Consume(false);
             count++;
         }
 

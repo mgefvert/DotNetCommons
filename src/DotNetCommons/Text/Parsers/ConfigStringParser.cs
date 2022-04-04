@@ -45,12 +45,12 @@ public class ConfigStringParser
             if (!item.Any())
                 break;
 
-            var key = item.Consume(Token.Text);
+            var key = item.Consume(false, Token.Text);
             if (key == null)
                 continue;
 
             item.Trim(Token.Whitespace);
-            item.Consume(Token.Equal);
+            item.Consume(true, Token.Equal);
             item.Trim(Token.Whitespace);
 
             var sb = new StringBuilder();
