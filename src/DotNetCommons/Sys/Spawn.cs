@@ -1,10 +1,11 @@
-﻿using System;
+﻿using DotNetCommons.Text;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -27,9 +28,13 @@ public class Spawn : IDisposable
     public List<string> Output { get; } = new();
     public string Text => string.Join(Environment.NewLine, Output);
 
-    public Spawn(string command)
+    public Spawn(string command, params string[] arguments)
     {
         Command = command.Chomp(out var remains) ?? throw new ArgumentNullException(nameof(command));
+
+        if (arguments.Any())
+            remains = string.Join(" ", new[] { remains }.Concat(arguments));
+
         Parameters = remains;
     }
 
@@ -208,5 +213,16 @@ public class Spawn : IDisposable
     {
         StartDirectory = startDirectory;
         return this;
+    }
+
+    public void ThrowIfExitCodeNonZero(Func<Spawn, Exception> action)
+    {
+        if (!IsFinished)
+            throw new InvalidOperationException("Process has finished");
+
+        if (ExitCode == 0)
+            return;
+
+        throw action(this);
     }
 }
