@@ -215,7 +215,7 @@ public class Spawn : IDisposable
         return this;
     }
 
-    public void ThrowIfExitCodeNonZero(Func<Spawn, Exception> action)
+    public void IfResultNonZero(Action<Spawn> action)
     {
         if (!IsFinished)
             throw new InvalidOperationException("Process has finished");
@@ -223,6 +223,6 @@ public class Spawn : IDisposable
         if (ExitCode == 0)
             return;
 
-        throw action(this);
+        action(this);
     }
 }
