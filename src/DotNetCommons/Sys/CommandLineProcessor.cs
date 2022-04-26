@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DotNetCommons.Collections;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetCommons.Collections;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -113,7 +113,7 @@ internal class CommandLineProcessor<T> where T : class, new()
         }
 
         definition = FindRemainder();
-        if (definition == null) 
+        if (definition == null)
             throw new CommandLineException("Unrecognized text on command line: " + arg);
 
         if (!(definition.Property.GetValue(Result) is ICollection<string> remainder))
@@ -174,9 +174,6 @@ internal class CommandLineProcessor<T> where T : class, new()
             return;
         }
 
-        if (definition.Property.PropertyType != value.GetType())
-            value = Convert.ChangeType(value, definition.Property.PropertyType);
-
-        definition.Property.SetValue(Result, value);
+        Result.SetPropertyValue(definition.Property, value);
     }
 }
