@@ -28,41 +28,38 @@ public class ApacheLogParser
     private enum LogToken
     {
         Whitespace,
-        Data,
-        Quotation
+        Data
     }
 
     private static readonly StringTokenizer<LogToken> Tokenizer = new(
         new Characters<LogToken>(TokenMode.Any, LogToken.Data, false),
-        new Characters<LogToken>(TokenMode.Whitespace, LogToken.Whitespace, false),
-        new Section<LogToken>("\"", "\"", true, LogToken.Quotation, false),
-        new Section<LogToken>("[", "]", false, LogToken.Quotation, false)
+        new Characters<LogToken>(TokenMode.Whitespace, LogToken.Whitespace, true),
+        new Section<LogToken>("\"", "\"", true, LogToken.Data, false),
+        new Section<LogToken>("[", "]", false, LogToken.Data, false)
     );
 
     public static ApacheLogEntry Parse(string line)
     {
         var fields = Tokenizer.Tokenize(line);
-        fields.RemoveValues(LogToken.Whitespace);
-        fields[4].Section.RemoveValues(LogToken.Whitespace);
 
-        if (fields.Count < 9 || fields[4].Section.Count < 3)
+        if (fields.Count < 9)
             return null;
 
-        if (fields.Any(x => string.IsNullOrEmpty(x.Text)))
+        if (fields.Any(x => string.IsNullOrEmpty(x.InsideText)))
             return null;
 
         return new ApacheLogEntry
         {
-            IP = IPAddress.Parse(fields[0].Text!),
-            UserName = fields[2].Text,
-            Time = DateTime.ParseExact(fields[3].Text!, "dd/MMM/yyyy:HH:mm:ss zzz", CultureInfo.InvariantCulture),
-            Method = fields[4].Section[0].Text,
-            Url = fields[4].Section[1].Text,
-            Protocol = fields[4].Section[2].Text,
-            ResponseCode = int.Parse(fields[5].Text!),
-            ResponseLength = int.Parse(fields[6].Text!),
-            Referer = fields[7].Section.ToString(),
-            UserAgent = fields[8].Section.ToString()
+            IP = IPAddress.Parse(fields[0].InsideText!),
+            UserName = fields[2].InsideText,
+            Time = DateTime.ParseExact(fields[3].InsideText!, "dd/MMM/yyyy:HH:mm:ss zzz", CultureInfo.InvariantCulture),
+            Method = fields[4].Section[0].InsideText,
+            Url = fields[4].Section[1].InsideText,
+            Protocol = fields[4].Section[2].InsideText,
+            ResponseCode = int.Parse(fields[5].InsideText!),
+            ResponseLength = int.Parse(fields[6].InsideText!),
+            Referer = fields[7].InsideText!,
+            UserAgent = fields[8].InsideText!
         };
     }
 }

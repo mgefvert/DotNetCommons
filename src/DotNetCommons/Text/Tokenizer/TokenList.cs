@@ -1,14 +1,14 @@
-﻿using System;
+﻿using DotNetCommons.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using DotNetCommons.Collections;
 
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Text.Tokenizer;
 
-public class TokenList<T> : List<Token<T>>
+public class TokenList<T> : List<Token<T>> where T : struct
 {
     public TokenList()
     {
@@ -119,7 +119,7 @@ public class TokenList<T> : List<Token<T>>
 
         foreach (var token in this)
         {
-            if (token.ID != null && token.ID.Equals(splitValue))
+            if (token.ID.Equals(splitValue))
                 result.Add(list = new TokenList<T>());
             else
                 list.Add(token);
@@ -128,12 +128,14 @@ public class TokenList<T> : List<Token<T>>
         return result;
     }
 
-    public override string ToString()
+    public override string ToString() => ToString(false);
+
+    public string ToString(bool insideText)
     {
         var result = new StringBuilder();
         foreach (var token in this)
         {
-            result.Append(token.Text);
+            result.Append(insideText ? token.InsideText : token.Text);
             if (token.Section.Any())
                 result.Append(token.Section);
         }

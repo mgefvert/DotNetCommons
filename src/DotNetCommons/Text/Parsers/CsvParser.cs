@@ -75,7 +75,7 @@ public class CsvParser
         foreach (var tokenField in tokenFields)
         {
             tokenField.Trim((int)CsvToken.Whitespace);
-            result.Add(tokenField.ToString());
+            result.Add(tokenField.ToString(true));
         }
 
         return result;

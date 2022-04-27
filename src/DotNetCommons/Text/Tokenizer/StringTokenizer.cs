@@ -9,7 +9,7 @@ namespace DotNetCommons.Text.Tokenizer;
 /// <summary>
 /// Class that divides a source string up into tokens.
 /// </summary>
-public class StringTokenizer<T>
+public class StringTokenizer<T> where T : struct
 {
     protected List<Definition<T>> Definitions { get; } = new();
     protected bool IsPrepared;
@@ -44,7 +44,7 @@ public class StringTokenizer<T>
     public TokenList<T> Tokenize(string text)
     {
         var position = 0;
-        return DoTokenize(text, null, ref position);
+        return DoTokenize(text, null, ref position, 0).Item1;
     }
 
     private void CaptureTextToToken(string source, ref int position, List<string> endTexts, Token<T> token)
@@ -53,33 +53,46 @@ public class StringTokenizer<T>
 
         while (position < source.Length)
         {
-            string? endText = null;
-            var c = source[position++];
+            string? endText;
+            var c = source[position];
             if (EscapeChars!.Contains(c))
             {
+                position++;
                 if (position >= source.Length)
                     throw new StringTokenizerException("Unexpected end of string", position, source);
 
-                c = source[position++];
+                c = source[position];
             }
             else if ((endText = MatchesEndText(source, position, endTexts)) != null)
             {
-                token.Text = sb.ToString();
-                position += endText.Length - 1;
+                var s = sb.ToString();
+                token.SetText(token.Text + s + endText, s);
+                position += endText.Length;
                 return;
             }
 
             sb.Append(c);
+            position++;
         }
 
         throw new StringTokenizerException("Unexpected end of string", position, source);
     }
 
-    private TokenList<T> DoTokenize(string source, List<string>? endTexts, ref int position)
+    private (TokenList<T> Tokens, string Text, string InsideText) DoTokenize(string source, List<string>? endTexts, ref int position, int start)
     {
+        var originalPosition = position;
+        int end = 0;
         var result = new TokenList<T>();
         if (string.IsNullOrEmpty(source))
-            return result;
+            return (result, "", "");
+
+        void AddToResult(Definition<T> definition, Token<T> token)
+        {
+            if (!definition.Discard)
+                result.Add(token);
+            if (definition.Append != null)
+                result.Add(new Token<T>(definition.Append.Value));
+        }
 
         var sb = new StringBuilder();
         Token<T>? current = null;
@@ -90,9 +103,9 @@ public class StringTokenizer<T>
             string? endText;
             if (endTexts != null && endTexts.Any() && (endText = MatchesEndText(source, position, endTexts)) != null)
             {
+                end = position;
                 position += endText.Length;
-                UpdateTokenText(current, sb);
-                return result;
+                break;
             }
 
             // Find matching definition
@@ -106,20 +119,22 @@ public class StringTokenizer<T>
 
                 // Flush previous text and generate a new token
                 UpdateTokenText(current, sb);
-                current = new Token<T>(match)
-                {
-                    Text = source.Substring(position, textMatch.Text.Length)
-                };
-                if (!match.Discard)
-                    result.Add(current);
+                current = new Token<T>(match);
+                current.SetText(source.Substring(position, textMatch.Text.Length));
+                AddToResult(match, current);
 
+                var sectionStart = position;
                 position += textMatch.Text.Length;
 
                 if (match is Section<T> sectionMatch)
                 {
                     if (sectionMatch.SectionTakesTokens)
+                    {
                         // Subsection - recurse
-                        current.Section.AddRange(DoTokenize(source, sectionMatch.EndTexts, ref position));
+                        var section = DoTokenize(source, sectionMatch.EndTexts, ref position, sectionStart);
+                        current.Section.AddRange(section.Tokens);
+                        current.SetText(section.Text, section.InsideText);
+                    }
                     else
                         // Just capture text to this token
                         CaptureTextToToken(source, ref position, sectionMatch.EndTexts, current);
@@ -135,19 +150,20 @@ public class StringTokenizer<T>
                     UpdateTokenText(current, sb);
 
                     current = new Token<T>(match);
-                    if (!match.Discard)
-                        result.Add(current);
+                    AddToResult(match, current);
                 }
 
                 // Add text
                 sb.Append(source[position++]);
             }
+
+            end = position;
         }
 
         // Flush any existing text to the last token
         UpdateTokenText(current, sb);
 
-        return result;
+        return (result, source.Substring(start, position - start), source.Substring(originalPosition, end - originalPosition));
     }
 
     private string? MatchesEndText(string source, int position, List<string> endTexts)
@@ -197,7 +213,7 @@ public class StringTokenizer<T>
     private void UpdateTokenText(Token<T>? token, StringBuilder sb)
     {
         if (sb.Length > 0 && token != null && token.Text == null)
-            token.Text = sb.ToString();
+            token.SetText(sb.ToString());
 
         sb.Clear();
     }

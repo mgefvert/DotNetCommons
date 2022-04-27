@@ -23,22 +23,29 @@ public enum TokenMode
 /// classify tokens.
 /// </summary>
 /// <typeparam name="T">Type of the ID value.</typeparam>
-public abstract class Definition<T>
+public abstract class Definition<T> where T : struct
 {
     public bool Discard { get; }
     public T ID { get; }
+    public T? Append { get; private set; }
 
     protected Definition(T id, bool discard)
     {
         Discard = discard;
         ID = id;
     }
+
+    public Definition<T> WithAppend(T token)
+    {
+        Append = token;
+        return this;
+    }
 }
 
 /// <summary>
 /// Capture a sequence of characters, e.g. digits, letters or digits, end of lines, whitespace etc.
 /// </summary>
-public class Characters<T> : Definition<T>
+public class Characters<T> : Definition<T> where T : struct
 {
     public TokenMode Mode { get; }
 
@@ -67,7 +74,7 @@ public class Characters<T> : Definition<T>
 /// tokens or just strings. Useful for defining custom strings like "hello world!" and treating
 /// the entire text as a single token defined by the quotes.
 /// </summary>
-public class Section<T> : Strings<T>
+public class Section<T> : Strings<T> where T : struct
 {
     public List<string> EndTexts { get; }
     public bool SectionTakesTokens { get; }
@@ -93,10 +100,9 @@ public class Section<T> : Strings<T>
 /// <summary>
 /// Match specific strings, like "=" or "and".
 /// </summary>
-public class Strings<T> : Definition<T>
+public class Strings<T> : Definition<T> where T : struct
 {
     public string Text { get; }
-    public bool EndOfLine { get; set; }
 
     public Strings(string text, T id, bool discard) : base(id, discard)
     {
@@ -105,18 +111,12 @@ public class Strings<T> : Definition<T>
 
         Text = text;
     }
-
-    public Definition<T> WithEol()
-    {
-        EndOfLine = true;
-        return this;
-    }
 }
 
 /// <summary>
 /// Define an escape character. Not actually used as a token, but for internal state-keeping.
 /// </summary>
-public class Escape<T> : Definition<T>
+public class Escape<T> : Definition<T> where T : struct
 {
     public char EscapeChar { get; }
 
