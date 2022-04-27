@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 // ReSharper disable UnusedMember.Global
 
@@ -67,7 +69,7 @@ public class Characters<T> : Definition<T>
 /// </summary>
 public class Section<T> : Strings<T>
 {
-    public string EndText { get; }
+    public List<string> EndTexts { get; }
     public bool SectionTakesTokens { get; }
 
     public Section(string text, string endText, bool takesTokens, T id, bool discard)
@@ -76,7 +78,14 @@ public class Section<T> : Strings<T>
         if (string.IsNullOrEmpty(endText))
             throw new ArgumentException("End text must not be empty.", nameof(endText));
 
-        EndText = endText;
+        EndTexts = new List<string> { endText };
+        SectionTakesTokens = takesTokens;
+    }
+
+    public Section(string text, IEnumerable<string> endTexts, bool takesTokens, T id, bool discard)
+        : base(text, id, discard)
+    {
+        EndTexts = endTexts.ToList();
         SectionTakesTokens = takesTokens;
     }
 }
@@ -87,6 +96,7 @@ public class Section<T> : Strings<T>
 public class Strings<T> : Definition<T>
 {
     public string Text { get; }
+    public bool EndOfLine { get; set; }
 
     public Strings(string text, T id, bool discard) : base(id, discard)
     {
@@ -94,6 +104,12 @@ public class Strings<T> : Definition<T>
             throw new ArgumentException("Text must not be empty.", nameof(text));
 
         Text = text;
+    }
+
+    public Definition<T> WithEol()
+    {
+        EndOfLine = true;
+        return this;
     }
 }
 

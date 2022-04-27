@@ -1,8 +1,8 @@
-﻿using DotNetCommons.Collections;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DotNetCommons.Collections;
 
 // ReSharper disable UnusedMember.Global
 
@@ -135,10 +135,7 @@ public class TokenList<T> : List<Token<T>>
         {
             result.Append(token.Text);
             if (token.Section.Any())
-            {
                 result.Append(token.Section);
-                result.Append((token.Definition as Section<T>)?.EndText);
-            }
         }
 
         return result.ToString();

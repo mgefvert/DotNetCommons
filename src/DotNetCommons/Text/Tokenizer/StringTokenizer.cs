@@ -47,13 +47,13 @@ public class StringTokenizer<T>
         return DoTokenize(text, null, ref position);
     }
 
-    private void CaptureTextToToken(string source, ref int position, string endText, Token<T> token)
+    private void CaptureTextToToken(string source, ref int position, List<string> endTexts, Token<T> token)
     {
         var sb = new StringBuilder();
-        var scan = endText[0];
 
         while (position < source.Length)
         {
+            string? endText = null;
             var c = source[position++];
             if (EscapeChars!.Contains(c))
             {
@@ -62,7 +62,7 @@ public class StringTokenizer<T>
 
                 c = source[position++];
             }
-            else if (c == scan && (endText.Length == 1 || string.CompareOrdinal(source, position, endText, 1, endText.Length - 1) == 0))
+            else if ((endText = MatchesEndText(source, position, endTexts)) != null)
             {
                 token.Text = sb.ToString();
                 position += endText.Length - 1;
@@ -75,7 +75,7 @@ public class StringTokenizer<T>
         throw new StringTokenizerException("Unexpected end of string", position, source);
     }
 
-    private TokenList<T> DoTokenize(string source, string? endText, ref int position)
+    private TokenList<T> DoTokenize(string source, List<string>? endTexts, ref int position)
     {
         var result = new TokenList<T>();
         if (string.IsNullOrEmpty(source))
@@ -84,16 +84,11 @@ public class StringTokenizer<T>
         var sb = new StringBuilder();
         Token<T>? current = null;
 
-        if (endText == "")
-            endText = null;
-
-        var ec = endText?[0] ?? '\0';
-
         while (position < source.Length)
         {
             // Did we hit the end text?
-            if (endText != null && source[position] == ec
-                                && string.CompareOrdinal(source, position, endText, 0, endText.Length) == 0)
+            string? endText;
+            if (endTexts != null && endTexts.Any() && (endText = MatchesEndText(source, position, endTexts)) != null)
             {
                 position += endText.Length;
                 UpdateTokenText(current, sb);
@@ -124,10 +119,10 @@ public class StringTokenizer<T>
                 {
                     if (sectionMatch.SectionTakesTokens)
                         // Subsection - recurse
-                        current.Section.AddRange(DoTokenize(source, sectionMatch.EndText, ref position));
+                        current.Section.AddRange(DoTokenize(source, sectionMatch.EndTexts, ref position));
                     else
                         // Just capture text to this token
-                        CaptureTextToToken(source, ref position, sectionMatch.EndText, current);
+                        CaptureTextToToken(source, ref position, sectionMatch.EndTexts, current);
                 }
             }
             else if (match is Characters<T>)
@@ -153,6 +148,15 @@ public class StringTokenizer<T>
         UpdateTokenText(current, sb);
 
         return result;
+    }
+
+    private string? MatchesEndText(string source, int position, List<string> endTexts)
+    {
+        foreach (var endText in endTexts)
+            if (string.CompareOrdinal(source, position, endText, 0, endText.Length) == 0)
+                return endText;
+
+        return null;
     }
 
     private Definition<T>? MatchText(string source, ref int position)
