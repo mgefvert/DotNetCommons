@@ -25,9 +25,9 @@ public class ConfigStringParser
         _definitions.AddRange(new Definition<Token>[] {
             new Characters<Token>(TokenMode.Any, Token.Text, false),
             new Characters<Token>(TokenMode.Whitespace, Token.Whitespace, false),
-            new Strings<Token>(separator, Token.Separator, false),
-            new Strings<Token>("=", Token.Equal, false),
-            new Section<Token>("\"", "\"", false, Token.Quote, false),
+            new Strings<Token>(Token.Separator, separator, false),
+            new Strings<Token>(Token.Equal, "=", false),
+            new Section<Token>(Token.Quote, "\"", "\"", false, false),
             new Escape<Token>('\\')
         });
     }

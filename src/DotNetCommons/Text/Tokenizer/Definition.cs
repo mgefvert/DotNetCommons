@@ -27,18 +27,11 @@ public abstract class Definition<T> where T : struct
 {
     public bool Discard { get; }
     public T ID { get; }
-    public T? Append { get; private set; }
 
     protected Definition(T id, bool discard)
     {
         Discard = discard;
         ID = id;
-    }
-
-    public Definition<T> WithAppend(T token)
-    {
-        Append = token;
-        return this;
     }
 }
 
@@ -70,50 +63,6 @@ public class Characters<T> : Definition<T> where T : struct
 }
 
 /// <summary>
-/// Capture a section. A section takes a starting text, ending text, and whether it takes
-/// tokens or just strings. Useful for defining custom strings like "hello world!" and treating
-/// the entire text as a single token defined by the quotes.
-/// </summary>
-public class Section<T> : Strings<T> where T : struct
-{
-    public List<string> EndTexts { get; }
-    public bool SectionTakesTokens { get; }
-
-    public Section(string text, string endText, bool takesTokens, T id, bool discard)
-        : base(text, id, discard)
-    {
-        if (string.IsNullOrEmpty(endText))
-            throw new ArgumentException("End text must not be empty.", nameof(endText));
-
-        EndTexts = new List<string> { endText };
-        SectionTakesTokens = takesTokens;
-    }
-
-    public Section(string text, IEnumerable<string> endTexts, bool takesTokens, T id, bool discard)
-        : base(text, id, discard)
-    {
-        EndTexts = endTexts.ToList();
-        SectionTakesTokens = takesTokens;
-    }
-}
-
-/// <summary>
-/// Match specific strings, like "=" or "and".
-/// </summary>
-public class Strings<T> : Definition<T> where T : struct
-{
-    public string Text { get; }
-
-    public Strings(string text, T id, bool discard) : base(id, discard)
-    {
-        if (string.IsNullOrEmpty(text))
-            throw new ArgumentException("Text must not be empty.", nameof(text));
-
-        Text = text;
-    }
-}
-
-/// <summary>
 /// Define an escape character. Not actually used as a token, but for internal state-keeping.
 /// </summary>
 public class Escape<T> : Definition<T> where T : struct
@@ -123,5 +72,110 @@ public class Escape<T> : Definition<T> where T : struct
     public Escape(char escapeChar) : base(default!, false)
     {
         EscapeChar = escapeChar;
+    }
+}
+
+/// <summary>
+/// Match specific strings, like "=" or "and".
+/// </summary>
+public class Strings<T> : Definition<T> where T : struct
+{
+    public StringDefinitions Texts { get; }
+
+    public Strings(T id, string text, bool discard) : base(id, discard)
+    {
+        Texts = new StringDefinitions().Add(text);
+    }
+
+    public Strings(T id, StringDefinitions texts, bool discard) : base(id, discard)
+    {
+        Texts = texts;
+    }
+}
+
+/// <summary>
+/// Define an End of Line character (usually \r\n, \r and \n). These have special meaning in that
+/// they advance the line/column counters differently.
+/// </summary>
+public class EndOfLine<T> : Strings<T> where T : struct
+{
+    public EndOfLine(T id, string text, bool discard) : base(id, text, discard)
+    {
+    }
+
+    public EndOfLine(T id, StringDefinitions texts, bool discard) : base(id, texts, discard)
+    {
+    }
+}
+
+/// <summary>
+/// Capture a section. A section takes a starting text, ending text, and whether it takes
+/// tokens or just strings. Useful for defining custom strings like "hello world!" and treating
+/// the entire text as a single token defined by the quotes.
+/// </summary>
+public class Section<T> : Strings<T> where T : struct
+{
+    public StringDefinitions EndTexts { get; }
+    public bool SectionTakesTokens { get; }
+
+    public Section(T id, string text, string endText, bool takesTokens, bool discard)
+        : base(id, text, discard)
+    {
+        if (string.IsNullOrEmpty(endText))
+            throw new ArgumentException("End text must not be empty.", nameof(endText));
+
+        EndTexts = new StringDefinitions().Add(endText);
+        SectionTakesTokens = takesTokens;
+    }
+
+    public Section(T id, string text, StringDefinitions endTexts, bool takesTokens, bool discard)
+        : base(id, text, discard)
+    {
+        EndTexts = endTexts;
+        SectionTakesTokens = takesTokens;
+    }
+}
+
+/// <summary>
+/// Class that encapsulates a series of strings, and optionally a reference to the
+/// EndOfLine definitions. Makes it easy to define a section with // as the starting part,
+/// and EndOfLine as the ending part. Or, optionally, to terminate a " section at the
+/// EndOfLine (and throwing an error).
+///
+/// Also, it automatically keeps the list of strings in descending order of length, which
+/// makes it easy to match against correctly.
+/// </summary>
+public class StringDefinitions
+{
+    public List<string> Strings { get; private set; } = new();
+    public bool EndOfLine;
+
+    public StringDefinitions Add(params string[] strings)
+    {
+        if (strings.Any(string.IsNullOrEmpty))
+            throw new ArgumentException("StringDefinition may not contain an empty string");
+
+        Strings = Strings.Concat(strings).OrderByDescending(x => x.Length).ToList();
+        return this;
+    }
+
+    public StringDefinitions IncludeEOL()
+    {
+        EndOfLine = true;
+        return this;
+    }
+
+    public (string Match, bool EOL)? Match(string source, int position, StringDefinitions endOfLines)
+    {
+        if (EndOfLine)
+            foreach (var endText in endOfLines.Strings)
+                if (string.CompareOrdinal(source, position, endText, 0, endText.Length) == 0)
+                    return (endText, true);
+
+        foreach (var endText in Strings)
+            if (string.CompareOrdinal(source, position, endText, 0, endText.Length) == 0)
+                return (endText, false);
+
+        return null;
     }
 }

@@ -29,9 +29,9 @@ public class TokenList<T> : List<Token<T>> where T : struct
     {
         var result = this.ExtractFirstOrDefault();
         if (required && result == null)
-            throw new StringTokenizerException("Unexpected end of text");
+            throw new StringTokenizerException("Unexpected end of text at {result.Line}:{result.Column}");
         if (result != null && allowed != null && allowed.Length > 0 && !allowed.Contains(result.ID))
-            throw new StringTokenizerException($"Unexpected '{result.Text}' in text");
+            throw new StringTokenizerException($"Unexpected '{result.Text}' in text at {result.Line}:{result.Column}");
 
         return result;
     }

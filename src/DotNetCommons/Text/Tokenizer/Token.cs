@@ -7,10 +7,14 @@ public class Token<T> where T : struct
     public string? Text { get; private set; }
     public string? InsideText { get; private set; }
     public T ID { get; }
+    public int Line { get; }
+    public int Column { get; }
 
-    public Token(Definition<T> definition, string? text = null)
+    public Token(Definition<T> definition, int line, int column, string? text = null)
     {
         Definition = definition;
+        Line = line;
+        Column = column;
         Text = InsideText = text;
         ID = definition.ID;
     }

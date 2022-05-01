@@ -11,19 +11,21 @@ namespace DotNetCommons.Text.Tokenizer;
 /// </summary>
 public class StringTokenizer<T> where T : struct
 {
-    protected List<Definition<T>> Definitions { get; } = new();
-    protected bool IsPrepared;
+    private record MatchResult(string MatchText, Definition<T> Definition);
 
-    protected List<Characters<T>>? Modes;
-    protected List<char>? EscapeChars;
-    protected ILookup<char, Strings<T>>? Strings;
+    private record TokenizeResult(TokenList<T> Tokens, string Text, string InsideText);
 
-    /// <summary>
-    /// Instantiate a new StringTokenizer class.
-    /// </summary>
-    public StringTokenizer()
-    {
-    }
+    private List<Definition<T>> Definitions { get; } = new();
+
+    private readonly List<Characters<T>>? _modes;
+    private readonly List<char>? _escapeChars;
+    private readonly ILookup<char, MatchResult> _strings;
+    private readonly StringDefinitions _endOfLine;
+
+    private string _source = null!;
+    private int _position;
+    private int _line;
+    private int _column;
 
     /// <summary>
     /// Instantiate a new StringTokenizer class from a given number of definitions.
@@ -32,10 +34,30 @@ public class StringTokenizer<T> where T : struct
     {
         Definitions.AddRange(definitions);
 
-        EscapeChars = Definitions.OfType<Escape<T>>().Select(x => x.EscapeChar).ToList();
-        Modes = Definitions.OfType<Characters<T>>().OrderByDescending(x => x.Mode).ToList();
-        Strings = Definitions.OfType<Strings<T>>().OrderByDescending(x => x.Text.Length).ToLookup(x => x.Text[0]);
-        IsPrepared = true;
+        // Build a list of end of line characters
+        _endOfLine = new StringDefinitions();
+        foreach (var definition in definitions.OfType<EndOfLine<T>>())
+            _endOfLine.Add(definition.Texts.Strings.ToArray());
+
+        // Build a list of escape characters
+        _escapeChars = Definitions
+            .OfType<Escape<T>>()
+            .Select(x => x.EscapeChar)
+            .ToList();
+
+        // Build a list of charater modes
+        _modes = Definitions
+            .OfType<Characters<T>>()
+            .OrderByDescending(x => x.Mode)
+            .ToList();
+
+        // Build a list of all matching strings and their corresponding tokens, ordered by descending length and
+        // grouped by their starting character
+        _strings = Definitions
+            .OfType<Strings<T>>()
+            .SelectMany(def => def.Texts.Strings.Select(s => new MatchResult(s, def)))
+            .OrderByDescending(x => x.MatchText.Length)
+            .ToLookup(x => x.MatchText[0]);
     }
 
     /// <summary>
@@ -43,149 +65,157 @@ public class StringTokenizer<T> where T : struct
     /// </summary>
     public TokenList<T> Tokenize(string text)
     {
-        var position = 0;
-        return DoTokenize(text, null, ref position, 0).Item1;
+        _source = text;
+        _position = 0;
+        _line = 1;
+        _column = 1;
+        return DoTokenize(null, 0).Tokens;
     }
 
-    private void CaptureTextToToken(string source, ref int position, List<string> endTexts, Token<T> token)
+    private TokenizeResult DoTokenize(StringDefinitions? endTexts, int start)
     {
-        var sb = new StringBuilder();
-
-        while (position < source.Length)
-        {
-            string? endText;
-            var c = source[position];
-            if (EscapeChars!.Contains(c))
-            {
-                position++;
-                if (position >= source.Length)
-                    throw new StringTokenizerException("Unexpected end of string", position, source);
-
-                c = source[position];
-            }
-            else if ((endText = MatchesEndText(source, position, endTexts)) != null)
-            {
-                var s = sb.ToString();
-                token.SetText(token.Text + s + endText, s);
-                position += endText.Length;
-                return;
-            }
-
-            sb.Append(c);
-            position++;
-        }
-
-        throw new StringTokenizerException("Unexpected end of string", position, source);
-    }
-
-    private (TokenList<T> Tokens, string Text, string InsideText) DoTokenize(string source, List<string>? endTexts, ref int position, int start)
-    {
-        var originalPosition = position;
-        int end = 0;
+        var originalPosition = _position;
+        var end = 0;
         var result = new TokenList<T>();
-        if (string.IsNullOrEmpty(source))
-            return (result, "", "");
+        if (string.IsNullOrEmpty(_source))
+            return new TokenizeResult(result, "", "");
 
         void AddToResult(Definition<T> definition, Token<T> token)
         {
             if (!definition.Discard)
                 result.Add(token);
-            if (definition.Append != null)
-                result.Add(new Token<T>(definition.Append.Value));
         }
 
         var sb = new StringBuilder();
         Token<T>? current = null;
 
-        while (position < source.Length)
+        while (_position < _source.Length)
         {
-            // Did we hit the end text?
-            string? endText;
-            if (endTexts != null && endTexts.Any() && (endText = MatchesEndText(source, position, endTexts)) != null)
-            {
-                end = position;
-                position += endText.Length;
+            // Did we hit any end text?
+            if (MatchEndText(endTexts, false) != null)
                 break;
-            }
 
             // Find matching definition
-            var match = MatchText(source, ref position);
-            if (match == null)
-                throw new StringTokenizerException("Unexpected token", position, source);
+            var stringMatch = MatchStrings();
+            var modeMatch = stringMatch == null ? MatchModes() : null;
 
-            if (match is Strings<T> textMatch)
+            if (stringMatch != null)
             {
-                // --- Matched a text token
+                // --- Matched a string/section token
 
                 // Flush previous text and generate a new token
                 UpdateTokenText(current, sb);
-                current = new Token<T>(match);
-                current.SetText(source.Substring(position, textMatch.Text.Length));
-                AddToResult(match, current);
+                AddToResult(stringMatch.Definition, current = new Token<T>(stringMatch.Definition, _line, _column,
+                    _source.Substring(_position, stringMatch.MatchText.Length)));
 
-                var sectionStart = position;
-                position += textMatch.Text.Length;
+                var sectionStart = _position;
+                _position += stringMatch.MatchText.Length;
+                if (stringMatch.Definition is EndOfLine<T>)
+                {
+                    _line++;
+                    _column = 1;
+                }
+                else
+                    _column += stringMatch.MatchText.Length;
 
-                if (match is Section<T> sectionMatch)
+                if (stringMatch.Definition is Section<T> sectionMatch)
                 {
                     if (sectionMatch.SectionTakesTokens)
                     {
                         // Subsection - recurse
-                        var section = DoTokenize(source, sectionMatch.EndTexts, ref position, sectionStart);
+                        var section = DoTokenize(sectionMatch.EndTexts, sectionStart);
                         current.Section.AddRange(section.Tokens);
                         current.SetText(section.Text, section.InsideText);
                     }
                     else
                         // Just capture text to this token
-                        CaptureTextToToken(source, ref position, sectionMatch.EndTexts, current);
+                        CaptureSection(sectionMatch.EndTexts, current);
                 }
             }
-            else if (match is Characters<T>)
+            else if (modeMatch != null)
             {
                 // --- Matched a character mode token
 
-                if (current == null || match != current.Definition)
+                if (current == null || modeMatch != current.Definition)
                 {
                     // It's different. Flush the text and generate a new one.
                     UpdateTokenText(current, sb);
 
-                    current = new Token<T>(match);
-                    AddToResult(match, current);
+                    AddToResult(modeMatch, current = new Token<T>(modeMatch, _line, _column));
                 }
 
                 // Add text
-                sb.Append(source[position++]);
+                sb.Append(_source[_position++]);
+                _column++;
             }
+            else
+                throw new StringTokenizerException(
+                    $"Unexpected token '{_source[_position]}' at line {_line}, column {_column}");
 
-            end = position;
+            end = _position;
         }
 
         // Flush any existing text to the last token
         UpdateTokenText(current, sb);
 
-        return (result, source.Substring(start, position - start), source.Substring(originalPosition, end - originalPosition));
+        return new TokenizeResult(
+            result,
+            _source.Substring(start, _position - start),
+            _source.Substring(originalPosition, end - originalPosition)
+        );
     }
 
-    private string? MatchesEndText(string source, int position, List<string> endTexts)
+    /// <summary>
+    /// Capture text until a given list of end strings.
+    /// </summary>
+    private void CaptureSection(StringDefinitions endTexts, Token<T> token)
     {
-        foreach (var endText in endTexts)
-            if (string.CompareOrdinal(source, position, endText, 0, endText.Length) == 0)
-                return endText;
+        var sb = new StringBuilder();
 
-        return null;
+        while (_position < _source.Length)
+        {
+            (string? Text, int End)? endText;
+            var c = _source[_position];
+            if (_escapeChars!.Contains(c))
+            {
+                _position++;
+                _column++;
+                if (_position >= _source.Length)
+                    throw new StringTokenizerException("Unexpected end of string", _position, _source);
+
+                c = _source[_position];
+            }
+            else if ((endText = MatchEndText(endTexts, false)) != null)
+            {
+                var s = sb.ToString();
+                token.SetText(token.Text + s + endText.Value.Text, s);
+                return;
+            }
+            else if ((endText = MatchEndText(_endOfLine, true)) != null)
+            {
+                sb.Append(endText.Value.Text);
+                continue;
+            }
+
+            sb.Append(c);
+            _position++;
+            _column++;
+        }
+
+        throw new StringTokenizerException("Unexpected end of string", _position, _source);
     }
 
-    private Definition<T>? MatchText(string source, ref int position)
+    private MatchResult? MatchStrings()
     {
-        var c = source[position];
+        var c = _source[_position];
 
         // Escape character?
-        var escape = EscapeChars!.Contains(c);
+        var escape = _escapeChars!.Contains(c);
         if (escape)
         {
-            position++;
-            if (position >= source.Length)
-                throw new StringTokenizerException("Unexpected end of string", position, source);
+            _position++;
+            if (_position >= _source.Length)
+                throw new StringTokenizerException("Unexpected end of string", _position, _source);
 
             c = c switch
             {
@@ -193,21 +223,52 @@ public class StringTokenizer<T> where T : struct
                 'r' => '\r',
                 'n' => '\n',
                 't' => '\t',
-                _ => source[position]
+                _ => _source[_position]
             };
         }
 
         // Try to match against text definitions first
         if (!escape)
         {
-            var definitions = Strings![c];
-            foreach (var definition in definitions)
-                if (string.CompareOrdinal(source, position, definition.Text, 0, definition.Text.Length) == 0)
-                    return definition;
+            foreach (var item in _strings[c])
+            {
+                if (string.CompareOrdinal(_source, _position, item.MatchText, 0, item.MatchText.Length) == 0)
+                    return item;
+            }
         }
 
+        return null;
+    }
+
+    private Definition<T>? MatchModes()
+    {
         // Try to match against character classes
-        return Modes!.FirstOrDefault(mode => mode.IsMode(c));
+        return _modes!.FirstOrDefault(mode => mode.IsMode(_source[_position]));
+    }
+
+    private (string? Text, int End)? MatchEndText(StringDefinitions? endTexts, bool forceEOL)
+    {
+        (string Match, bool EOL)? endText;
+        if (endTexts == null)
+            return null;
+
+        if ((endText = endTexts.Match(_source, _position, _endOfLine)) != null)
+        {
+            var end = _position;
+            _position += endText.Value.Match.Length;
+
+            if (endText.Value.EOL || forceEOL)
+            {
+                _line++;
+                _column = 1;
+            }
+            else
+                _column += endText.Value.Match.Length;
+
+            return (endText.Value.Match, end);
+        }
+
+        return null;
     }
 
     private void UpdateTokenText(Token<T>? token, StringBuilder sb)

@@ -25,10 +25,10 @@ public class CsvParser
     private static readonly StringTokenizer<CsvToken> Tokenizer = new(
         new Characters<CsvToken>(TokenMode.Any, CsvToken.Data, false),
         new Characters<CsvToken>(TokenMode.Whitespace, CsvToken.Whitespace, false),
-        new Strings<CsvToken>("\r\n", CsvToken.Newline, false),
-        new Strings<CsvToken>("\n", CsvToken.Linefeed, false),
-        new Strings<CsvToken>(",", CsvToken.Comma, false),
-        new Section<CsvToken>("\"", "\"", false, CsvToken.Quotation, false),
+        new Strings<CsvToken>(CsvToken.Newline, "\r\n", false),
+        new Strings<CsvToken>(CsvToken.Linefeed, "\n", false),
+        new Strings<CsvToken>(CsvToken.Comma, ",", false),
+        new Section<CsvToken>(CsvToken.Quotation, "\"", "\"", false, false),
         new Escape<CsvToken>('\\')
     );
 

@@ -34,8 +34,8 @@ public class ApacheLogParser
     private static readonly StringTokenizer<LogToken> Tokenizer = new(
         new Characters<LogToken>(TokenMode.Any, LogToken.Data, false),
         new Characters<LogToken>(TokenMode.Whitespace, LogToken.Whitespace, true),
-        new Section<LogToken>("\"", "\"", true, LogToken.Data, false),
-        new Section<LogToken>("[", "]", false, LogToken.Data, false)
+        new Section<LogToken>(LogToken.Data, "\"", "\"", true, false),
+        new Section<LogToken>(LogToken.Data, "[", "]", false, false)
     );
 
     public static ApacheLogEntry Parse(string line)

@@ -27,33 +27,33 @@ public class StringTokenizerTests
     public void Setup()
     {
         _tokenizer = new StringTokenizer<Token>(
+            new EndOfLine<Token>(Token.EndOfLine, new StringDefinitions().Add("\r\n", "\r", "\n"), true),
             new Characters<Token>(TokenMode.Any, Token.Text, false),
             new Characters<Token>(TokenMode.Whitespace, Token.None, true),
-            new Strings<Token>("include", Token.Keyword, false),
-            new Strings<Token>("location", Token.Keyword, false),
-            new Strings<Token>("job", Token.Keyword, false),
-            new Strings<Token>("map", Token.Keyword, false),
-            new Strings<Token>("memory", Token.Keyword, false),
-            new Strings<Token>("=", Token.Equals, false),
-            new Strings<Token>("{", Token.OpenBrace, false),
-            new Strings<Token>("}", Token.CloseBrace, false),
-            new Strings<Token>(";", Token.EndStatement, false),
-            new Section<Token>("\"", new[] { "\"", "\r\n", "\r", "\n" }, false, Token.Text, false),
-            new Section<Token>("\"\"\"", "\"\"\"", false, Token.LongText, false),
-            new Strings<Token>("\r\n", Token.EndOfLine, false),
-            new Strings<Token>("\r", Token.EndOfLine, false),
-            new Strings<Token>("\n", Token.EndOfLine, false),
-            new Section<Token>("//", new[] { "\r\n", "\r", "\n" }, false, Token.Comment, true).WithAppend(Token.EndOfLine),
-            new Section<Token>("/*", "*/", false, Token.Comment, true)
+            new Strings<Token>(Token.Keyword, "include", false),
+            new Strings<Token>(Token.Keyword, "location", false),
+            new Strings<Token>(Token.Keyword, "job", false),
+            new Strings<Token>(Token.Keyword, "map", false),
+            new Strings<Token>(Token.Keyword, "memory", false),
+            new Strings<Token>(Token.Equals, "=", false),
+            new Strings<Token>(Token.OpenBrace, "{", false),
+            new Strings<Token>(Token.CloseBrace, "}", false),
+            new Strings<Token>(Token.EndStatement, ";", false),
+            new Section<Token>(Token.Text, "\"", new StringDefinitions().Add("\"").IncludeEOL(), false, false),
+            new Section<Token>(Token.LongText, "\"\"\"", "\"\"\"", false, false),
+            new Section<Token>(Token.Comment, "//", new StringDefinitions().IncludeEOL(), false, true),
+            new Section<Token>(Token.Comment, "/*", "*/", false, true)
         );
     }
 
-    private void Verify(Token<Token> token, Token id, string? text, string? insideText = null)
+    private void Verify(Token<Token> token, Token id, string? text, string? insideText, int line, int col)
     {
         token.ID.Should().Be(id);
         token.Text.Should().Be(text);
         if (insideText != null)
             token.InsideText.Should().Be(insideText);
+        token.Line.Should().Be(line);
+        token.Column.Should().Be(col);
     }
 
     [TestMethod]
@@ -62,8 +62,8 @@ public class StringTokenizerTests
         var stream = _tokenizer.Tokenize("Hello world!");
 
         stream.Count.Should().Be(2);
-        Verify(stream[0], Token.Text, "Hello");
-        Verify(stream[1], Token.Text, "world!");
+        Verify(stream[0], Token.Text, "Hello", "Hello", 1, 1);
+        Verify(stream[1], Token.Text, "world!", "world!", 1, 7);
     }
 
     [TestMethod]
@@ -72,9 +72,9 @@ public class StringTokenizerTests
         var stream = _tokenizer.Tokenize("user=\"Hello world!\"");
 
         stream.Count.Should().Be(3);
-        Verify(stream[0], Token.Text, "user");
-        Verify(stream[1], Token.Equals, "=");
-        Verify(stream[2], Token.Text, "\"Hello world!\"", "Hello world!");
+        Verify(stream[0], Token.Text, "user", "user", 1, 1);
+        Verify(stream[1], Token.Equals, "=", "=", 1, 5);
+        Verify(stream[2], Token.Text, "\"Hello world!\"", "Hello world!", 1, 6);
     }
 
     [TestMethod]
@@ -84,8 +84,8 @@ public class StringTokenizerTests
 and ends here */ bonk");
 
         stream.Count.Should().Be(2);
-        Verify(stream[0], Token.Text, "hey");
-        Verify(stream[1], Token.Text, "bonk");
+        Verify(stream[0], Token.Text, "hey", "hey", 1, 1);
+        Verify(stream[1], Token.Text, "bonk", "bonk", 2, 18);
     }
 
     [TestMethod]
@@ -94,9 +94,8 @@ and ends here */ bonk");
         var stream = _tokenizer.Tokenize(@"hey // Comment goes here
 bonk");
 
-        stream.Count.Should().Be(3);
-        Verify(stream[0], Token.Text, "hey");
-        Verify(stream[1], Token.EndOfLine, null);
-        Verify(stream[2], Token.Text, "bonk");
+        stream.Count.Should().Be(2);
+        Verify(stream[0], Token.Text, "hey", "hey", 1, 1);
+        Verify(stream[1], Token.Text, "bonk", "bonk", 2, 1);
     }
 }
