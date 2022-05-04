@@ -1,11 +1,11 @@
-﻿using DotNetCommons.Text;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -99,10 +99,10 @@ public class Spawn : IDisposable
     /// <summary>
     /// Run the process and wait for exit.
     /// </summary>
-    public Spawn Run()
+    public Spawn Run(TimeSpan? timeout = null)
     {
         Start();
-        Wait();
+        Wait(timeout);
 
         return this;
     }
@@ -110,10 +110,10 @@ public class Spawn : IDisposable
     /// <summary>
     /// Run the process asynchronously and wait for exit.
     /// </summary>
-    public async Task<Spawn> RunAsync()
+    public async Task<Spawn> RunAsync(TimeSpan? timeout = null)
     {
         Start();
-        await WaitAsync();
+        await WaitAsync(timeout);
 
         return this;
     }
