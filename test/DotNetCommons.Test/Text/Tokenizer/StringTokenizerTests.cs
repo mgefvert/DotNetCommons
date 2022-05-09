@@ -46,7 +46,7 @@ public class StringTokenizerTests
         );
     }
 
-    private void Verify(Token<Token> token, Token id, string? text, string? insideText, int line, int col)
+    private static void Verify(Token<Token> token, Token id, string? text, string? insideText, int line, int col)
     {
         token.ID.Should().Be(id);
         token.Text.Should().Be(text);
