@@ -1,6 +1,6 @@
-﻿using DotNetCommons.Text.Tokenizer;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using DotNetCommons.Text.Tokenizer;
 
 // ReSharper disable UnusedMember.Global
 
@@ -23,9 +23,13 @@ public class CsvParser
     }
 
     private static readonly StringTokenizer<CsvToken> Tokenizer = new(
-        new Characters<CsvToken>(TokenMode.Any, CsvToken.Data, false),
-        new Characters<CsvToken>(TokenMode.Whitespace, CsvToken.Whitespace, false),
-        new Strings<CsvToken>(CsvToken.Newline, "\r\n", false),
+        new Characters<CsvToken>(CsvToken.Data, false)
+            .Add(TokenMode.Letter, TokenMode.Digit, TokenMode.Symbols)
+            .AddSpecific("-.")
+            .Except(","),
+        new Characters<CsvToken>(CsvToken.Whitespace, false)
+            .Add(TokenMode.Whitespace),
+        new EndOfLine<CsvToken>(CsvToken.Newline, "\r\n", false),
         new Strings<CsvToken>(CsvToken.Linefeed, "\n", false),
         new Strings<CsvToken>(CsvToken.Comma, ",", false),
         new Section<CsvToken>(CsvToken.Quotation, "\"", "\"", false, false),
@@ -74,8 +78,8 @@ public class CsvParser
 
         foreach (var tokenField in tokenFields)
         {
-            tokenField.Trim((int)CsvToken.Whitespace);
-            result.Add(tokenField.ToString(true));
+            tokenField.Trim(CsvToken.Whitespace);
+            result.Add(tokenField.ToString(true).Trim());
         }
 
         return result;

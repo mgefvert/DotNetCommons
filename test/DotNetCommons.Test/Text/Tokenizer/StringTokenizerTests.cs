@@ -28,8 +28,8 @@ public class StringTokenizerTests
     {
         _tokenizer = new StringTokenizer<Token>(
             new EndOfLine<Token>(Token.EndOfLine, new StringDefinitions().Add("\r\n", "\r", "\n"), true),
-            new Characters<Token>(TokenMode.Any, Token.Text, false),
-            new Characters<Token>(TokenMode.Whitespace, Token.None, true),
+            new Characters<Token>(Token.Text, false).Add(TokenMode.Letter, TokenMode.Digit),
+            new Characters<Token>(Token.None, true).Add(TokenMode.Whitespace),
             new Strings<Token>(Token.Keyword, "include", false),
             new Strings<Token>(Token.Keyword, "location", false),
             new Strings<Token>(Token.Keyword, "job", false),
@@ -59,22 +59,20 @@ public class StringTokenizerTests
     [TestMethod]
     public void HelloWorld_Works()
     {
-        var stream = _tokenizer.Tokenize("Hello world!");
+        var stream = _tokenizer.Tokenize("Hello world");
 
         stream.Count.Should().Be(2);
         Verify(stream[0], Token.Text, "Hello", "Hello", 1, 1);
-        Verify(stream[1], Token.Text, "world!", "world!", 1, 7);
+        Verify(stream[1], Token.Text, "world", "world", 1, 7);
     }
 
     [TestMethod]
-    public void VarAssignment_Works()
+    public void KeywordInMiddle_Works()
     {
-        var stream = _tokenizer.Tokenize("user=\"Hello world!\"");
+        var stream = _tokenizer.Tokenize("testmap");
 
-        stream.Count.Should().Be(3);
-        Verify(stream[0], Token.Text, "user", "user", 1, 1);
-        Verify(stream[1], Token.Equals, "=", "=", 1, 5);
-        Verify(stream[2], Token.Text, "\"Hello world!\"", "Hello world!", 1, 6);
+        stream.Count.Should().Be(1);
+        Verify(stream[0], Token.Text, "testmap", "testmap", 1, 1);
     }
 
     [TestMethod]
@@ -97,5 +95,16 @@ bonk");
         stream.Count.Should().Be(2);
         Verify(stream[0], Token.Text, "hey", "hey", 1, 1);
         Verify(stream[1], Token.Text, "bonk", "bonk", 2, 1);
+    }
+
+    [TestMethod]
+    public void VarAssignment_Works()
+    {
+        var stream = _tokenizer.Tokenize("user=\"Hello world!\"");
+
+        stream.Count.Should().Be(3);
+        Verify(stream[0], Token.Text, "user", "user", 1, 1);
+        Verify(stream[1], Token.Equals, "=", "=", 1, 5);
+        Verify(stream[2], Token.Text, "\"Hello world!\"", "Hello world!", 1, 6);
     }
 }

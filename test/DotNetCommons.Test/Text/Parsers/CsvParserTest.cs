@@ -1,10 +1,10 @@
-﻿using DotNetCommons.Text.Parsers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
+using DotNetCommons.Text.Parsers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Text.Parsers;
 
@@ -26,7 +26,7 @@ public class CsvParserTest
 
         var result = _parser.ParseRows(Cvt(src));
         Assert.AreEqual(1, result.Count);
-        Assert.AreEqual(",1,2,abc,hello world,3,hello\" again,1  2 3", string.Join(",", result[0]));
+        Assert.AreEqual("|1|2|abc|hello world|3|hello\" again|1  2 3", string.Join("|", result[0]));
     }
 
     [TestMethod]

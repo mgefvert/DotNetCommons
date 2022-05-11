@@ -48,7 +48,6 @@ public class StringTokenizer<T> where T : struct
         // Build a list of charater modes
         _modes = Definitions
             .OfType<Characters<T>>()
-            .OrderByDescending(x => x.Mode)
             .ToList();
 
         // Build a list of all matching strings and their corresponding tokens, ordered by descending length and
@@ -97,9 +96,13 @@ public class StringTokenizer<T> where T : struct
 
             // Find matching definition
             var stringMatch = MatchStrings();
-            var modeMatch = stringMatch == null ? MatchModes() : null;
+            var modeMatch = MatchModes();
 
-            if (stringMatch != null)
+            // If we have a string match, and we're *not* in a modeMatch that just happpened to match
+            // the previous mode we were in, match the string token. This is to make sure that once we've
+            // started parsing a text mode stream, we don't want to be interrupted until it actually ends.
+            // Otherwise, a string "map" would match in the middle of the text "testmap".
+            if (stringMatch != null && (modeMatch == null || modeMatch != current?.Definition))
             {
                 // --- Matched a string/section token
 

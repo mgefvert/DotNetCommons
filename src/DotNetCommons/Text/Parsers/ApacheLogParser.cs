@@ -1,9 +1,9 @@
 ﻿#nullable disable
-using DotNetCommons.Text.Tokenizer;
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using DotNetCommons.Text.Tokenizer;
 
 // ReSharper disable UnusedMember.Global
 
@@ -32,8 +32,8 @@ public class ApacheLogParser
     }
 
     private static readonly StringTokenizer<LogToken> Tokenizer = new(
-        new Characters<LogToken>(TokenMode.Any, LogToken.Data, false),
-        new Characters<LogToken>(TokenMode.Whitespace, LogToken.Whitespace, true),
+        new Characters<LogToken>(LogToken.Data, false).Add(TokenMode.Letter, TokenMode.Digit, TokenMode.Symbols),
+        new Characters<LogToken>(LogToken.Whitespace, true).Add(TokenMode.Whitespace),
         new Section<LogToken>(LogToken.Data, "\"", "\"", true, false),
         new Section<LogToken>(LogToken.Data, "[", "]", false, false)
     );

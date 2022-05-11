@@ -1,7 +1,7 @@
-﻿using DotNetCommons.Text.Tokenizer;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DotNetCommons.Text.Tokenizer;
 
 // ReSharper disable UnusedMember.Global
 
@@ -23,8 +23,8 @@ public class ConfigStringParser
     public ConfigStringParser(string separator = ";")
     {
         _definitions.AddRange(new Definition<Token>[] {
-            new Characters<Token>(TokenMode.Any, Token.Text, false),
-            new Characters<Token>(TokenMode.Whitespace, Token.Whitespace, false),
+            new Characters<Token>(Token.Text, false).Add(TokenMode.Letter, TokenMode.Digit).AddSpecific("-_"),
+            new Characters<Token>(Token.Whitespace, false).Add(TokenMode.Whitespace),
             new Strings<Token>(Token.Separator, separator, false),
             new Strings<Token>(Token.Equal, "=", false),
             new Section<Token>(Token.Quote, "\"", "\"", false, false),

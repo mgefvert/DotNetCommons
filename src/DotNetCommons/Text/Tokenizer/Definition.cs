@@ -9,12 +9,12 @@ namespace DotNetCommons.Text.Tokenizer;
 public enum TokenMode
 {
     None,
-    Any,
+    Specific,
     Letter,
     Digit,
-    LetterOrDigit,
     Whitespace,
-    EndOfLine
+    EndOfLine,
+    Symbols
 }
 
 /// <summary>
@@ -40,25 +40,61 @@ public abstract class Definition<T> where T : struct
 /// </summary>
 public class Characters<T> : Definition<T> where T : struct
 {
-    public TokenMode Mode { get; }
+    public HashSet<TokenMode> Modes { get; } = new();
+    public HashSet<char> Include { get; } = new();
+    public HashSet<char> Exclude { get; } = new();
 
-    public Characters(TokenMode mode, T id, bool discard) : base(id, discard)
+    public Characters(T id, bool discard) : base(id, discard)
     {
-        Mode = mode;
+    }
+
+    public Characters<T> Add(params TokenMode[] modes)
+    {
+        foreach (var mode in modes)
+            Modes.Add(mode);
+
+        return this;
+    }
+
+    public Characters<T> AddSpecific(string characters)
+    {
+        Modes.Add(TokenMode.Specific);
+        foreach (var c in characters)
+            Include.Add(c);
+
+        return this;
+    }
+
+    public Characters<T> Except(string characters)
+    {
+        foreach (var c in characters)
+            Exclude.Add(c);
+
+        return this;
     }
 
     public bool IsMode(char c)
     {
-        return Mode switch
+        if (Exclude.Contains(c))
+            return false;
+
+        foreach (var mode in Modes)
         {
-            TokenMode.Any => true,
-            TokenMode.Letter => char.IsLetter(c),
-            TokenMode.Digit => char.IsDigit(c),
-            TokenMode.LetterOrDigit => char.IsLetterOrDigit(c),
-            TokenMode.Whitespace => char.IsWhiteSpace(c),
-            TokenMode.EndOfLine => c == 13 || c == 10,
-            _ => false
-        };
+            var result = mode switch
+            {
+                TokenMode.Letter => char.IsLetter(c),
+                TokenMode.Digit => char.IsDigit(c),
+                TokenMode.Whitespace => char.IsWhiteSpace(c),
+                TokenMode.EndOfLine => c == 13 || c == 10,
+                TokenMode.Specific => Include.Contains(c),
+                TokenMode.Symbols => char.IsPunctuation(c) || char.IsSymbol(c),
+                _ => false
+            };
+            if (result)
+                return true;
+        }
+
+        return false;
     }
 }
 
