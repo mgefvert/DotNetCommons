@@ -1,33 +1,20 @@
 ﻿namespace DotNetCommons.Text.Tokenizer;
 
-public class Token<T> where T : struct
+public class Token
 {
-    public Definition<T>? Definition { get; }
-    public TokenList<T> Section { get; } = new();
+    private static Token? _empty;
+
     public string? Text { get; private set; }
     public string? InsideText { get; private set; }
-    public T ID { get; }
     public int Line { get; }
     public int Column { get; }
+    public static Token Empty => _empty ??= new(0, 0);
 
-    public Token(Definition<T> definition, int line, int column, string? text = null)
+    public Token(int line, int column, string? text = null)
     {
-        Definition = definition;
         Line = line;
         Column = column;
         Text = InsideText = text;
-        ID = definition.ID;
-    }
-
-    public Token(T id, string? text = null)
-    {
-        Text = InsideText = text;
-        ID = id;
-    }
-
-    public override string ToString()
-    {
-        return $"[{ID}:{Text}]";
     }
 
     public void SetText(string text)
@@ -39,5 +26,24 @@ public class Token<T> where T : struct
     {
         Text = text;
         InsideText = insideText;
+    }
+}
+
+public class Token<T> : Token where T : struct
+{
+    public Definition<T>? Definition { get; }
+    public TokenList<T> Section { get; } = new();
+    public T ID { get; }
+
+    public Token(Definition<T> definition, int line, int column, string? text = null)
+        : base(line, column, text)
+    {
+        Definition = definition;
+        ID = definition.ID;
+    }
+
+    public override string ToString()
+    {
+        return $"[{ID}:{Text}]";
     }
 }

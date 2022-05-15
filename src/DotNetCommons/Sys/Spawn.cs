@@ -1,11 +1,11 @@
-﻿using System;
+﻿using DotNetCommons.Text;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -218,7 +218,7 @@ public class Spawn : IDisposable
     public void IfResultNonZero(Action<Spawn> action)
     {
         if (!IsFinished)
-            throw new InvalidOperationException("Process has finished");
+            throw new InvalidOperationException("Process has not finished");
 
         if (ExitCode == 0)
             return;
