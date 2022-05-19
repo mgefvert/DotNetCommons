@@ -216,4 +216,15 @@ public static class DateTimeExtensions
                 throw new ArgumentOutOfRangeException(nameof(format), format, null);
         }
     }
+
+    /// <summary>
+    /// Truncates a DateTime to a specified resolution. A convenient source for resolution is TimeSpan.TicksPerXXXX constants.
+    /// From https://stackoverflow.com/questions/1004698/how-to-truncate-milliseconds-off-of-a-net-datetime
+    /// </summary>
+    /// <param name="date">The DateTime object to truncate</param>
+    /// <param name="resolution">e.g. to round to nearest second, TimeSpan.TicksPerSecond</param>
+    public static DateTime Truncate(this DateTime date, long resolution)
+    {
+        return new DateTime(date.Ticks - (date.Ticks % resolution), date.Kind);
+    }
 }
