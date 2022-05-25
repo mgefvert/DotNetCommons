@@ -2,6 +2,9 @@
 
 namespace DotNetCommons.Temporal;
 
+/// <summary>
+/// Class that represents a holiday occurring on a fixed month and day.
+/// </summary>
 public class DateBasedHoliday : Holiday
 {
     public int Month { get; }

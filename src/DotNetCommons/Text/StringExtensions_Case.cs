@@ -18,6 +18,9 @@ public enum CaseType
 
 public static partial class StringExtensions
 {
+    /// <summary>
+    /// Transform a string into a specific case.
+    /// </summary>
     public static string ToCase(this string value, CaseType caseType)
     {
         return caseType switch

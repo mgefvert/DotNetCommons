@@ -11,23 +11,74 @@ using System.Threading.Tasks;
 
 namespace DotNetCommons.Sys;
 
+/// <summary>
+/// Start a new process. Wraps the Process class in easy to use methods.
+/// </summary>
 public class Spawn : IDisposable
 {
+    /// <summary>
+    /// Process to execute.
+    /// </summary>
     public string Command { get; set; }
+
+    /// <summary>
+    /// Echo process output to the console.
+    /// </summary>
     public bool Echo { get; set; }
+
+    /// <summary>
+    /// Command-line parameters for the process.
+    /// </summary>
     public string? Parameters { get; set; }
+
+    /// <summary>
+    /// Whether to redirect input to the process.
+    /// </summary>
     public bool RedirectInput { get; set; }
+
+    /// <summary>
+    /// Optional start directory for the process.
+    /// </summary>
     public string? StartDirectory { get; set; }
 
+    /// <summary>
+    /// Process object wrapping the new program.
+    /// </summary>
     public Process? Process { get; private set; }
 
+    /// <summary>
+    /// Exit code from the process, or null if the process hasn't exited yet.
+    /// </summary>
     public int? ExitCode => IsFinished ? Process!.ExitCode : null;
+
+    /// <summary>
+    /// Input stream available for writing to, if we have redirected the standard input.
+    /// </summary>
     public StreamWriter? InputStream => Process?.StandardInput;
+
+    /// <summary>
+    /// True if the process is currently running.
+    /// </summary>
     public bool IsRunning => Process is { HasExited: false };
+
+    /// <summary>
+    /// True if the process has finished.
+    /// </summary>
     public bool IsFinished => Process is { HasExited: true };
+
+    /// <summary>
+    /// Output from the process as a list of strings.
+    /// </summary>
     public List<string> Output { get; } = new();
+
+    /// <summary>
+    /// Output from the process as a single string.
+    /// </summary>
     public string Text => string.Join(Environment.NewLine, Output);
 
+    /// <summary>
+    /// Create a Spawn object that encapsulates a given command and arguments.
+    /// </summary>
     public Spawn(string command, params string[] arguments)
     {
         Command = command.Chomp(out var remains) ?? throw new ArgumentNullException(nameof(command));
@@ -215,6 +266,10 @@ public class Spawn : IDisposable
         return this;
     }
 
+    /// <summary>
+    /// Execute an action if the result from a child process is non-zero. Throws an exception
+    /// if the process has not completed yet.
+    /// </summary>
     public void IfResultNonZero(Action<Spawn> action)
     {
         if (!IsFinished)

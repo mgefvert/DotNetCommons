@@ -12,8 +12,18 @@ public static class CollectionExtensions
 {
     public class Intersection<T>
     {
+        /// <summary>
+        /// Records that were found in the left list.
+        /// </summary>
         public List<T> Left { get; } = new();
+        /// <summary>
+        /// Records that were found to be identical in both lists (a tuple is used to contain
+        /// a reference to both items, from left and right, in case there are internal differences).
+        /// </summary>
         public List<(T, T)> Both { get; } = new();
+        /// <summary>
+        /// Records that were found in the right list.
+        /// </summary>
         public List<T> Right { get; } = new();
     }
 
@@ -244,6 +254,16 @@ public static class CollectionExtensions
         return Intersect(list1, list2, comparison, x => x);
     }
 
+    /// <summary>
+    /// Compare two lists against each other and return an Intersection result from the comparison, 
+    /// listing the objects found in only list1, only list2, or both lists, using a selector function.
+    /// </summary>
+    /// <typeparam name="T">Type of list</typeparam>
+    /// <param name="list1">The first list (left)</param>
+    /// <param name="list2">The second list (right)</param>
+    /// <param name="comparison">A comparison method for comparing the objects</param>
+    /// <param name="selector">A selector for the key to compare the objects by</param>
+    /// <returns>An Intersection object with the results of the comparison</returns>
     public static Intersection<T> Intersect<T, TKey>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<TKey>? comparison, Func<T, TKey> selector)
     {
         bool DoCompare(T item1, T item2)

@@ -12,6 +12,10 @@ public class StateMachineException : Exception
     }
 }
 
+/// <summary>
+/// Minimal state machine that handles states, substates and transitions between states.
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class LittleStateMachine<T> where T : notnull
 {
     private class StateRecord
@@ -26,10 +30,27 @@ public class LittleStateMachine<T> where T : notnull
     private readonly Dictionary<T, StateRecord> _states = new();
     private readonly List<(T, T)> _transitions = new();
 
+    /// <summary>
+    /// Current state.
+    /// </summary>
     public T? Current { get; set; }
+
+    /// <summary>
+    /// Time of the last transition.
+    /// </summary>
     public DateTime LastTransition { get; private set; }
+
+    /// <summary>
+    /// Time since the last transition.
+    /// </summary>
     public TimeSpan TimeSinceTransition => DateTime.Now - LastTransition;
 
+    /// <summary>
+    /// Configure a given state, including actions to perform when arriving and departing from the state.
+    /// </summary>
+    /// <param name="state">State to add</param>
+    /// <param name="arrive">Optional action to perform when arriving in this state</param>
+    /// <param name="leave">Optional action to perform when departing this state</param>
     public LittleStateMachine<T> ConfigureState(T state, Action<T>? arrive = null, Action<T>? leave = null)
     {
         if (_states.ContainsKey(state))
@@ -46,6 +67,15 @@ public class LittleStateMachine<T> where T : notnull
         return this;
     }
 
+    /// <summary>
+    /// Configure a given state as a substate of a different state, including actions to perform when arriving and departing from the state.
+    /// Several substates can have a given state as a parent state; transitions between substates will not affect the parent state or cause
+    /// parent actions to be performed.
+    /// </summary>
+    /// <param name="state">State to add</param>
+    /// <param name="subStateOf">Parent state</param>
+    /// <param name="arrive">Optional action to perform when arriving in this state</param>
+    /// <param name="leave">Optional action to perform when departing this state</param>
     public LittleStateMachine<T> ConfigureState(T state, T subStateOf, Action<T>? arrive = null, Action<T>? leave = null)
     {
         if (_states.ContainsKey(state))
@@ -65,6 +95,9 @@ public class LittleStateMachine<T> where T : notnull
         return this;
     }
 
+    /// <summary>
+    /// Allow transition from a particular state to another.
+    /// </summary>
     public LittleStateMachine<T> ConfigureTransition(T from, T to)
     {
         var transition = (from, to);
@@ -105,6 +138,9 @@ public class LittleStateMachine<T> where T : notnull
         return result;
     }
 
+    /// <summary>
+    /// Initialize the state machine and set a given starting state.
+    /// </summary>
     public void Initialize(T state)
     {
         if (state == null)
@@ -132,6 +168,12 @@ public class LittleStateMachine<T> where T : notnull
             _states[item].Arrive?.Invoke(item);
     }
 
+    /// <summary>
+    /// Move from the current state to a new state, executing arrive and leave actions as needed and
+    /// throwing an exception if the transition is not allowed.
+    /// </summary>
+    /// <param name="state"></param>
+    /// <exception cref="StateMachineException"></exception>
     public void MoveTo(T state)
     {
         if (state == null)

@@ -20,16 +20,28 @@ public class CircularBufferEmptyException : Exception
     }
 }
 
+/// <summary>
+/// A fixed size circular buffer (reminiscent of a UART-16550 input buffer).
+/// </summary>
 public class CircularBuffer<T>
 {
     private readonly T[] _items;
     private int _readPosition;
     private int _writePosition;
 
+    /// <summary>
+    /// Any items available in the buffer?
+    /// </summary>
     public bool Empty => !Full && _readPosition == _writePosition;
 
+    /// <summary>
+    /// Is the buffer full?
+    /// </summary>
     public bool Full { get; private set; }
 
+    /// <summary>
+    /// Current size of the circular buffer (the total number of elements that can be stored in it).
+    /// </summary>
     public int Size => _items.Length;
 
     public CircularBuffer(int size)
@@ -59,6 +71,9 @@ public class CircularBuffer<T>
             throw new CircularBufferFullException();
     }
 
+    /// <summary>
+    /// Clear the buffer.
+    /// </summary>
     public void Clear()
     {
         _writePosition = 0;
@@ -66,11 +81,17 @@ public class CircularBuffer<T>
         Full = false;
     }
 
+    /// <summary>
+    /// Check to see whether the buffer contains an item.
+    /// </summary>
     public bool Contains(T result)
     {
         return Values().Any(v => v != null && v.Equals(result));
     }
 
+    /// <summary>
+    /// The total number of items currently in the buffer.
+    /// </summary>
     public int Count
     {
         get
@@ -86,6 +107,9 @@ public class CircularBuffer<T>
         }
     }
 
+    /// <summary>
+    /// First item read non-destructively.
+    /// </summary>
     public T First
     {
         get
@@ -95,6 +119,9 @@ public class CircularBuffer<T>
         }
     }
 
+    /// <summary>
+    /// Last item read non-destructively.
+    /// </summary>
     public T Last
     {
         get
@@ -109,6 +136,10 @@ public class CircularBuffer<T>
         return position > 0 ? position - 1 : Size - 1;
     }
 
+    /// <summary>
+    /// Read a single item from the buffer, or throw a <see cref="CircularBufferEmptyException"/> if
+    /// the buffer is empty.
+    /// </summary>
     public T Read()
     {
         AssertNotEmpty();
@@ -121,6 +152,9 @@ public class CircularBuffer<T>
         return result;
     }
 
+    /// <summary>
+    /// Enumerate the values in the buffer non-destructively.
+    /// </summary>
     public IEnumerable<T> Values()
     {
         if (Empty)
@@ -134,6 +168,10 @@ public class CircularBuffer<T>
         } while (current != _writePosition);
     }
 
+    /// <summary>
+    /// Write an item to the buffer, or throw a <see cref="CircularBufferFullException"/> if
+    /// the buffer is full.
+    /// </summary>
     public void Write(T value)
     {
         AssertNotFull();

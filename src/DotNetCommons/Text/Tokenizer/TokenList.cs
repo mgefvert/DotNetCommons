@@ -8,6 +8,9 @@ using System.Text;
 
 namespace DotNetCommons.Text.Tokenizer;
 
+/// <summary>
+/// Contains a list of captured tokens.
+/// </summary>
 public class TokenList<T> : List<Token<T>> where T : struct
 {
     public TokenList()
@@ -130,6 +133,10 @@ public class TokenList<T> : List<Token<T>> where T : struct
 
     public override string ToString() => ToString(false);
 
+    /// <summary>
+    /// Return a string representation of this token.
+    /// </summary>
+    /// <param name="insideText">Whether to use InsideText to build the string instead of Text.</param>
     public string ToString(bool insideText)
     {
         var result = new StringBuilder();
@@ -144,21 +151,26 @@ public class TokenList<T> : List<Token<T>> where T : struct
     }
 
     /// <summary>
-    /// Trim start and end of the list.
+    /// Trim start and end of the list from specific tokens.
     /// </summary>
-    /// <param name="values"></param>
     public void Trim(params T[] values)
     {
         TrimStart(values);
         TrimEnd(values);
     }
 
+    /// <summary>
+    /// Trim the end of the list from specific tokens.
+    /// </summary>
     private void TrimEnd(T[] values)
     {
         while (Count > 0 && values.Contains(this[Count - 1].ID))
             RemoveAt(Count - 1);
     }
 
+    /// <summary>
+    /// Trim the start of the list from specific tokens.
+    /// </summary>
     private void TrimStart(T[] values)
     {
         while (Count > 0 && values.Contains(this[0].ID))

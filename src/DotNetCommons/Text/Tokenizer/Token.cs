@@ -1,13 +1,35 @@
 ﻿namespace DotNetCommons.Text.Tokenizer;
 
+/// <summary>
+/// Encapsulates a specific token found in a stream.
+/// </summary>
 public class Token
 {
     private static Token? _empty;
 
+    /// <summary>
+    /// Text captured by this token. Includes quotes and surrounding text.
+    /// </summary>
     public string? Text { get; private set; }
+
+    /// <summary>
+    /// Text captured by this token. Excludes surrounding quotes and similar.
+    /// </summary>
     public string? InsideText { get; private set; }
+
+    /// <summary>
+    /// Line number where this text was captured.
+    /// </summary>
     public int Line { get; }
+
+    /// <summary>
+    /// Column number where this text was captured.
+    /// </summary>
     public int Column { get; }
+
+    /// <summary>
+    /// Default Empty token.
+    /// </summary>
     public static Token Empty => _empty ??= new(0, 0);
 
     public Token(int line, int column, string? text = null)

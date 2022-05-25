@@ -11,6 +11,31 @@ using System.Text;
 
 namespace DotNetCommons.Security;
 
+/// <summary>
+/// Easy generation of passwords. Also encrypts passwords and checks them using a custom
+/// RFC-2898 key derivation algorithm.
+///
+/// Templates are defined as a sequence of letter specifiers:
+/// 
+///   A   Alphabetic character(A-Z, a-z)
+///   C   Alphabetic character, uppercase only(A-Z)
+///   c   Alphabetic character, lowercase only(a-z)
+///   F   Friendly characters or digits, omitting hard-to-read ones(l, 1, I etc)
+///   H   Uppercase hex digit(0-9, A-F)
+///   h   Lowercase hex digit(0-9, a-f)
+///   N   Digit(0-9)
+///   X   Any character or digit
+///   p   Punctuation(,.;:?!@#$*-+=)
+///   Z   Any character, digit, or punctuation
+///   -   Dash
+///   _   Underscore
+///
+/// Each letter may optionally be followed by a number specifying the repeat count.
+/// For instance:
+///     A40 = 40 alphabetic letters.
+///     A4-N4 = 4 alphabetic letters, hyphen, and 4 digits. 
+/// 
+/// </summary>
 public static class Passwords
 {
     private class PasswordLayout
@@ -39,6 +64,9 @@ public static class Passwords
     private const string FullAlphabet = AlphaLowercase + AlphaUppercase + Digits;
     private const string AnyCharacter = AlphaLowercase + AlphaUppercase + Digits + Punctuation;
 
+    /// <summary>
+    /// Set the complexity required for the key derivation.
+    /// </summary>
     public static int Complexity { get; set; } = 12;
 
     private static string ComputeHash(string plaintext, byte[] salt, int complexity)
@@ -62,6 +90,9 @@ public static class Passwords
         return alphabet[data % alphabet.Length];
     }
 
+    /// <summary>
+    /// Generate a new salt value with the given number of bytes.
+    /// </summary>
     public static byte[] GetSalt(int bytes)
     {
         var result = new byte[bytes];
@@ -69,11 +100,17 @@ public static class Passwords
         return result;
     }
 
+    /// <summary>
+    /// Encrypt a plaintext password using a random salt.
+    /// </summary>
     public static string Encrypt(string plaintext)
     {
         return ComputeHash(plaintext, GetSalt(8), Complexity);
     }
 
+    /// <summary>
+    /// Verify a given plaintext password against an encrypted one.
+    /// </summary>
     public static bool Verify(string encryptedPassword, string plaintext)
     {
         if (string.IsNullOrWhiteSpace(encryptedPassword) || string.IsNullOrWhiteSpace(plaintext))
@@ -90,27 +127,17 @@ public static class Passwords
         return string.CompareOrdinal(encryptedPassword, test) == 0;
     }
 
-    /*
-        Creates a new password according to a given layout, consisting of the
-        following characters:
-          A      Alphabetic character (A-Z, a-z)
-          C      Alphabetic character, uppercase only (A-Z)
-          c      Alphabetic character, lowercase only (a-z)
-          F      Friendly characters or digits, omitting hard-to-read ones (l, 1, I etc)
-          H      Uppercase hex digit (0-9, A-F)
-          h      Lowercase hex digit (0-9, a-f)
-          N      Digit (0-9)
-          X      Any character or digit
-          p      Punctuation (,.;:?!@#$*-+=)
-          Z      Any character, digit, or punctuation
-          -      Dash
-          _      Underscore
-    */
+    /// <summary>
+    /// Creates a new password using a given template.
+    /// </summary>
     public static string GeneratePassword(string template)
     {
         return GeneratePasswordFromLayout(GeneratePasswordLayout(template), Rng);
     }
 
+    /// <summary>
+    /// Creates a number of passwords using a given template.
+    /// </summary>
     public static string[] GeneratePassword(string template, int count)
     {
         var layout = GeneratePasswordLayout(template);
@@ -197,6 +224,9 @@ public static class Passwords
         return layout;
     }
 
+    /// <summary>
+    /// Generate a new random text key of a required length.
+    /// </summary>
     public static string RandomKey(int length)
     {
         if (length <= 0)

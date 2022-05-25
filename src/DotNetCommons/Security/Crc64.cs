@@ -11,7 +11,7 @@ namespace DotNetCommons.Security;
 /// </summary>
 public static class Crc64
 {
-    private static readonly ulong[] Data = 
+    private static readonly ulong[] Data =
     {
         0x0000000000000000ul, 0x7ad870c830358979ul, 0xf5b0e190606b12f2ul, 0x8f689158505e9b8bul,
         0xc038e5739841b68ful, 0xbae095bba8743ff6ul, 0x358804e3f82aa47dul, 0x4f50742bc81f2d04ul,
@@ -79,16 +79,25 @@ public static class Crc64
         0xa6df411fbfb21ca3ul, 0xdc0731d78f8795daul, 0x536fa08fdfd90e51ul, 0x29b7d047efec8728ul,
     };
 
+    /// <summary>
+    /// Calculate a CRC-64 value from a byte buffer, expressed as eight bytes.
+    /// </summary>
     public static byte[] ComputeChecksumBytes(byte[] bytes)
     {
         return BitConverter.GetBytes(ComputeChecksum(bytes));
     }
 
+    /// <summary>
+    /// Calculate a CRC-64 value from a byte buffer, expressed as an unsigned int64.
+    /// </summary>
     public static ulong ComputeChecksum(byte[] bytes)
     {
-        return bytes.Aggregate(0ul, (current, b) => (current >> 8) ^ Data[(byte) current ^ b]);
+        return bytes.Aggregate(0ul, (current, b) => (current >> 8) ^ Data[(byte)current ^ b]);
     }
 
+    /// <summary>
+    /// Calculate a CRC-64 value from a string buffer, expressed as an unsigned int64.
+    /// </summary>
     public static ulong ComputeChecksum(string data, Encoding? encoding = null)
     {
         return ComputeChecksum((encoding ?? Encoding.UTF8).GetBytes(data));

@@ -1,58 +1,76 @@
-﻿using System;
+﻿using DotNetCommons.IO;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using DotNetCommons.IO;
 
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Security;
 
+/// <summary>
+/// Class that provides easy encryption and decryption of data using AES-256 encryption.
+/// </summary>
 public static class Crypt
 {
     public const int KeyLength = 32;
 
+    /// <summary>
+    /// Create a new key using HMAC-SHA256 based on a master key and a specific message key.
+    /// </summary>
     public static byte[] CreateKey(byte[] masterKey, byte[] messageKey)
     {
         using var hmac = new HMACSHA256(masterKey);
         return hmac.ComputeHash(messageKey);
     }
 
+    /// <summary>
+    /// Create a new key using HMAC-SHA256 based on a master key and a specific message key.
+    /// </summary>
     public static byte[] CreateKey(string masterKey, string messageKey)
     {
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(masterKey));
         return hmac.ComputeHash(Encoding.UTF8.GetBytes(messageKey));
     }
 
+    /// <summary>
+    /// Decrypt a byte message using a given key. Keys are padded if they're not the exact length required.
+    /// </summary>
     public static byte[] Decrypt(byte[] key, byte[] data)
     {
         using var aes = Aes.Create();
         aes.Key = PadKey(key, KeyLength);
         using var mem = new MemoryStream(data);
-            byte[] buffer;
+        byte[] buffer;
 
         using (var reader = new BinaryReader(mem, Encoding.UTF8, true))
         {
             var ivlen = reader.ReadInt32();
             aes.IV = reader.ReadBytes(ivlen);
-                buffer = new byte[reader.ReadInt32()];
+            buffer = new byte[reader.ReadInt32()];
         }
 
         using var crypto = new CryptoStream(mem, aes.CreateDecryptor(), CryptoStreamMode.Read);
 
-            var read = StreamTools.ReadIntoBuffer(crypto, buffer);
-            if (read != buffer.Length)
-                throw new Exception($"Expected {buffer.Length} of decrypted data, got {read}.");
+        var read = StreamTools.ReadIntoBuffer(crypto, buffer);
+        if (read != buffer.Length)
+            throw new Exception($"Expected {buffer.Length} of decrypted data, got {read}.");
 
-            return buffer;
+        return buffer;
     }
 
+    /// <summary>
+    /// Decrypt a string message using a given key. Keys are padded if they're not the exact length required.
+    /// </summary>
     public static string Decrypt(byte[] key, string data)
     {
         var bytes = Convert.FromBase64String(data);
         return Encoding.UTF8.GetString(Decrypt(key, bytes));
     }
 
+    /// <summary>
+    /// Encrypt a byte message using a given key. Keys are padded if they're not the exact length required.
+    /// </summary>
     public static byte[] Encrypt(byte[] key, byte[] data)
     {
         using var aes = Aes.Create();
@@ -72,6 +90,9 @@ public static class Crypt
         return mem.ToArray();
     }
 
+    /// <summary>
+    /// Encrypt a string message using a given key. Keys are padded if they're not the exact length required.
+    /// </summary>
     public static string Encrypt(byte[] key, string data)
     {
         var bytes = Encoding.UTF8.GetBytes(data);
@@ -88,6 +109,9 @@ public static class Crypt
         return result;
     }
 
+    /// <summary>
+    /// Burn a key after use to prevent information leaks.
+    /// </summary>
     public static void Zero(byte[] key)
     {
         for (var i = 0; i < key.Length; i++)

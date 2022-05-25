@@ -7,15 +7,34 @@ using System.Net;
 
 namespace DotNetCommons.Net;
 
+/// <summary>
+/// Class that represents an IPv4 or IPv6 network.
+/// </summary>
 public class IPNetwork
 {
     private readonly byte[] _bytes;
     private readonly int _maxLength;
 
+    /// <summary>
+    /// IP address of the network (e.g. 192.168.1.0)
+    /// </summary>
     public IPAddress Address { get; }
+
+    /// <summary>
+    /// Network mask length (e.g. 24 bits).
+    /// </summary>
     public int MaskLen { get; }
+
+    /// <summary>
+    /// Netmask expressed as an IP address (e.g. 255.255.255.0)
+    /// </summary>
     public IPAddress NetMask => LengthToNetMask(MaskLen, _maxLength);
 
+    /// <summary>
+    /// Create a new IP network based on an IP address and netmask.
+    /// </summary>
+    /// <param name="address"></param>
+    /// <param name="maskLength"></param>
     public IPNetwork(IPAddress address, int maskLength)
     {
         Address = Mask(address, maskLength);
@@ -24,14 +43,26 @@ public class IPNetwork
         _maxLength = _bytes.Length * 8;
     }
 
+    /// <summary>
+    /// Create an IP network representing a single IP address (e.g. 192.168.1.40/32).
+    /// </summary>
+    /// <param name="address"></param>
     public IPNetwork(IPAddress address) : this(address, address.GetAddressBytes().Length * 8)
     {
     }
 
+    /// <summary>
+    /// Create an IP network based on an IP address and IP netmask.
+    /// </summary>
+    /// <param name="address"></param>
+    /// <param name="netMask"></param>
     public IPNetwork(IPAddress address, IPAddress netMask) : this(address, NetMaskToLength(netMask))
     {
     }
 
+    /// <summary>
+    /// Determine if a given IP address is contained in the network.
+    /// </summary>
     public bool Contains(IPAddress ip)
     {
         var ipBytes = GetMaskedBytes(ip, MaskLen);
@@ -47,6 +78,9 @@ public class IPNetwork
         return true;
     }
 
+    /// <summary>
+    /// Parse a string representation of an IP network, throwing an exception if it fails.
+    /// </summary>
     public static IPNetwork? Parse(string network)
     {
         if (TryParse(network, out var range))
@@ -55,6 +89,9 @@ public class IPNetwork
         throw new ArgumentException("Invalid IP network: " + network, nameof(network));
     }
 
+    /// <summary>
+    /// Parse a string representation of an IP network.
+    /// </summary>
     public static bool TryParse(string network, out IPNetwork? range)
     {
         range = null;
@@ -85,6 +122,10 @@ public class IPNetwork
         return true;
     }
 
+    /// <summary>
+    /// Return a string representation of the network.
+    /// </summary>
+    /// <returns></returns>
     public override string ToString()
     {
         return Address + "/" + MaskLen;

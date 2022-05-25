@@ -2,6 +2,9 @@
 
 namespace DotNetCommons.Temporal;
 
+/// <summary>
+/// Class that represents a holiday as a given weekday between two possible dates.
+/// </summary>
 public class BetweenDaysHoliday : Holiday
 {
     public int MaxDay { get; }

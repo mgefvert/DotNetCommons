@@ -5,6 +5,11 @@ using System.Collections.Generic;
 
 namespace DotNetCommons.Collections;
 
+/// <summary>
+/// Represents a list of objects, where the individual items are drawn in a random order.
+/// Repeats if so desired. Thread-safe.
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class DrawList<T>
 {
     private readonly object _lock = new();
@@ -23,6 +28,9 @@ public class DrawList<T>
         Seed(source);
     }
 
+    /// <summary>
+    /// The number of items available in the source list.
+    /// </summary>
     public int Count()
     {
         lock (_lock)
@@ -31,6 +39,12 @@ public class DrawList<T>
         }
     }
 
+    /// <summary>
+    /// Draw a new item randomly from the list. If repeating, there will
+    /// always be a new item drawn at random; if non-repeating, a null or default
+    /// value will be returned if the list is empty.
+    /// </summary>
+    /// <returns></returns>
     public T? Draw()
     {
         lock (_lock)
@@ -49,6 +63,9 @@ public class DrawList<T>
         }
     }
 
+    /// <summary>
+    /// Number of items left in the draw buffer.
+    /// </summary>
     public int Left()
     {
         lock (_lock)
@@ -57,6 +74,9 @@ public class DrawList<T>
         }
     }
 
+    /// <summary>
+    /// Seed the draw buffer with new records (will erase the current items and state).
+    /// </summary>
     public void Seed(IEnumerable<T> items)
     {
         lock (_lock)

@@ -7,6 +7,9 @@ using System.Threading;
 
 namespace DotNetCommons.Sys;
 
+/// <summary>
+/// Class that captures CTRL-C and CTRL-BREAK keys.
+/// </summary>
 public static class CtrlBreak
 {
     private static readonly ManualResetEvent Event = new(false);
@@ -20,6 +23,9 @@ public static class CtrlBreak
         _hook?.Invoke();
     }
 
+    /// <summary>
+    /// Perform an action if a break key is pressed.
+    /// </summary>
     public static void Hook(Action action)
     {
         _hook = action;
@@ -27,6 +33,9 @@ public static class CtrlBreak
         Console.CancelKeyPress += CancelKeypress;
     }
 
+    /// <summary>
+    /// Clear any actions.
+    /// </summary>
     public static void Release()
     {
         Console.CancelKeyPress -= CancelKeypress;
@@ -34,6 +43,9 @@ public static class CtrlBreak
         _hook = null;
     }
 
+    /// <summary>
+    /// Wait for a break key to be pressed.
+    /// </summary>
     public static void WaitFor()
     {
         if (!_hooked)

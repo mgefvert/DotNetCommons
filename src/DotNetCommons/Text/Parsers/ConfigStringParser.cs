@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using DotNetCommons.Text.Tokenizer;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using DotNetCommons.Text.Tokenizer;
 
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Text.Parsers;
 
+/// <summary>
+/// Class that captures configuration strings on the format of "key=value; key=value", handles quoted strings as part of the value.
+/// </summary>
 public class ConfigStringParser
 {
     public enum Token

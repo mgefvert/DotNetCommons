@@ -2,6 +2,9 @@
 
 namespace DotNetCommons.Temporal;
 
+/// <summary>
+/// Class that encapsulates the last day of the month calculations (e.g. last Thursday of October).
+/// </summary>
 public class LastDayHoliday : Holiday
 {
     public int Month { get; }

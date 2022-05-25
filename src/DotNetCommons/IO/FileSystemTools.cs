@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DotNetCommons.Collections;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using DotNetCommons.Collections;
 
 // ReSharper disable UnusedMember.Global
 
@@ -31,6 +31,10 @@ public static class FileSystemTools
         return result;
     }
 
+    /// <summary>
+    /// A simple filename expansion method that can understand paths like a\*\b and return
+    /// a sequence of files found.
+    /// </summary>
     public static IEnumerable<FileSystemInfo> Glob(string pattern)
     {
         if (string.IsNullOrEmpty(pattern))

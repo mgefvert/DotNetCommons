@@ -8,10 +8,20 @@ using System.Text;
 
 namespace DotNetCommons.Collections;
 
+/// <summary>
+/// Class that serializes a dictionary to a binary stream in a custom format. Handles only trivial
+/// data types.
+/// </summary>
 public class DictionarySerializer
 {
+    /// <summary>
+    /// Selects the encoding to use for string values.
+    /// </summary>
     public Encoding Encoding { get; set; } = Encoding.UTF8;
 
+    /// <summary>
+    /// Load a dictionary from a file.
+    /// </summary>
     public Dictionary<TKey, TValue> Load<TKey, TValue>(string filename) where TKey : notnull
     {
         if (!File.Exists(filename))
@@ -21,6 +31,9 @@ public class DictionarySerializer
         return Load<TKey, TValue>(fs);
     }
 
+    /// <summary>
+    /// Load a dictionary from a stream.
+    /// </summary>
     public Dictionary<TKey, TValue> Load<TKey, TValue>(Stream stream) where TKey : notnull
     {
         using var zip = new DeflateStream(stream, CompressionMode.Decompress, true);
@@ -85,12 +98,18 @@ public class DictionarySerializer
         throw new SerializationException($"{typeof(T).Name} is a complex object and cannot be serialized");
     }
 
+    /// <summary>
+    /// Save a dictionary to a file name.
+    /// </summary>
     public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, string filename) where TKey : notnull
     {
         using var fs = new FileStream(filename, FileMode.Create);
         Save(dictionary, fs);
     }
 
+    /// <summary>
+    /// Save a dictionary to a stream.
+    /// </summary>
     public void Save<TKey, TValue>(Dictionary<TKey, TValue> dictionary, Stream stream) where TKey : notnull
     {
         using var zip = new DeflateStream(stream, CompressionMode.Compress, true);
@@ -105,6 +124,9 @@ public class DictionarySerializer
             }
     }
 
+    /// <summary>
+    /// Write a single value to a BinaryWriter.
+    /// </summary>
     public void SaveValue(BinaryWriter writer, object value)
     {
         var type = value.GetType();
