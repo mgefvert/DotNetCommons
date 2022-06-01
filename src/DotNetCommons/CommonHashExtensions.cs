@@ -1,14 +1,13 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Security;
+namespace DotNetCommons;
 
-public static class HashExtensions
+public static class CommonHashExtensions
 {
     public static string ComputeString(this HashAlgorithm hashAlgorithm, byte[] buffer, string format = "x2")
     {

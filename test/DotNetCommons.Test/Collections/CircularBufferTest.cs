@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using DotNetCommons.Collections;
+﻿using DotNetCommons.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
 
 namespace DotNetCommons.Test.Collections;
 
 [TestClass]
 public class CircularBufferTest
 {
-    private static readonly Random Rnd = new Random();
+    private static readonly Random Rnd = new();
 
     [TestMethod]
     public void StressTest1()

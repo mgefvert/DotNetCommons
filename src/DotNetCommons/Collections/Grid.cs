@@ -156,13 +156,13 @@ public class Grid<TRow, TCol, TData>
 
     // --- EXPORT FUNCTIONS -----------------------------------------------
 
-    private bool IsNumeric(string? result)
+    private static bool IsNumeric(string? result)
     {
         return double.TryParse(result, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
             CultureInfo.InvariantCulture, out _);
     }
 
-    private string EscapeString(string? value, char[] escapeChars, bool addQuotes)
+    private static string EscapeString(string? value, char[] escapeChars, bool addQuotes)
     {
         var result = value ?? "";
         foreach (var ch in escapeChars)
@@ -206,8 +206,9 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Generate a CSV string from the grid.
     /// </summary>
-    public string? ToCsv(char separator = ',', bool includeRowHeader = false)
+    public string? ToCsv(bool includeRowHeader = false, char separator = ',', string? lineSeparator = null)
     {
+        lineSeparator ??= Environment.NewLine;
         if (!Columns.Any() || !Rows.Any())
             return null;
 
@@ -215,7 +216,7 @@ public class Grid<TRow, TCol, TData>
 
         var result = new StringBuilder();
         foreach (var row in strings)
-            result.AppendLine(string.Join(separator, row));
+            result.Append(string.Join(separator, row) + lineSeparator);
 
         return result.ToString();
     }

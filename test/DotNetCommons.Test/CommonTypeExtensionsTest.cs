@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DotNetCommons.Test;
 
 [TestClass]
-public class TypeExtensionsTest
+public class CommonTypeExtensionsTest
 {
     [TestMethod]
     public void TestDescendantOfOrEqual()

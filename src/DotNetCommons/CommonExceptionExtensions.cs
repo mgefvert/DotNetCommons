@@ -3,7 +3,7 @@ using System.Text;
 
 namespace DotNetCommons;
 
-public static class ExceptionExtensions
+public static class CommonExceptionExtensions
 {
     public static string GetDetailedInformation(this Exception ex, bool stackTrace)
     {

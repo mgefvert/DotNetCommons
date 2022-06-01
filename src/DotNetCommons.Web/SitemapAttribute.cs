@@ -2,11 +2,12 @@
 
 namespace DotNetCommons.Web;
 
-public class SitemapAttribute : Attribute
+[AttributeUsage(AttributeTargets.Method)]
+public class SiteMapAttribute : Attribute
 {
     public float Priority { get; }
 
-    public SitemapAttribute(float priority = 0.8f)
+    public SiteMapAttribute(float priority = 0.8f)
     {
         Priority = priority;
     }

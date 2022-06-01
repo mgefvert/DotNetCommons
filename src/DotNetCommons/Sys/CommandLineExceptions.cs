@@ -45,20 +45,13 @@ public class CommandLineParameterException : CommandLineException
 
     private static string GetMessage(CommandLineParameterError error)
     {
-        switch (error)
+        return error switch
         {
-            case CommandLineParameterError.BooleanParameterDoesNotTakeValue:
-                return "Parameter does not take a value";
-
-            case CommandLineParameterError.UndefinedParameter:
-                return "Undefined parameter";
-
-            case CommandLineParameterError.ValueRequired:
-                return "Parameter requires a value";
-
-            default:
-                return "Error";
-        }
+            CommandLineParameterError.BooleanParameterDoesNotTakeValue => "Parameter does not take a value",
+            CommandLineParameterError.UndefinedParameter => "Undefined parameter",
+            CommandLineParameterError.ValueRequired => "Parameter requires a value",
+            _ => "Error"
+        };
     }
 }
 

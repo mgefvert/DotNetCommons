@@ -4,7 +4,7 @@
 
 namespace DotNetCommons;
 
-public static class StructExtensions
+public static class CommonStructExtensions
 {
     /// <summary>
     /// Limit a value inside a guard range.

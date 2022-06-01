@@ -1,14 +1,13 @@
-﻿using System;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetCommons.Collections;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CollectionExtensions = DotNetCommons.Collections.CollectionExtensions;
 
-namespace DotNetCommons.Test.Collections;
+namespace DotNetCommons.Test;
 
 [TestClass]
-public class CollectionExtensionsTest
+public class CommonCollectionExtensionsTest
 {
     private List<string> _list = null!;
     private Dictionary<string, int> _dictI = null!;
@@ -177,7 +176,7 @@ public class CollectionExtensionsTest
         var list1 = new[] { 1, 2, 3, 4, 5 };
         var list2 = new[] { 4, 5, 6, 7 };
 
-        var intersect = CollectionExtensions.Intersect(list1, list2);
+        var intersect = list1.Intersect(list2);
         CollectionAssert.AreEqual(new[] { 1, 2, 3 }, intersect.Left);
         CollectionAssert.AreEqual(new[] { (4, 4), (5, 5) }, intersect.Both);
         CollectionAssert.AreEqual(new[] { 6, 7 }, intersect.Right);
@@ -185,7 +184,7 @@ public class CollectionExtensionsTest
         list1 = new[] { 1, 2, 3, 4, 5 };
         list2 = new[] { 4, 5 };
 
-        intersect = CollectionExtensions.Intersect(list1, list2);
+        intersect = list1.Intersect(list2);
         CollectionAssert.AreEqual(new[] { 1, 2, 3 }, intersect.Left);
         CollectionAssert.AreEqual(new[] { (4, 4), (5, 5) }, intersect.Both);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Right);
@@ -193,7 +192,7 @@ public class CollectionExtensionsTest
         list1 = Array.Empty<int>();
         list2 = new[] { 4, 5 };
 
-        intersect = CollectionExtensions.Intersect(list1, list2);
+        intersect = list1.Intersect(list2);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Left);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Both);
         CollectionAssert.AreEqual(new[] { 4, 5 }, intersect.Right);
@@ -252,5 +251,111 @@ public class CollectionExtensionsTest
         Assert.AreEqual("", string.Join("", list.Repeat(3)));
         Assert.AreEqual("", string.Join("", list.Repeat(1)));
         Assert.AreEqual("", string.Join("", list.Repeat(0)));
+    }
+
+    [TestMethod]
+    public void TestSwap()
+    {
+        var list = new[] { 1, 2, 3, 4, 5 };
+        Assert.IsTrue(list.Swap(0, 1));
+        Assert.AreEqual("2,1,3,4,5", string.Join(",", list));
+
+        list = new[] { 1, 2, 3, 4, 5 };
+        Assert.IsTrue(list.Swap(1, 2));
+        Assert.AreEqual("1,3,2,4,5", string.Join(",", list));
+
+        list = new[] { 1, 2, 3, 4, 5 };
+        Assert.IsTrue(list.Swap(0, 4));
+        Assert.AreEqual("5,2,3,4,1", string.Join(",", list));
+
+        list = new[] { 1, 2, 3, 4, 5 };
+        Assert.IsTrue(list.Swap(3, 4));
+        Assert.AreEqual("1,2,3,5,4", string.Join(",", list));
+
+        list = new[] { 1, 2, 3, 4, 5 };
+        Assert.IsFalse(list.Swap(-1, 0));
+        Assert.AreEqual("1,2,3,4,5", string.Join(",", list));
+
+        list = new[] { 1, 2, 3, 4, 5 };
+        Assert.IsFalse(list.Swap(0, 5));
+        Assert.AreEqual("1,2,3,4,5", string.Join(",", list));
+    }
+
+    public class TreeNode
+    {
+        public string Name { get; }
+        public List<TreeNode> Children { get; } = new List<TreeNode>();
+
+        public TreeNode(string name, params TreeNode[] children)
+        {
+            Name = name;
+            Children.AddRange(children);
+        }
+    }
+
+    private static List<TreeNode> MakeTreeNodes()
+    {
+        return new List<TreeNode>
+        {
+            new TreeNode("Top",
+                new TreeNode("TopLeft"),
+                new TreeNode("TopRight")
+            ),
+            new TreeNode("Middle"),
+            new TreeNode("Bottom",
+                new TreeNode("BottomLeft",
+                    new TreeNode("BottomLeftDeep")
+                ),
+                new TreeNode("BottomRight",
+                    new TreeNode("BottomRightDeep")
+                )
+            )
+        };
+    }
+
+    [TestMethod]
+    public void TestWalkTree_DepthFirst()
+    {
+        var names = MakeTreeNodes()
+            .WalkTree(n => n.Children, WalkTreeMode.DepthFirst)
+            .Select(n => n.Name)
+            .ToList();
+
+        names.Count.Should().Be(9);
+
+        var text = string.Join(",", names);
+        text.Should().Be("Top,TopLeft,TopRight,Middle,Bottom,BottomLeft,BottomLeftDeep,BottomRight,BottomRightDeep");
+    }
+
+    [TestMethod]
+    public void TestWalkTree_ShallowFirst()
+    {
+        var names = MakeTreeNodes()
+            .WalkTree(n => n.Children, WalkTreeMode.ShallowFirst)
+            .Select(n => n.Name)
+            .ToList();
+
+        names.Count.Should().Be(9);
+
+        var text = string.Join(",", names);
+        text.Should().Be("Top,Middle,Bottom,TopLeft,TopRight,BottomLeft,BottomRight,BottomLeftDeep,BottomRightDeep");
+    }
+
+    [TestMethod]
+    public void TestWalkTree_BreakInMiddle()
+    {
+        var nodes = MakeTreeNodes();
+        var names = new List<string>();
+
+        foreach (var node in nodes.WalkTree(n => n.Children, WalkTreeMode.ShallowFirst))
+        {
+            names.Add(node.Name);
+            if (names.Count >= 5)
+                break;
+        }
+
+        names.Count.Should().Be(5);
+        var text = string.Join(",", names);
+        text.Should().Be("Top,Middle,Bottom,TopLeft,TopRight");
     }
 }

@@ -28,6 +28,7 @@ public class SetConsoleColor : IDisposable
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         Console.ForegroundColor = _fg;
         Console.BackgroundColor = _bg;
     }

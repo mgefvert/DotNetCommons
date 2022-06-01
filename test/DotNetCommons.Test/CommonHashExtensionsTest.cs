@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Security.Cryptography;
 using System.Text;
-using DotNetCommons.Security;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DotNetCommons.Test.Security;
+namespace DotNetCommons.Test;
 
 [TestClass]
-public class HashExtensionsTest
+public class CommonHashExtensionsTest
 {
     [TestMethod]
     public void TestComputeString()

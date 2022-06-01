@@ -2,7 +2,7 @@
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Sys;
+namespace DotNetCommons;
 
 /// <summary>
 /// Helper class that checks to see if a console is attached to the current process without

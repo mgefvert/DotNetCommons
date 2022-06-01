@@ -1,9 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using DotNetCommons.Sys;
+﻿using DotNetCommons.Sys;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 // ReSharper disable UnusedMember.Global
 
@@ -12,13 +13,25 @@ namespace DotNetCommons.Test.Sys;
 [TestClass]
 public class SpawnTest
 {
+    private bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
     [TestMethod]
     public void Run_Works()
     {
-        var result = new Spawn("cmd /c echo Hello World!").Run();
+        var cmd = IsLinux ? "echo Hello World!" : "cmd /c echo Hello World!";
+        var result = new Spawn(cmd).Run();
 
-        result.Command.Should().Be("cmd");
-        result.Parameters.Should().Be("/c echo Hello World!");
+        if (IsLinux)
+        {
+            result.Command.Should().Be("echo");
+            result.Parameters.Should().Be("Hello World!");
+        }
+        else
+        {
+            result.Command.Should().Be("cmd");
+            result.Parameters.Should().Be("/c echo Hello World!");
+        }
+
         result.ExitCode.Should().Be(0);
         result.IsFinished.Should().BeTrue();
         result.IsRunning.Should().BeFalse();
@@ -30,14 +43,14 @@ public class SpawnTest
     [TestMethod]
     public void Run_WithEcho_Works()
     {
-        Console.WriteLine("There should be 'dir' output below:");
-        new Spawn("cmd /c dir").WithEcho().Run();
+        var result = new Spawn(IsLinux ? "ls -a" : "cmd /c dir").WithEcho().Run();
+        result.Output.Should().NotBeEmpty();
     }
 
     [TestMethod]
     public void Run_WithRedirectInput_Works()
     {
-        var result = new Spawn("cmd /c pause").WithRedirectInput().Start();
+        var result = new Spawn(IsLinux ? "bash -c \"read -p 'Press any key to continue...' -n 1 -s\"" : "cmd /c pause").WithRedirectInput().Start();
 
         result.IsRunning.Should().BeTrue();
         result.IsFinished.Should().BeFalse();
@@ -51,17 +64,29 @@ public class SpawnTest
     [TestMethod]
     public void Run_WithStartDirectory_Works()
     {
-        var result = new Spawn("cmd /c cd").WithStartDirectory("c:\\windows").Run();
-        result.Text.Should().Be("c:\\windows");
+        var result = IsLinux
+            ? new Spawn("pwd").WithStartDirectory("/tmp").Run()
+            : new Spawn("cmd /c cd").WithStartDirectory("c:\\windows").Run();
+
+        result.Text.Should().Be(IsLinux ? "/tmp" : "c:\\windows");
     }
 
     [TestMethod]
     public async Task RunAsync_Works()
     {
-        var result = await new Spawn("cmd /c echo Hello World!").RunAsync();
+        var result = await new Spawn(IsLinux ? "echo Hello World!" : "cmd /c echo Hello World!").RunAsync();
 
-        result.Command.Should().Be("cmd");
-        result.Parameters.Should().Be("/c echo Hello World!");
+        if (IsLinux)
+        {
+            result.Command.Should().Be("echo");
+            result.Parameters.Should().Be("Hello World!");
+        }
+        else
+        {
+            result.Command.Should().Be("cmd");
+            result.Parameters.Should().Be("/c echo Hello World!");
+        }
+
         result.ExitCode.Should().Be(0);
         result.IsFinished.Should().BeTrue();
         result.IsRunning.Should().BeFalse();
@@ -73,10 +98,14 @@ public class SpawnTest
     [TestMethod]
     public void Wait_TimeoutAndKillWorks()
     {
-        var result = new Spawn("cmd /c pause").Start();
+        Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: Starting");
+        var spawn = new Spawn(IsLinux ? "bash -c read" : "cmd /c pause");
+        Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: {spawn.Command} {spawn.Parameters}");
+        var result = spawn.Start();
 
         for (var i = 0; i < 10; i++)
         {
+            Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: IsRunning = {result.IsRunning}, ExitCode = {result.ExitCode}");
             if (result.IsRunning)
                 break;
 
@@ -85,9 +114,18 @@ public class SpawnTest
 
         result.IsRunning.Should().BeTrue();
         result.ExitCode.Should().BeNull();
+
+        Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: Attempting kill");
         result.Kill();
 
-        result.Wait(TimeSpan.FromSeconds(10));
+        for (var i = 0; i < 10; i++)
+        {
+            Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: IsRunning = {result.IsRunning}, ExitCode = {result.ExitCode}");
+            if (!result.IsRunning)
+                break;
+
+            Thread.Sleep(1000);
+        }
 
         result.IsRunning.Should().BeFalse();
         result.ExitCode.Should().NotBeNull();

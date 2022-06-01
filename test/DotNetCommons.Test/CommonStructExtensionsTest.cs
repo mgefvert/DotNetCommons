@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DotNetCommons.Test;
 
 [TestClass]
-public class StructExtensionsTest
+public class CommonStructExtensionsTest
 {
     [TestMethod]
     public void Limit()

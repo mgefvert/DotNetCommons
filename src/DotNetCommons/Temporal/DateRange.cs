@@ -139,105 +139,54 @@ public class DateRange
 
     protected static DateTime GetStartDate(DateRangeType type, DateTime date)
     {
-        int y = date.Year, m = date.Month-1;
+        int y = date.Year, m = date.Month - 1;
 
-        switch (type)
+        return type switch
         {
-            case DateRangeType.Daily:
-                return date;
-
-            case DateRangeType.Weekly:
-            case DateRangeType.Biweekly:
-                return date.StartOfWeek(DayOfWeek.Sunday);
-
-            case DateRangeType.WeeklyIso:
-            case DateRangeType.BiweeklyIso:
+            DateRangeType.Daily => date,
+            DateRangeType.Weekly => date.StartOfWeek(DayOfWeek.Sunday),
+            DateRangeType.Biweekly => date.StartOfWeek(DayOfWeek.Sunday),
+            DateRangeType.WeeklyIso =>
                 // ReSharper disable once RedundantArgumentDefaultValue
-                return date.StartOfWeek(DayOfWeek.Monday);
-
-            case DateRangeType.Monthly:
-                return new DateTime(y, m + 1, 1);
-
-            case DateRangeType.Bimonthly:
-                return new DateTime(y, m/2*2 + 1, 1);
-
-            case DateRangeType.Quarterly:
-                return new DateTime(y, m/3*3 + 1, 1);
-
-            case DateRangeType.Tertile:
-                return new DateTime(y, m/4*4 + 1, 1);
-
-            case DateRangeType.Semiannually:
-                return new DateTime(y, m/6*6 + 1, 1);
-
-            case DateRangeType.Annually:
-                return new DateTime(y, 1, 1);
-
-            case DateRangeType.Biannually:
-                return new DateTime(y/2*2, 1, 1);
-
-            case DateRangeType.Decade:
-                return new DateTime(y/10*10, 1, 1);
-
-            case DateRangeType.Century:
-                return new DateTime(y/100*100, 1, 1);
-
-            case DateRangeType.Millenium:
-                return new DateTime(y/1000*1000, 1, 1);
-
-            default:
-                throw new ArgumentOutOfRangeException(nameof(type), "Date range type is out of range.");
-        }
+                date.StartOfWeek(DayOfWeek.Monday),
+            DateRangeType.BiweeklyIso =>
+                // ReSharper disable once RedundantArgumentDefaultValue
+                date.StartOfWeek(DayOfWeek.Monday),
+            DateRangeType.Monthly => new DateTime(y, m + 1, 1),
+            DateRangeType.Bimonthly => new DateTime(y, m / 2 * 2 + 1, 1),
+            DateRangeType.Quarterly => new DateTime(y, m / 3 * 3 + 1, 1),
+            DateRangeType.Tertile => new DateTime(y, m / 4 * 4 + 1, 1),
+            DateRangeType.Semiannually => new DateTime(y, m / 6 * 6 + 1, 1),
+            DateRangeType.Annually => new DateTime(y, 1, 1),
+            DateRangeType.Biannually => new DateTime(y / 2 * 2, 1, 1),
+            DateRangeType.Decade => new DateTime(y / 10 * 10, 1, 1),
+            DateRangeType.Century => new DateTime(y / 100 * 100, 1, 1),
+            DateRangeType.Millenium => new DateTime(y / 1000 * 1000, 1, 1),
+            _ => throw new ArgumentOutOfRangeException(nameof(type), "Date range type is out of range.")
+        };
     }
 
     protected static DateTime GetNextStartDate(DateRangeType type, DateTime date, int count)
     {
-        switch (type)
+        return type switch
         {
-            case DateRangeType.Daily:
-                return date.AddDays(count);
-
-            case DateRangeType.Weekly:
-            case DateRangeType.WeeklyIso:
-                return date.AddDays(7 * count);
-
-            case DateRangeType.Biweekly:
-            case DateRangeType.BiweeklyIso:
-                return date.AddDays(14 * count);
-
-            case DateRangeType.Monthly:
-                return date.AddMonths(1 * count);
-
-            case DateRangeType.Bimonthly:
-                return date.AddMonths(2 * count);
-
-            case DateRangeType.Quarterly:
-                return date.AddMonths(3 * count);
-
-            case DateRangeType.Tertile:
-                return date.AddMonths(4 * count);
-
-            case DateRangeType.Semiannually:
-                return date.AddMonths(6 * count);
-
-            case DateRangeType.Annually:
-                return date.AddYears(1 * count);
-
-            case DateRangeType.Biannually:
-                return date.AddYears(2 * count);
-
-            case DateRangeType.Decade:
-                return date.AddYears(10 * count);
-
-            case DateRangeType.Century:
-                return date.AddYears(100 * count);
-
-            case DateRangeType.Millenium:
-                return date.AddYears(1000 * count);
-
-            default:
-                throw new ArgumentOutOfRangeException(nameof(type), "Date range type is out of range.");
-        }
+            DateRangeType.Daily => date.AddDays(count),
+            DateRangeType.Weekly => date.AddDays(7 * count),
+            DateRangeType.WeeklyIso => date.AddDays(7 * count),
+            DateRangeType.Biweekly => date.AddDays(14 * count),
+            DateRangeType.BiweeklyIso => date.AddDays(14 * count),
+            DateRangeType.Monthly => date.AddMonths(1 * count),
+            DateRangeType.Bimonthly => date.AddMonths(2 * count),
+            DateRangeType.Quarterly => date.AddMonths(3 * count),
+            DateRangeType.Tertile => date.AddMonths(4 * count),
+            DateRangeType.Semiannually => date.AddMonths(6 * count),
+            DateRangeType.Annually => date.AddYears(1 * count),
+            DateRangeType.Biannually => date.AddYears(2 * count),
+            DateRangeType.Decade => date.AddYears(10 * count),
+            DateRangeType.Century => date.AddYears(100 * count),
+            DateRangeType.Millenium => date.AddYears(1000 * count),
+            _ => throw new ArgumentOutOfRangeException(nameof(type), "Date range type is out of range.")
+        };
     }
 
     /// <summary>
@@ -259,23 +208,14 @@ public class DateRange
     /// <returns></returns>
     public bool InRange(DateRange range, DateRangeBound boundingMode)
     {
-        switch (boundingMode)
+        return boundingMode switch
         {
-            case DateRangeBound.CompletelyInside:
-                return range.InRange(Start) && range.InRange(End);
-
-            case DateRangeBound.PartiallyInside:
-                return range.InRange(Start) || range.InRange(End);
-
-            case DateRangeBound.StartInside:
-                return range.InRange(Start);
-
-            case DateRangeBound.EndInside:
-                return range.InRange(End);
-
-            default:
-                return false;
-        }
+            DateRangeBound.CompletelyInside => range.InRange(Start) && range.InRange(End),
+            DateRangeBound.PartiallyInside => range.InRange(Start) || range.InRange(End),
+            DateRangeBound.StartInside => range.InRange(Start),
+            DateRangeBound.EndInside => range.InRange(End),
+            _ => false
+        };
     }
 
     /// <summary>

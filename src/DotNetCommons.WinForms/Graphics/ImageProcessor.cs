@@ -94,36 +94,35 @@ public class ImageProcessor
         var et = edges.HasFlag(Edges.Top);
         var eb = edges.HasFlag(Edges.Bottom);
 
-        using (var buffer = GetBitmapBuffer())
-        {
-            var dim = (int)(h * percent / 100.0);
-            if (et || eb)
-                for (var y = 0; y < dim; y++)
-                {
-                    var c = y / (float)dim;
-                    for (var x = 0; x < w; x++)
-                    {
-                        if (et)
-                            buffer.MultPixelAlpha(buffer.CoordToOffset(x, y), c);
-                        if (eb)
-                            buffer.MultPixelAlpha(buffer.CoordToOffset(x, h - y - 1), c);
-                    }
-                }
+        using var buffer = GetBitmapBuffer();
 
-            dim = (int)(w * percent / 100.0);
-            if (el || er)
-                for (var x = 0; x < dim; x++)
+        var dim = (int)(h * percent / 100.0);
+        if (et || eb)
+            for (var y = 0; y < dim; y++)
+            {
+                var c = y / (float)dim;
+                for (var x = 0; x < w; x++)
                 {
-                    var c = x / (float)dim;
-                    for (var y = 0; y < h; y++)
-                    {
-                        if (el)
-                            buffer.MultPixelAlpha(buffer.CoordToOffset(x, y), c);
-                        if (er)
-                            buffer.MultPixelAlpha(buffer.CoordToOffset(w - x - 1, y), c);
-                    }
+                    if (et)
+                        buffer.MultPixelAlpha(buffer.CoordToOffset(x, y), c);
+                    if (eb)
+                        buffer.MultPixelAlpha(buffer.CoordToOffset(x, h - y - 1), c);
                 }
-        }
+            }
+
+        dim = (int)(w * percent / 100.0);
+        if (el || er)
+            for (var x = 0; x < dim; x++)
+            {
+                var c = x / (float)dim;
+                for (var y = 0; y < h; y++)
+                {
+                    if (el)
+                        buffer.MultPixelAlpha(buffer.CoordToOffset(x, y), c);
+                    if (er)
+                        buffer.MultPixelAlpha(buffer.CoordToOffset(w - x - 1, y), c);
+                }
+            }
     }
 
     public BitmapBuffer GetBitmapBuffer()
@@ -131,7 +130,7 @@ public class ImageProcessor
         return new BitmapBuffer(_bitmap);
     }
 
-    private int PercentVisible(BitmapBuffer buffer)
+    private static int PercentVisible(BitmapBuffer buffer)
     {
         var c = 0;
         for (int i = 0; i < buffer.Length; i++)
@@ -185,14 +184,13 @@ public class ImageProcessor
     {
         ConvertToFormat(PixelFormat.Format32bppArgb, false);
 
-        using (var buffer = GetBitmapBuffer())
+        using var buffer = GetBitmapBuffer();
+
+        var color = highlight.ToArgb();
+        for (int i = 0; i < buffer.Length; i++)
         {
-            var color = highlight.ToArgb();
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                if (match(Color.FromArgb(buffer.Buffer[i])))
-                    buffer.SetPixel(i, color);
-            }
+            if (match(Color.FromArgb(buffer.Buffer[i])))
+                buffer.SetPixel(i, color);
         }
     }
 
@@ -200,32 +198,31 @@ public class ImageProcessor
     {
         ConvertToFormat(PixelFormat.Format32bppArgb, false);
 
-        using (var buffer = GetBitmapBuffer())
+        using var buffer = GetBitmapBuffer();
+
+        var colors = new List<int>();
+        for (int i = 0; i < buffer.Length; i++)
         {
-            var colors = new List<int>();
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                buffer.SetPixelAlpha(i, 0);
-                if (match(Color.FromArgb(buffer.Buffer[i])))
-                    colors.Add(i);
-            }
-
-            while (CompressOffsetList(colors) > 0)
-            { }
-
-            var brush = new PaintBrush(2 * Width / 3, 32);
-            do
-            {
-                for (var i = 0; i < 10; i++)
-                {
-                    var pt = buffer.OffsetToCoord(colors[_rnd.Next(colors.Count)]);
-                    brush.Reveal(buffer, pt.X + _rnd.Next(-5, 5), pt.Y + _rnd.Next(-5, 5));
-                }
-            } while (PercentVisible(buffer) < 10);
+            buffer.SetPixelAlpha(i, 0);
+            if (match(Color.FromArgb(buffer.Buffer[i])))
+                colors.Add(i);
         }
+
+        while (CompressOffsetList(colors) > 0)
+        { }
+
+        var brush = new PaintBrush(2 * Width / 3, 32);
+        do
+        {
+            for (var i = 0; i < 10; i++)
+            {
+                var pt = buffer.OffsetToCoord(colors[_rnd.Next(colors.Count)]);
+                brush.Reveal(buffer, pt.X + _rnd.Next(-5, 5), pt.Y + _rnd.Next(-5, 5));
+            }
+        } while (PercentVisible(buffer) < 10);
     }
 
-    private int CompressOffsetList(List<int> colors)
+    private static int CompressOffsetList(List<int> colors)
     {
         var i = 0;
         while (i < colors.Count - 1)
@@ -275,7 +272,7 @@ public class ImageProcessor
         Resample(newsize.Width, newsize.Height);
     }
 
-    private int Similarity(Color color1, Color color2)
+    private static int Similarity(Color color1, Color color2)
     {
         return Math.Abs(((color1.R - color2.R) + (color1.G - color2.G) + (color1.B - color2.B)) / 3);
     }

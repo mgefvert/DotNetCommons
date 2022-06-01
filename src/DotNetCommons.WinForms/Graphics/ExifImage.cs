@@ -191,8 +191,8 @@ public class ExifImage : IDisposable
 
     public void Save(string filename)
     {
-        using (var fs = new FileStream(filename, FileMode.Create))
-            Save(fs);
+        using var fs = new FileStream(filename, FileMode.Create);
+        Save(fs);
     }
 
     public void Save(Stream target)

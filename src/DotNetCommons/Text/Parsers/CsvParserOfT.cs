@@ -242,7 +242,7 @@ public class CsvParser<T> where T : class, new()
 
             try
             {
-                obj.SetPropertyValue(definition.Property, value, Culture);
+                definition.Property.SetPropertyValue(obj, value, Culture);
             }
             catch (Exception ex)
             {

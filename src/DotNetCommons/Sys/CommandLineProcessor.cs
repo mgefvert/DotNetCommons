@@ -1,5 +1,4 @@
-﻿using DotNetCommons.Collections;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,7 +48,7 @@ internal class CommandLineProcessor<T> where T : class, new()
     {
         string? value = null;
 
-        if (arg.Contains("="))
+        if (arg.Contains('='))
         {
             var items = arg.Split(new[] { '=' }, 2);
             arg = items[0];
@@ -116,7 +115,7 @@ internal class CommandLineProcessor<T> where T : class, new()
         if (definition == null)
             throw new CommandLineException("Unrecognized text on command line: " + arg);
 
-        if (!(definition.Property.GetValue(Result) is ICollection<string> remainder))
+        if (definition.Property.GetValue(Result) is not ICollection<string> remainder)
             throw new CommandLineException("No CommandLineRemainder property found, or the designated property is not an ICollection<string>.");
 
         remainder.Add(arg);
@@ -163,7 +162,7 @@ internal class CommandLineProcessor<T> where T : class, new()
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
         {
             // Add the value onto a list instead of just setting the property
-            if (!(definition.Property.GetValue(Result) is IList list))
+            if (definition.Property.GetValue(Result) is not IList list)
                 throw new CommandLineException("Property " + definition.Property.Name + " has not been initialized.");
 
             var subtype = type.GetGenericArguments().Single();
@@ -174,6 +173,6 @@ internal class CommandLineProcessor<T> where T : class, new()
             return;
         }
 
-        Result.SetPropertyValue(definition.Property, value);
+        definition.Property.SetPropertyValue(Result, value);
     }
 }

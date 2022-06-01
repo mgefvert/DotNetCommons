@@ -41,14 +41,11 @@ public class IndexedTreeCollection<T, TKey> : TreeCollection<T> where TKey : not
         if (node != null)
             return node.AddChild(item);
 
-        switch (mode)
+        return mode switch
         {
-            case AddChildOfMode.AddToRoot:
-                return AddRoot(item);
-
-            default:
-                throw new InvalidOperationException("Parent node not found");
-        }
+            AddChildOfMode.AddToRoot => AddRoot(item),
+            _ => throw new InvalidOperationException("Parent node not found")
+        };
     }
 
     public TreeNode<T> Find(TKey key)

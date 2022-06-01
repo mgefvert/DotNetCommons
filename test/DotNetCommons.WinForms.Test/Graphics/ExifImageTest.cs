@@ -1,7 +1,7 @@
-﻿using System.IO;
-using System.Reflection;
-using DotNetCommons.WinForms.Graphics;
+﻿using DotNetCommons.WinForms.Graphics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
+using System.Reflection;
 
 namespace DotNetCommons.WinForms.Test.Graphics;
 
@@ -31,18 +31,17 @@ public class ExifImageTest
         _img.Rating = 5;
         _img.Subject = null;
 
-        using (var mem = new MemoryStream())
-        {
-            _img.Save(mem);
+        using var mem = new MemoryStream();
 
-            mem.Position = 0;
-            var x = new ExifImage(mem);
+        _img.Save(mem);
 
-            Assert.AreEqual("Bork!", x.Title);
-            Assert.IsFalse(x.Exists(ExifTags.XpSubject));
-            Assert.IsNull(x.Subject);
-            Assert.AreEqual((short)5, x.Rating);
-            Assert.AreEqual("hello; bonk", x.TagAsText);
-        }
+        mem.Position = 0;
+        var x = new ExifImage(mem);
+
+        Assert.AreEqual("Bork!", x.Title);
+        Assert.IsFalse(x.Exists(ExifTags.XpSubject));
+        Assert.IsNull(x.Subject);
+        Assert.AreEqual((short)5, x.Rating);
+        Assert.AreEqual("hello; bonk", x.TagAsText);
     }
 }

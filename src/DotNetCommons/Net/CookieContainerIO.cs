@@ -59,8 +59,8 @@ public static class CookieContainerIO
             {
                 Domain = items[0],
                 Path = items[2],
-                Secure = items[3].Like("TRUE"),
-                Expires = DateTimeExtensions.FromUnixSeconds(long.Parse(items[4])),
+                Secure = items[3].EqualsInsensitive("TRUE"),
+                Expires = CommonDateTimeExtensions.FromUnixSeconds(long.Parse(items[4])),
                 Name = items[5],
                 Value = ReEncodeHtmlString(items[6])
             };

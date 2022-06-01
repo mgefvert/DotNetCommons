@@ -9,7 +9,7 @@ public class Crc64Test
 {
     [TestMethod]
     public void Test()
-    { 
+    {
         var calc = Crc64.ComputeChecksum("123456789");
         Console.WriteLine($"Calculated = {calc:x16}");
 

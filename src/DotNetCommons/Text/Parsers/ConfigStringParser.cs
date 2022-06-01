@@ -26,12 +26,13 @@ public class ConfigStringParser
     public ConfigStringParser(string separator = ";")
     {
         _definitions.AddRange(new Definition<Token>[] {
-            new Characters<Token>(Token.Text, false).Add(TokenMode.Letter, TokenMode.Digit).AddSpecific("-_"),
-            new Characters<Token>(Token.Whitespace, false).Add(TokenMode.Whitespace),
+            new Characters<Token>(Token.Text, false)
+                .Add(TokenMode.Letter, TokenMode.Digit, TokenMode.Symbols)
+                .AddSpecific(" ")
+                .Except(";="),
             new Strings<Token>(Token.Separator, separator, false),
             new Strings<Token>(Token.Equal, "=", false),
-            new Section<Token>(Token.Quote, "\"", "\"", false, false),
-            new Escape<Token>('\\')
+            new Section<Token>(Token.Quote, "\"", "\"", false, false)
         });
     }
 
@@ -58,7 +59,7 @@ public class ConfigStringParser
 
             var sb = new StringBuilder();
             foreach (var token in item.ConsumeAll(Token.Text, Token.Quote))
-                sb.Append(token.Text);
+                sb.Append(token.InsideText);
 
             if (!string.IsNullOrEmpty(key.Text))
                 result[key.Text] = sb.ToString();

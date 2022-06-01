@@ -27,7 +27,7 @@ public class LittleStateMachineTest
         _log = new List<string>();
 
         _lsm = new LittleStateMachine<States>();
-            
+
         _lsm.ConfigureState(States.Initialized);
         _lsm.ConfigureState(States.Starting, s => _log.Add($"at:{s}"));
         _lsm.ConfigureState(States.Running, s => _log.Add($"at:{s}"), s2 => _log.Add($"leave:{s2}"));

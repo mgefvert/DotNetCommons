@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DotNetCommons.Collections;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetCommons.Collections;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Collections;
 
@@ -21,7 +21,7 @@ public class Foo
 [TestClass]
 public class IndexedCollectionTest
 {
-    private string Fetch<TItem, TResult>(IEnumerable<TItem> items, Func<TItem, TResult> accessor)
+    private static string Fetch<TItem, TResult>(IEnumerable<TItem> items, Func<TItem, TResult> accessor)
     {
         return string.Join(",", items.Select(accessor).OrderBy(x => x));
     }

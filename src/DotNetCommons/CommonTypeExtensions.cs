@@ -6,7 +6,7 @@
 
 namespace DotNetCommons;
 
-public static class TypeExtensions
+public static class CommonTypeExtensions
 {
     /// <summary>
     /// True if the given type is equal to or a descendant of another type.
@@ -21,7 +21,8 @@ public static class TypeExtensions
     /// </summary>
     public static bool IsNullable(this Type type)
     {
-        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && type != typeof(string);
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) &&
+               type != typeof(string);
     }
 
     // From https://stackoverflow.com/questions/1749966/c-sharp-how-to-determine-whether-a-type-is-a-number

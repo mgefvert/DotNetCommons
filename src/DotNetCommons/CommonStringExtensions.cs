@@ -8,9 +8,9 @@ using System.Text;
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Text;
+namespace DotNetCommons;
 
-public static partial class StringExtensions
+public static partial class CommonStringExtensions
 {
     /// <summary>
     /// Break up a string in chunks of a given length.
@@ -101,6 +101,22 @@ public static partial class StringExtensions
     }
 
     /// <summary>
+    /// Compare text according to the current culture, case insensitive.
+    /// </summary>
+    public static bool ContainsInsensitive(this string? value, string? compare)
+    {
+        return compare != null && (value?.Contains(compare, StringComparison.CurrentCultureIgnoreCase) ?? false);
+    }
+
+    /// <summary>
+    /// Compare text according to the current culture, case insensitive.
+    /// </summary>
+    public static bool EqualsInsensitive(this string? value, string? compare)
+    {
+        return string.Equals(value, compare, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    /// <summary>
     /// Get the first line from a text separated by CRLF.
     /// </summary>
     /// <param name="value">Line to search</param>
@@ -148,17 +164,6 @@ public static partial class StringExtensions
             result += "…";
 
         return result;
-    }
-
-    /// <summary>
-    /// Compare text according to the current culture, case insensitive.
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="compare"></param>
-    /// <returns></returns>
-    public static bool Like(this string? value, string? compare)
-    {
-        return string.Equals(value, compare, StringComparison.CurrentCultureIgnoreCase);
     }
 
     /// <summary>

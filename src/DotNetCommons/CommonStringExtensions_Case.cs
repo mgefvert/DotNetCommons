@@ -5,7 +5,7 @@
 using System;
 using System.Text;
 
-namespace DotNetCommons.Text;
+namespace DotNetCommons;
 
 public enum CaseType
 {
@@ -16,7 +16,7 @@ public enum CaseType
     SnakeCase,
 }
 
-public static partial class StringExtensions
+public static partial class CommonStringExtensions
 {
     /// <summary>
     /// Transform a string into a specific case.

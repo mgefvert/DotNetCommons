@@ -1,7 +1,7 @@
-﻿using System;
+﻿using DotNetCommons.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using CollectionExtensions = DotNetCommons.Collections.CollectionExtensions;
 
 namespace DotNetCommons;
 
@@ -154,7 +154,7 @@ public class LittleStateMachine<T> where T : notnull
         var leave = GetStateHierarchy(Current);
         var arrive = GetStateHierarchy(state);
 
-        var diff = CollectionExtensions.Intersect(leave, arrive);
+        var diff = leave.Intersect(arrive);
 
         // Call leave actions in ascending order
         foreach (var item in diff.Left)

@@ -1,13 +1,12 @@
-﻿using DotNetCommons.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Globalization;
 using System.Linq;
 
-namespace DotNetCommons.Test.Text;
+namespace DotNetCommons.Test;
 
 [TestClass]
-public class StringExtensionsTest
+public class CommonStringExtensionsTest
 {
     [TestMethod]
     public void TestBreakUp()
@@ -80,23 +79,23 @@ public class StringExtensionsTest
     }
 
     [TestMethod]
-    public void TestLike()
+    public void TestEqualsInsensitive()
     {
-        Assert.IsTrue(((string?)null).Like(null));
-        Assert.IsFalse(((string?)null).Like(""));
-        Assert.IsFalse(((string?)null).Like("AB"));
+        Assert.IsTrue(((string?)null).EqualsInsensitive(null));
+        Assert.IsFalse(((string?)null).EqualsInsensitive(""));
+        Assert.IsFalse(((string?)null).EqualsInsensitive("AB"));
 
-        Assert.IsFalse("".Like(null));
-        Assert.IsTrue("".Like(""));
-        Assert.IsFalse("".Like("AB"));
+        Assert.IsFalse("".EqualsInsensitive(null));
+        Assert.IsTrue("".EqualsInsensitive(""));
+        Assert.IsFalse("".EqualsInsensitive("AB"));
 
-        Assert.IsFalse("Abcd".Like(null));
-        Assert.IsFalse("Abcd".Like(""));
-        Assert.IsFalse("Abcd".Like("AB"));
+        Assert.IsFalse("Abcd".EqualsInsensitive(null));
+        Assert.IsFalse("Abcd".EqualsInsensitive(""));
+        Assert.IsFalse("Abcd".EqualsInsensitive("AB"));
 
-        Assert.IsTrue("Abcd".Like("abcd"));
-        Assert.IsTrue("Abcd".Like("Abcd"));
-        Assert.IsTrue("Abcd".Like("ABCD"));
+        Assert.IsTrue("Abcd".EqualsInsensitive("abcd"));
+        Assert.IsTrue("Abcd".EqualsInsensitive("Abcd"));
+        Assert.IsTrue("Abcd".EqualsInsensitive("ABCD"));
     }
 
     [TestMethod]

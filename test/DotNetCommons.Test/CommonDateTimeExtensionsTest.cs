@@ -1,37 +1,36 @@
-﻿using System;
-using DotNetCommons.Temporal;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
-namespace DotNetCommons.Test.Temporal;
+namespace DotNetCommons.Test;
 
 [TestClass]
-public class DateTimeExtensionsTest
+public class CommonDateTimeExtensionsTest
 {
     [TestMethod]
     public void TestDateTime()
     {
-        var dt = DateTimeExtensions.FromUnixSeconds(1469284816);
+        var dt = CommonDateTimeExtensions.FromUnixSeconds(1469284816);
         Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
     [TestMethod]
     public void TestDateTimeMillis()
     {
-        var dt = DateTimeExtensions.FromUnixMilliseconds(1469284816000L);
+        var dt = CommonDateTimeExtensions.FromUnixMilliseconds(1469284816000L);
         Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
     [TestMethod]
     public void TestDateTimeOffset()
     {
-        var dt = DateTimeExtensions.FromUnixSecondsOffset(1469284816);
+        var dt = CommonDateTimeExtensions.FromUnixSecondsOffset(1469284816);
         Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
     [TestMethod]
     public void TestDateTimeOffsetMillis()
     {
-        var dt = DateTimeExtensions.FromUnixMillisecondsOffset(1469284816000);
+        var dt = CommonDateTimeExtensions.FromUnixMillisecondsOffset(1469284816000);
         Assert.AreEqual("2016-07-23 14:40:16", dt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
     }
 
