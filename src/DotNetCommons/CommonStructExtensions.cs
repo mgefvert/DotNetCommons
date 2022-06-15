@@ -9,7 +9,7 @@ public static class CommonStructExtensions
     /// <summary>
     /// Limit a value inside a guard range.
     /// </summary>
-    public static T Limit<T>(this T value, T min, T max) where T : struct, IComparable<T>
+    public static T Limit<T>(this T value, T min, T max) where T : struct, IComparable
     {
         if (value.CompareTo(min) < 0)
             return min;
