@@ -1,16 +1,19 @@
-﻿using System.Collections;
+﻿using DotNetCommons.Temporal;
+using DotNetCommons.Text;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using DotNetCommons.Temporal;
-using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Net;
 
+/// <summary>
+/// Class that serializes cookie containers into Netscape-style cookie files.
+/// </summary>
 public static class CookieContainerIO
 {
     public static IEnumerable<Cookie> GetAllCookies(this CookieContainer container)
@@ -35,6 +38,9 @@ public static class CookieContainerIO
         }
     }
 
+    /// <summary>
+    /// Read cookies from a stream.
+    /// </summary>
     public static void ReadFrom(this CookieContainer container, Stream stream)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -53,8 +59,8 @@ public static class CookieContainerIO
             {
                 Domain = items[0],
                 Path = items[2],
-                Secure = items[3].Like("TRUE"),
-                Expires = DateTimeExtensions.FromUnixSeconds(long.Parse(items[4])),
+                Secure = items[3].EqualsInsensitive("TRUE"),
+                Expires = CommonDateTimeExtensions.FromUnixSeconds(long.Parse(items[4])),
                 Name = items[5],
                 Value = ReEncodeHtmlString(items[6])
             };
@@ -68,6 +74,9 @@ public static class CookieContainerIO
         return s.Replace("&amp;", "%26");
     }
 
+    /// <summary>
+    /// Save cookies to a stream.
+    /// </summary>
     public static void WriteTo(this CookieContainer container, Stream stream)
     {
         using var writer = new StreamWriter(stream, Encoding.UTF8);

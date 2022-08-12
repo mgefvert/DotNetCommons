@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Globalization;
 using System.Linq;
-using DotNetCommons.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DotNetCommons.Test.Text;
+namespace DotNetCommons.Test;
 
 [TestClass]
-public class StringExtensionsTest
+public class CommonStringExtensionsTest
 {
     [TestMethod]
     public void TestBreakUp()
@@ -27,25 +26,44 @@ public class StringExtensionsTest
     [TestMethod]
     public void TestChomp()
     {
-        string? result;
+        string? remaining;
 
-        Assert.IsNull(null, ((string?)null).Chomp(out result));
-        Assert.AreEqual(null, result);
+        Assert.IsNull(null, ((string?)null).Chomp(out remaining));
+        Assert.AreEqual("", remaining);
 
-        Assert.AreEqual("", "".Chomp(out result));
-        Assert.AreEqual(null, result);
+        Assert.AreEqual(null, "".Chomp(out remaining));
+        Assert.AreEqual("", remaining);
 
-        Assert.AreEqual("A", "A".Chomp(out result));
-        Assert.AreEqual("", result);
+        Assert.AreEqual("A", "A".Chomp(out remaining));
+        Assert.AreEqual("", remaining);
 
-        Assert.AreEqual("Two", "Two happy birds".Chomp(out result));
-        Assert.AreEqual("happy birds", result);
+        Assert.AreEqual("Two", "Two happy birds".Chomp(out remaining));
+        Assert.AreEqual("happy birds", remaining);
 
-        Assert.AreEqual("Two happy", "'Two happy' birds".Chomp(out result, ' ', '\''));
-        Assert.AreEqual("birds", result);
+        Assert.AreEqual("Two happy", "'Two happy' birds".Chomp(out remaining, ' ', '\''));
+        Assert.AreEqual("birds", remaining);
 
-        Assert.AreEqual("Two happy birds", "'Two happy birds'".Chomp(out result, ' ', '\''));
-        Assert.AreEqual("", result);
+        Assert.AreEqual("Two happy birds", "'Two happy birds'".Chomp(out remaining, ' ', '\''));
+        Assert.AreEqual("", remaining);
+
+        Assert.AreEqual("x='two'", "x='two' y=5".Chomp(out remaining, ' ', '\''));
+        Assert.AreEqual("y=5", remaining);
+    }
+
+    [TestMethod]
+    public void TestChompAll()
+    {
+        CollectionAssert.AreEqual(
+            Array.Empty<string>(),
+            ((string?)null).ChompAll().ToArray());
+
+        CollectionAssert.AreEqual(
+            new[] { "A", "B", "C" },
+            "A B C".ChompAll().ToArray());
+
+        CollectionAssert.AreEqual(
+            new[] { "node=\"A B C\"", "five", "two-zero", "x=3", "one to", "x=\"223 456\"" },
+            "  node=\"A B C\" five two-zero x=3 \"one to\" x=\"223 456\"       ".ChompAll().ToArray());
     }
 
     [TestMethod]
@@ -61,23 +79,23 @@ public class StringExtensionsTest
     }
 
     [TestMethod]
-    public void TestLike()
+    public void TestEqualsInsensitive()
     {
-        Assert.IsTrue(((string?)null).Like(null));
-        Assert.IsFalse(((string?)null).Like(""));
-        Assert.IsFalse(((string?)null).Like("AB"));
+        Assert.IsTrue(((string?)null).EqualsInsensitive(null));
+        Assert.IsFalse(((string?)null).EqualsInsensitive(""));
+        Assert.IsFalse(((string?)null).EqualsInsensitive("AB"));
 
-        Assert.IsFalse("".Like(null));
-        Assert.IsTrue("".Like(""));
-        Assert.IsFalse("".Like("AB"));
+        Assert.IsFalse("".EqualsInsensitive(null));
+        Assert.IsTrue("".EqualsInsensitive(""));
+        Assert.IsFalse("".EqualsInsensitive("AB"));
 
-        Assert.IsFalse("Abcd".Like(null));
-        Assert.IsFalse("Abcd".Like(""));
-        Assert.IsFalse("Abcd".Like("AB"));
+        Assert.IsFalse("Abcd".EqualsInsensitive(null));
+        Assert.IsFalse("Abcd".EqualsInsensitive(""));
+        Assert.IsFalse("Abcd".EqualsInsensitive("AB"));
 
-        Assert.IsTrue("Abcd".Like("abcd"));
-        Assert.IsTrue("Abcd".Like("Abcd"));
-        Assert.IsTrue("Abcd".Like("ABCD"));
+        Assert.IsTrue("Abcd".EqualsInsensitive("abcd"));
+        Assert.IsTrue("Abcd".EqualsInsensitive("Abcd"));
+        Assert.IsTrue("Abcd".EqualsInsensitive("ABCD"));
     }
 
     [TestMethod]

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using DotNetCommons.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using DotNetCommons.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -11,9 +11,19 @@ using DotNetCommons.Text;
 
 namespace DotNetCommons.Sys;
 
+/// <summary>
+/// Simple command line parsing class, using an argument object to define properties.
+/// </summary>
 public static class CommandLine
 {
+    /// <summary>
+    /// Handle -aop as -a, -o, and -p.
+    /// </summary>
     public static bool MultipleShortOptions { get; set; } = true;
+
+    /// <summary>
+    /// If no parameters are submitted at all, display help.
+    /// </summary>
     public static bool DisplayHelpOnEmpty { get; set; } = true;
 
     public static List<CommandLineDefinition> GetParameters(Type type)
@@ -71,15 +81,21 @@ public static class CommandLine
         return string.Join("\r\n", result);
     }
 
+    /// <summary>
+    /// Parse the default arguments on the command line as a given object.
+    /// </summary>
     public static T Parse<T>() where T : class, new()
     {
         return Parse<T>(Environment.GetCommandLineArgs().Skip(1).ToArray());
     }
 
+    /// <summary>
+    /// Parse specific command line arguments as a given object.
+    /// </summary>
     public static T Parse<T>(params string[] args) where T : class, new()
     {
         if (args.Length == 0 && DisplayHelpOnEmpty)
-            throw new CommandLineDisplayHelpException(typeof(T));    
+            throw new CommandLineDisplayHelpException(typeof(T));
 
         var processor = new CommandLineProcessor<T>(args.ToList(), GetDefinitionList(typeof(T)));
 

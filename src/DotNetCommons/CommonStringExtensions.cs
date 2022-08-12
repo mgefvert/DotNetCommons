@@ -8,9 +8,9 @@ using System.Text;
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Text;
+namespace DotNetCommons;
 
-public static partial class StringExtensions
+public static partial class CommonStringExtensions
 {
     /// <summary>
     /// Break up a string in chunks of a given length.
@@ -37,33 +37,51 @@ public static partial class StringExtensions
     /// <returns>Chopped off word or quoted phrase (without quotes)</returns>
     public static string? Chomp(this string? value, out string? remaining, char separator = ' ', char quote = '"')
     {
-        remaining = null;
+        remaining = "";
+        value = value?.Trim(separator);
         if (string.IsNullOrEmpty(value))
-            return value;
+            return null;
 
-        if (value[0] == quote)
+        var inQuote = false;
+        string? result = null;
+        for (var i = 0; i < value.Length; i++)
         {
-            var n = value.IndexOf(quote, 1);
-            if (n == -1)
+            if (inQuote)
             {
-                remaining = "";
-                return value.Mid(1);
+                if (value[i] == quote)
+                    inQuote = false;
+                continue;
             }
 
-            remaining = value.Mid(n + 1).Trim();
-            return value.Mid(1, n - 1);
+            if (value[i] == quote)
+            {
+                inQuote = true;
+                continue;
+            }
+
+            if (value[i] == separator)
+            {
+                remaining = value.Mid(i + 1).Trim(separator);
+                result = value.Left(i);
+                break;
+            }
         }
-        else
-        {
-            var n = value.IndexOf(separator);
-            if (n == -1)
-            {
-                remaining = "";
-                return value;
-            }
 
-            remaining = value.Mid(n + 1).Trim();
-            return value.Left(n);
+        result ??= value;
+
+        if (result.StartsWith(quote) && result.EndsWith(quote))
+            result = result.Mid(1, result.Length - 2);
+
+        return result;
+    }
+
+    public static IEnumerable<string> ChompAll(this string? value, char separator = ' ', char quote = '"')
+    {
+        while (!string.IsNullOrEmpty(value))
+        {
+            var word = value.Chomp(out value, separator, quote);
+            if (word != null)
+                yield return word;
         }
     }
 
@@ -80,6 +98,22 @@ public static partial class StringExtensions
                 return true;
 
         return false;
+    }
+
+    /// <summary>
+    /// Compare text according to the current culture, case insensitive.
+    /// </summary>
+    public static bool ContainsInsensitive(this string? value, string? compare)
+    {
+        return compare != null && (value?.Contains(compare, StringComparison.CurrentCultureIgnoreCase) ?? false);
+    }
+
+    /// <summary>
+    /// Compare text according to the current culture, case insensitive.
+    /// </summary>
+    public static bool EqualsInsensitive(this string? value, string? compare)
+    {
+        return string.Equals(value, compare, StringComparison.CurrentCultureIgnoreCase);
     }
 
     /// <summary>
@@ -130,17 +164,6 @@ public static partial class StringExtensions
             result += "…";
 
         return result;
-    }
-
-    /// <summary>
-    /// Compare text according to the current culture, case insensitive.
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="compare"></param>
-    /// <returns></returns>
-    public static bool Like(this string? value, string? compare)
-    {
-        return string.Equals(value, compare, StringComparison.CurrentCultureIgnoreCase);
     }
 
     /// <summary>

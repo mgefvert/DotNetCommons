@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using DotNetCommons.IO;
+using DotNetCommons.Net.Cache;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,13 +9,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using DotNetCommons.IO;
-using DotNetCommons.Net.Cache;
 
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Net;
 
+/// <summary>
+/// Class that encapsulates a specific HTTP request.
+/// </summary>
 public class CommonWebRequest
 {
     private readonly CommonWebClient _client;
@@ -62,6 +65,9 @@ public class CommonWebRequest
         UserAgent = settings.UserAgent;
     }
 
+    /// <summary>
+    /// The request has JSON accept and content-type headers.
+    /// </summary>
     public CommonWebRequest AsJson()
     {
         WithAccept(ContentTypes.Json);
@@ -69,12 +75,18 @@ public class CommonWebRequest
         return this;
     }
 
+    /// <summary>
+    /// Set the HTTP verb to DELETE and execute the request.
+    /// </summary>
     public CommonWebResult Delete()
     {
         WithMethod("DELETE");
         return _client.Request(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to DELETE and execute the request asynchronously.
+    /// </summary>
     public async Task<CommonWebResult> DeleteAsync()
     {
         WithMethod("DELETE");
@@ -91,120 +103,180 @@ public class CommonWebRequest
         return await _client.RequestAsync(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to GET and execute the request.
+    /// </summary>
     public CommonWebResult Get()
     {
         WithMethod("GET");
         return _client.Request(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to GET and execute the request asynchronously.
+    /// </summary>
     public async Task<CommonWebResult> GetAsync()
     {
         WithMethod("GET");
         return await _client.RequestAsync(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to HEAD and execute the request.
+    /// </summary>
     public CommonWebResult Head()
     {
         WithMethod("HEAD");
         return _client.Request(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to HEAD and execute the request asynchronously.
+    /// </summary>
     public async Task<CommonWebResult> HeadAsync()
     {
         WithMethod("HEAD");
         return await _client.RequestAsync(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to OPTIONS and execute the request.
+    /// </summary>
     public CommonWebResult Options()
     {
         WithMethod("OPTIONS");
         return _client.Request(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to OPTIONS and execute the request asynchronously.
+    /// </summary>
     public async Task<CommonWebResult> OptionsAsync()
     {
         WithMethod("OPTIONS");
         return await _client.RequestAsync(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to POST and execute the request.
+    /// </summary>
     public CommonWebResult Post()
     {
         WithMethod("POST");
         return _client.Request(this);
     }
 
+    /// <summary>
+    /// Set the HTTP verb to POST and execute the request asynchronously.
+    /// </summary>
     public async Task<CommonWebResult> PostAsync()
     {
         WithMethod("POST");
         return await _client.RequestAsync(this);
     }
 
+    /// <summary>
+    /// Set the Accept: header to a given value.
+    /// </summary>
     public CommonWebRequest WithAccept(string accept)
     {
         Accept = accept;
         return this;
     }
 
+    /// <summary>
+    /// Automatically follow redirects or not.
+    /// </summary>
     public CommonWebRequest WithAllowRedirect(bool allowRedirect)
     {
         AllowRedirect = allowRedirect;
         return this;
     }
 
+    /// <summary>
+    /// Use a cache to store already known requests.
+    /// </summary>
     public CommonWebRequest WithCache(IWebCache cache)
     {
         Cache = cache;
         return this;
     }
 
+    /// <summary>
+    /// Set a specific cookie container.
+    /// </summary>
     public CommonWebRequest WithCookieContainer(CookieContainer container)
     {
         CookieContainer = container;
         return this;
     }
 
+    /// <summary>
+    /// Add specific POST content to the request.
+    /// </summary>
     public CommonWebRequest WithContent(byte[] data)
     {
         ContentData = data;
         return this;
     }
 
-    public CommonWebRequest WithContent(IDictionary<string, string> formdata)
+    /// <summary>
+    /// Add specific form data to the request, encoded properly.
+    /// </summary>
+    public CommonWebRequest WithContent(IDictionary<string, string> formData)
     {
-        WithContent(CommonWebClient.EncodeQuery(formdata as IDictionary));
+        WithContent(CommonWebClient.EncodeQuery(formData as IDictionary));
         return this;
     }
 
+    /// <summary>
+    /// Add specific POST content to the request.
+    /// </summary>
     public CommonWebRequest WithContent(string data)
     {
         ContentData = Encoding.GetBytes(data);
         return this;
     }
 
+    /// <summary>
+    /// Add specific POST content to the request.
+    /// </summary>
     public CommonWebRequest WithContent(Stream stream)
     {
         ContentData = StreamTools.ReadToEnd(stream);
         return this;
     }
 
+    /// <summary>
+    /// Set the Content-Type: header of the requset.
+    /// </summary>
     public CommonWebRequest WithContentType(string contentType)
     {
         ContentType = contentType;
         return this;
     }
 
+    /// <summary>
+    /// Specify a specific encoding for parsing the result data.
+    /// </summary>
     public CommonWebRequest WithEncoding(Encoding encoding)
     {
         Encoding = encoding;
         return this;
     }
 
+    /// <summary>
+    /// Add a given header to the request.
+    /// </summary>
     public CommonWebRequest WithHeader(string name, string value)
     {
         Headers[name] = value;
         return this;
     }
 
+    /// <summary>
+    /// Add a sequence of headers to the request.
+    /// </summary>
     public CommonWebRequest WithHeaders(IEnumerable<KeyValuePair<string, string>> headers)
     {
         foreach (var header in headers)
@@ -212,41 +284,62 @@ public class CommonWebRequest
         return this;
     }
 
+    /// <summary>
+    /// Set a given HTTP verb.
+    /// </summary>
     public CommonWebRequest WithMethod(string method)
     {
         Method = method;
         return this;
     }
 
+    /// <summary>
+    /// Add a referer header to the request.
+    /// </summary>
     public CommonWebRequest WithReferer(string referer)
     {
         Referer = new Uri(referer);
         return this;
     }
 
+    /// <summary>
+    /// Add a referer header to the request.
+    /// </summary>
     public CommonWebRequest WithReferer(Uri referer)
     {
         Referer = referer;
         return this;
     }
 
+    /// <summary>
+    /// Set the request timeout.
+    /// </summary>
     public CommonWebRequest WithTimeout(TimeSpan timeout)
     {
         Timeout = timeout;
         return this;
     }
 
+    /// <summary>
+    /// Specify if exceptions should be thrown on errors.
+    /// </summary>
     public CommonWebRequest WithThrowExceptions(bool throwExceptions)
     {
         ThrowExceptions = throwExceptions;
         return this;
     }
 
+    /// <summary>
+    /// Set the URI of the request, optionally encoding parameters in the URI as well.
+    /// </summary>
     public CommonWebRequest WithUri(string uri, IDictionary<string, string> query = null)
     {
         return WithUri(new Uri(uri), query);
     }
 
+    /// <summary>
+    /// Set the URI of the request, optionally encoding parameters in the URI as well.
+    /// </summary>
     public CommonWebRequest WithUri(Uri uri, IDictionary<string, string> query = null)
     {
         Uri = query == null
@@ -256,6 +349,11 @@ public class CommonWebRequest
         return this;
     }
 
+    /// <summary>
+    /// Add a User-Agent: header to the request.
+    /// </summary>
+    /// <param name="userAgent"></param>
+    /// <returns></returns>
     public CommonWebRequest WithUserAgent(string userAgent)
     {
         UserAgent = userAgent;

@@ -5,7 +5,7 @@
 using System;
 using System.Text;
 
-namespace DotNetCommons.Text;
+namespace DotNetCommons;
 
 public enum CaseType
 {
@@ -16,8 +16,11 @@ public enum CaseType
     SnakeCase,
 }
 
-public static partial class StringExtensions
+public static partial class CommonStringExtensions
 {
+    /// <summary>
+    /// Transform a string into a specific case.
+    /// </summary>
     public static string ToCase(this string value, CaseType caseType)
     {
         return caseType switch
@@ -41,7 +44,10 @@ public static partial class StringExtensions
         foreach (var c in value)
         {
             if (char.IsLower(c) || char.IsDigit(c))
+            {
                 sb.Append(c);
+                lastUpper = false;
+            }
             else if (char.IsUpper(c))
             {
                 if (!lastUpper && sb.Length > 0)

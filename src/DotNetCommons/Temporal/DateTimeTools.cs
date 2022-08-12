@@ -22,7 +22,7 @@ public static class DateTimeTools
 
     public static IEnumerable<DateTime> Generate(DateTime start, int count, Func<DateTime, DateTime> next)
     {
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             yield return start;
             start = next(start);
@@ -30,22 +30,8 @@ public static class DateTimeTools
     }
 
     /// <summary>
-    /// Convert an individual DateTimeOffset to UTC without changing the actual time, and
-    /// then converts to local time.
-    /// </summary>
-    /// <param name="date"></param>
-    /// <returns></returns>
-    public static DateTimeOffset ForceUtcAndConvert(this DateTimeOffset date)
-    {
-        return new DateTimeOffset(date.Ticks, TimeSpan.Zero).ToLocalTime();
-    }
-
-    /// <summary>
     /// Convert an individual DateTime to Unspecified without changing the actual time.
     /// </summary>
-    /// <param name="date"></param>
-    /// <param name="kind"></param>
-    /// <returns></returns>
     public static DateTime ForceKind(this DateTime date, DateTimeKind kind)
     {
         return new DateTime(date.Ticks, kind);
@@ -54,9 +40,6 @@ public static class DateTimeTools
     /// <summary>
     /// Convert an individual DateTime to Unspecified without changing the actual time.
     /// </summary>
-    /// <param name="date"></param>
-    /// <param name="kind"></param>
-    /// <returns></returns>
     public static DateTime? ForceKind(this DateTime? date, DateTimeKind kind)
     {
         return date != null ? new DateTime(date.Value.Ticks, kind) : null;

@@ -4,9 +4,12 @@
 
 namespace DotNetCommons;
 
-public static class StructExtensions
+public static class CommonStructExtensions
 {
-    public static T Limit<T>(this T value, T min, T max) where T : struct, IComparable<T>
+    /// <summary>
+    /// Limit a value inside a guard range.
+    /// </summary>
+    public static T Limit<T>(this T value, T min, T max) where T : struct, IComparable
     {
         if (value.CompareTo(min) < 0)
             return min;
@@ -16,6 +19,9 @@ public static class StructExtensions
         return value;
     }
 
+    /// <summary>
+    /// Determine the number of set bits in a value.
+    /// </summary>
     public static int BitCount(this uint value)
     {
         value -= (value >> 1) & 0x55555555;

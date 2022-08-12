@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace DotNetCommons.Sys;
 
+/// <summary>
+/// Start a new process. Wraps the Process class in easy to use methods.
+/// </summary>
 public class Spawn : IDisposable
 {
     /// <summary>
@@ -62,40 +66,41 @@ public class Spawn : IDisposable
     public int? ExitCode => IsFinished ? Process!.ExitCode : null;
 
     /// <summary>
-    /// Handle for writing to the input stream for the process, if RedirectInput is enabled.
+    /// Input stream available for writing to, if we have redirected the standard input.
     /// </summary>
     public StreamWriter? InputStream => Process?.StandardInput;
 
     /// <summary>
-    /// True if the process is running.
+    /// True if the process is currently running.
     /// </summary>
     public bool IsRunning => Process is { HasExited: false };
 
     /// <summary>
-    /// True if the process has exited.
+    /// True if the process has finished.
     /// </summary>
     public bool IsFinished => Process is { HasExited: true };
 
     /// <summary>
-    /// The captured output, if RedirectOutput is enabled.
+    /// Output from the process as a list of strings.
     /// </summary>
     public List<string> Output { get; } = new();
 
     /// <summary>
-    /// String concatenation of the <seealso cref="Output"/> property.
+    /// Output from the process as a single string.
     /// </summary>
     public string Text => string.Join(Environment.NewLine, Output);
 
-    public Spawn(string command)
+    /// <summary>
+    /// Create a Spawn object that encapsulates a given command and arguments.
+    /// </summary>
+    public Spawn(string command, params string[] arguments)
     {
         Command = command.Chomp(out var remains) ?? throw new ArgumentNullException(nameof(command));
-        Parameters = remains;
-    }
 
-    public Spawn(string command, params string[] parameters)
-    {
-        Command = command;
-        Parameters = string.Join(" ", parameters);
+        if (arguments.Any())
+            remains = string.Join(" ", new[] { remains }.Concat(arguments));
+
+        Parameters = remains;
     }
 
     private void AssertProcessStarted()
@@ -172,10 +177,10 @@ public class Spawn : IDisposable
     /// <summary>
     /// Run the process and wait for exit.
     /// </summary>
-    public Spawn Run()
+    public Spawn Run(TimeSpan? timeout = null)
     {
         Start();
-        Wait();
+        Wait(timeout);
 
         return this;
     }
@@ -183,10 +188,10 @@ public class Spawn : IDisposable
     /// <summary>
     /// Run the process asynchronously and wait for exit.
     /// </summary>
-    public async Task<Spawn> RunAsync()
+    public async Task<Spawn> RunAsync(TimeSpan? timeout = null)
     {
         Start();
-        await WaitAsync();
+        await WaitAsync(timeout);
 
         return this;
     }
@@ -308,5 +313,20 @@ public class Spawn : IDisposable
     {
         StartDirectory = startDirectory;
         return this;
+    }
+
+    /// <summary>
+    /// Execute an action if the result from a child process is non-zero. Throws an exception
+    /// if the process has not completed yet.
+    /// </summary>
+    public void IfResultNonZero(Action<Spawn> action)
+    {
+        if (!IsFinished)
+            throw new InvalidOperationException("Process has not finished");
+
+        if (ExitCode == 0)
+            return;
+
+        action(this);
     }
 }

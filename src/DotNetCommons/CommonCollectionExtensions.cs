@@ -6,14 +6,30 @@ using System.Linq;
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Collections;
+namespace DotNetCommons;
 
-public static class CollectionExtensions
+public enum WalkTreeMode
+{
+    ShallowFirst,
+    DepthFirst
+}
+
+public static class CommonCollectionExtensions
 {
     public class Intersection<T>
     {
+        /// <summary>
+        /// Records that were found in the left list.
+        /// </summary>
         public List<T> Left { get; } = new();
+        /// <summary>
+        /// Records that were found to be identical in both lists (a tuple is used to contain
+        /// a reference to both items, from left and right, in case there are internal differences).
+        /// </summary>
         public List<(T, T)> Both { get; } = new();
+        /// <summary>
+        /// Records that were found in the right list.
+        /// </summary>
         public List<T> Right { get; } = new();
     }
 
@@ -32,6 +48,21 @@ public static class CollectionExtensions
         if (collection != null && item != null)
             collection.Add(item);
     }
+
+
+    /// <summary>
+    /// Add a range of items to a collection. (This applies to any collection, not just lists.)
+    /// </summary>
+    public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> items)
+    {
+        foreach (var item in items)
+            collection.Add(item);
+    }
+
+    /// <summary>
+    /// Add a range of items to a collection. (This applies to any collection, not just lists.)
+    /// </summary>
+    public static void AddRange<T>(this ICollection<T> collection, params T[] items) => collection.AddRange((IEnumerable<T>)items);
 
     /// <summary>
     /// Copy values from one dictionary to another.
@@ -167,6 +198,15 @@ public static class CollectionExtensions
     }
 
     /// <summary>
+    /// Iterative over an enumerable list of items, and perform an action for each of them.
+    /// </summary>
+    public static void ForEach<T>(this IEnumerable<T> items, Action<T> action)
+    {
+        foreach (var item in items)
+            action(item);
+    }
+
+    /// <summary>
     /// Increment the value of a given dictionary key, optionally creating the key with a default value of 0
     /// if it doesn't exist, and then incrementing it. Returns the new value.
     /// </summary>
@@ -189,20 +229,20 @@ public static class CollectionExtensions
     }
 
     /// <summary>
-    /// Compare two lists against each other and return an Intersection result from the comparison, 
+    /// Compare two lists against each other and return an Intersection result from the comparison,
     /// listing the objects found in only list1, only list2, or both lists.
     /// </summary>
     /// <typeparam name="T">Type of list</typeparam>
     /// <param name="list1">The first list (left)</param>
     /// <param name="list2">The second list (right)</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2)
+    public static Intersection<T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2)
     {
         return Intersect(list1, list2, null, x => x);
     }
 
     /// <summary>
-    /// Compare two lists against each other and return an Intersection result from the comparison, 
+    /// Compare two lists against each other and return an Intersection result from the comparison,
     /// listing the objects found in only list1, only list2, or both lists.
     /// </summary>
     /// <typeparam name="T">Type of list</typeparam>
@@ -211,13 +251,13 @@ public static class CollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="selector">A selector for the key to compare the objects by</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T, TKey>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Func<T, TKey> selector)
+    public static Intersection<T> Intersect<T, TKey>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Func<T, TKey> selector)
     {
         return Intersect(list1, list2, null, selector);
     }
 
     /// <summary>
-    /// Compare two lists against each other and return an Intersection result from the comparison, 
+    /// Compare two lists against each other and return an Intersection result from the comparison,
     /// listing the objects found in only list1, only list2, or both lists.
     /// </summary>
     /// <typeparam name="T">Type of list</typeparam>
@@ -225,13 +265,13 @@ public static class CollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="comparer">A specific comparer to use for comparing the objects</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, IComparer<T> comparer)
+    public static Intersection<T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, IComparer<T> comparer)
     {
         return Intersect(list1, list2, comparer.Compare, x => x);
     }
 
     /// <summary>
-    /// Compare two lists against each other and return an Intersection result from the comparison, 
+    /// Compare two lists against each other and return an Intersection result from the comparison,
     /// listing the objects found in only list1, only list2, or both lists.
     /// </summary>
     /// <typeparam name="T">Type of list</typeparam>
@@ -239,12 +279,23 @@ public static class CollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="comparison">A comparison method for comparing the objects</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<T> comparison)
+    public static Intersection<T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<T> comparison)
     {
         return Intersect(list1, list2, comparison, x => x);
     }
 
-    public static Intersection<T> Intersect<T, TKey>(IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<TKey>? comparison, Func<T, TKey> selector)
+    /// <summary>
+    /// Compare two lists against each other and return an Intersection result from the comparison,
+    /// listing the objects found in only list1, only list2, or both lists, using a selector function.
+    /// </summary>
+    /// <typeparam name="T">Type of list</typeparam>
+    /// <typeparam name="TKey">Key selector type</typeparam>
+    /// <param name="list1">The first list (left)</param>
+    /// <param name="list2">The second list (right)</param>
+    /// <param name="comparison">A comparison method for comparing the objects</param>
+    /// <param name="selector">A selector for the key to compare the objects by</param>
+    /// <returns>An Intersection object with the results of the comparison</returns>
+    public static Intersection<T> Intersect<T, TKey>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<TKey>? comparison, Func<T, TKey> selector)
     {
         bool DoCompare(T item1, T item2)
         {
@@ -302,6 +353,22 @@ public static class CollectionExtensions
         result.Right.AddRange(search2);
 
         return result;
+    }
+
+    /// <summary>
+    /// Javascript-like String.Join.
+    /// </summary>
+    public static string Join(this IEnumerable<string> enumerable, string separator)
+    {
+        return string.Join(separator, enumerable);
+    }
+
+    /// <summary>
+    /// Javascript-like String.Join.
+    /// </summary>
+    public static string Join<T>(this IEnumerable<T> enumerable, Func<T, string> selector, string separator)
+    {
+        return enumerable.Select(selector).Join(separator);
     }
 
     /// <summary>
@@ -378,5 +445,55 @@ public static class CollectionExtensions
         for (var i = 0; i < times; i++)
             foreach (var item in collection)
                 yield return item;
+    }
+
+    /// <summary>
+    /// Swap position for two items in a list
+    /// </summary>
+    public static bool Swap<T>(this IList<T> list, int pos1, int pos2)
+    {
+        if (pos1 < 0 || pos2 < 0 || pos1 >= list.Count || pos2 >= list.Count)
+            return false;
+
+        (list[pos1], list[pos2]) = (list[pos2], list[pos1]);
+        return true;
+    }
+
+    public static IEnumerable<T> WalkTree<T>(this ICollection<T> nodes, Func<T, ICollection<T>> childNodes, WalkTreeMode mode)
+    {
+        return mode switch
+        {
+            WalkTreeMode.DepthFirst => WalkTreeDepthFirst(nodes, childNodes),
+            WalkTreeMode.ShallowFirst => WalkTreeShallowFirst(nodes, childNodes),
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
+    }
+
+    private static IEnumerable<T> WalkTreeDepthFirst<T>(ICollection<T> nodes, Func<T, ICollection<T>> childNodes)
+    {
+        foreach (var node in nodes)
+        {
+            yield return node;
+            foreach (var subNode in WalkTreeDepthFirst(childNodes(node), childNodes))
+                yield return subNode;
+        }
+    }
+
+    private static IEnumerable<T> WalkTreeShallowFirst<T>(ICollection<T> nodes, Func<T, ICollection<T>> childNodes)
+    {
+        foreach (var node in nodes)
+            yield return node;
+
+        foreach (var subNodes in nodes.Select(childNodes))
+            foreach (var subNode in WalkTreeShallowFirst(subNodes, childNodes))
+                yield return subNode;
+    }
+
+    /// <summary>
+    /// Iterate through an enumerable and bring along an index counter
+    /// </summary>
+    public static IEnumerable<(T Item, int Index)> WithIndex<T>(this IEnumerable<T> source)
+    {
+        return source.Select((item, index) => (item, index));
     }
 }

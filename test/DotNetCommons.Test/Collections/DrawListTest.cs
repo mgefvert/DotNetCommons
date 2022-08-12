@@ -49,7 +49,7 @@ public class DrawListTest
         var list = new DrawList<int> { Repeat = false };
         Assert.AreEqual(0, list.Count());
         Assert.AreEqual(0, list.Left());
-            
+
         list.Seed(new [] { 1, 2 });
         Assert.AreEqual(2, list.Count());
         Assert.AreEqual(2, list.Left());

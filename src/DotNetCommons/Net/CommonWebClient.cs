@@ -11,8 +11,14 @@ using System.Threading.Tasks;
 
 namespace DotNetCommons.Net;
 
+/// <summary>
+/// Class that encapsulates HTTP requests.
+/// </summary>
 public class CommonWebClient
 {
+    /// <summary>
+    /// Default parameters for new requests.
+    /// </summary>
     public CommonWebRequest Default { get; }
 
     public CommonWebClient()
@@ -22,6 +28,9 @@ public class CommonWebClient
 
     // Static methods
 
+    /// <summary>
+    /// Builds a dictionary from a data object using the public properties.
+    /// </summary>
     public static Dictionary<string, string> ParametersFromObject(object data)
     {
         return data?
@@ -30,6 +39,10 @@ public class CommonWebClient
             .ToDictionary(p => p.Name, p => (p.GetValue(data) ?? "").ToString());
     }
 
+    /// <summary>
+    /// Encodes a dictionary of parameters as a query string. Does *not* start with
+    /// a question mark.
+    /// </summary>
     public static string EncodeQuery(IDictionary parameters)
     {
         if (parameters == null || parameters.Count == 0)
@@ -42,13 +55,20 @@ public class CommonWebClient
         return string.Join("&", query);
     }
 
+    /// <summary>
+    /// Encodes a dictionary of parameters as a query string, and appends it to a
+    /// given URI.
+    /// </summary>
+    /// <param name="url"></param>
+    /// <param name="parameters"></param>
+    /// <returns></returns>
     public static string EncodeQuery(string url, IDictionary parameters)
     {
         var query = EncodeQuery(parameters);
         if (url == null)
             return query;
 
-        return url + (url.Contains("?") ? "&" : "?") + query;
+        return url + (url.Contains('?') ? "&" : "?") + query;
     }
 
     // Internal methods
@@ -154,11 +174,9 @@ public class CommonWebClient
 
     private static HttpWebRequest CreateRequest(CommonWebRequest request)
     {
-#pragma warning disable CS0618
 #pragma warning disable SYSLIB0014 // Type or member is obsolete
         var http = WebRequest.CreateHttp(request.Uri);
 #pragma warning restore SYSLIB0014 // Type or member is obsolete
-#pragma warning restore CS0618
         http.AllowAutoRedirect = request.AllowRedirect;
         http.CookieContainer = request.CookieContainer;
         http.Headers.Add("Origin", request.Uri.GetLeftPart(UriPartial.Authority));
@@ -204,7 +222,7 @@ public class CommonWebClient
         return result;
     }
 
-    private string NullIfEmpty(string s)
+    private static string NullIfEmpty(string s)
     {
         return string.IsNullOrWhiteSpace(s) ? null : s;
     }
@@ -236,6 +254,10 @@ public class CommonWebClient
 
     // Public methods
 
+    /// <summary>
+    /// Create a new request object using JSON data as "accept" and "content-type" headers.
+    /// </summary>
+    /// <returns></returns>
     public CommonWebRequest NewJsonRequest()
     {
         return NewRequest()
@@ -243,11 +265,17 @@ public class CommonWebClient
             .WithContentType("application/json");
     }
 
+    /// <summary>
+    /// Create a new request object.
+    /// </summary>
     public CommonWebRequest NewRequest()
     {
         return new CommonWebRequest(this, Default);
     }
 
+    /// <summary>
+    /// Execute a new DELETE request.
+    /// </summary>
     public CommonWebResult Delete(Uri uri)
     {
         return NewRequest()
@@ -255,6 +283,9 @@ public class CommonWebClient
             .Delete();
     }
 
+    /// <summary>
+    /// Execute a new DELETE async request.
+    /// </summary>
     public async Task<CommonWebResult> DeleteAsync(Uri uri)
     {
         return await NewRequest()
@@ -262,16 +293,25 @@ public class CommonWebClient
             .DeleteAsync();
     }
 
+    /// <summary>
+    /// Execute a new GET request.
+    /// </summary>
     public CommonWebResult Get(string uri, IDictionary<string, string> query = null)
     {
         return Get(new Uri(uri), query);
     }
 
+    /// <summary>
+    /// Execute a new GET async request.
+    /// </summary>
     public async Task<CommonWebResult> GetAsync(string uri, IDictionary<string, string> query = null)
     {
         return await GetAsync(new Uri(uri), query);
     }
 
+    /// <summary>
+    /// Execute a new GET request.
+    /// </summary>
     public CommonWebResult Get(Uri uri, IDictionary<string, string> query = null)
     {
         return NewRequest()
@@ -279,6 +319,9 @@ public class CommonWebClient
             .Get();
     }
 
+    /// <summary>
+    /// Execute a new GET async request.
+    /// </summary>
     public async Task<CommonWebResult> GetAsync(Uri uri, IDictionary<string, string> query = null)
     {
         return await NewRequest()
@@ -286,6 +329,9 @@ public class CommonWebClient
             .GetAsync();
     }
 
+    /// <summary>
+    /// Execute a new POST request using a given buffer and content-type.
+    /// </summary>
     public CommonWebResult PostData(Uri uri, byte[] data, string contentType)
     {
         return NewRequest()
@@ -295,6 +341,9 @@ public class CommonWebClient
             .Post();
     }
 
+    /// <summary>
+    /// Execute a new POST async request using a given buffer and content-type.
+    /// </summary>
     public async Task<CommonWebResult> PostDataAsync(Uri uri, byte[] data, string contentType)
     {
         return await NewRequest()
@@ -304,6 +353,9 @@ public class CommonWebClient
             .PostAsync();
     }
 
+    /// <summary>
+    /// Execute a new POST request using a given string buffer and content-type.
+    /// </summary>
     public CommonWebResult PostData(Uri uri, string data, string contentType)
     {
         return NewRequest()
@@ -313,6 +365,9 @@ public class CommonWebClient
             .Post();
     }
 
+    /// <summary>
+    /// Execute a new POST async request using a given string buffer and content-type.
+    /// </summary>
     public async Task<CommonWebResult> PostDataAsync(Uri uri, string data, string contentType)
     {
         return await NewRequest()
@@ -322,6 +377,9 @@ public class CommonWebClient
             .PostAsync();
     }
 
+    /// <summary>
+    /// Execute a new POST request using a given dictionary as a form submit.
+    /// </summary>
     public CommonWebResult PostForm(Uri uri, IDictionary<string, string> formdata)
     {
         return NewRequest()
@@ -331,6 +389,9 @@ public class CommonWebClient
             .Post();
     }
 
+    /// <summary>
+    /// Execute a new POST async request using a given dictionary as a form submit.
+    /// </summary>
     public async Task<CommonWebResult> PostFormAsync(Uri uri, IDictionary<string, string> formdata)
     {
         return await NewRequest()
@@ -340,6 +401,9 @@ public class CommonWebClient
             .PostAsync();
     }
 
+    /// <summary>
+    /// Execute a new POST request using JSON raw data.
+    /// </summary>
     public CommonWebResult PostJson(Uri uri, string data)
     {
         return NewRequest()
@@ -348,6 +412,10 @@ public class CommonWebClient
             .WithContentType(ContentTypes.Json)
             .Post();
     }
+
+    /// <summary>
+    /// Execute a new POST async request using JSON raw data.
+    /// </summary>
     public async Task<CommonWebResult> PostJsonAsync(Uri uri, string data)
     {
         return await NewRequest()

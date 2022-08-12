@@ -62,7 +62,7 @@ public class CollectionLinkerTest
     [TestMethod]
     public void TestLinkToOne()
     {
-        CollectionLinker.LinkToOne(_comments, _posts, x => x.PostID, x => x.ID, 
+        CollectionLinker.LinkToOne(_comments, _posts, x => x.PostID, x => x.ID,
             (comment, post) => comment.Post = post);
 
         Assert.AreEqual(1, _comments[0].Post!.ID);

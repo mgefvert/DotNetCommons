@@ -6,6 +6,9 @@ using System.Text;
 
 namespace DotNetCommons.Security;
 
+/// <summary>
+/// Calculate a CRC-32 value from byte data.
+/// </summary>
 public static class Crc32
 {
     private const uint Polynomial = 0xEDB88320;
@@ -26,16 +29,25 @@ public static class Crc32
         }
     }
 
+    /// <summary>
+    /// Calculate a CRC-32 value from a byte buffer, expressed as four bytes.
+    /// </summary>
     public static byte[] ComputeChecksumBytes(byte[] bytes)
     {
         return BitConverter.GetBytes(ComputeChecksum(bytes));
     }
 
+    /// <summary>
+    /// Calculate a CRC-32 value from a byte buffer, expressed as an unsigned int32.
+    /// </summary>
     public static uint ComputeChecksum(byte[] bytes)
     {
-        return ~bytes.Aggregate(0xFFFF_FFFF, (c, t) => (c >> 8) ^ Data[(byte) ((c & 0xFF) ^ t)]);
+        return ~bytes.Aggregate(0xFFFF_FFFF, (c, t) => (c >> 8) ^ Data[(byte)((c & 0xFF) ^ t)]);
     }
 
+    /// <summary>
+    /// Calculate a CRC-32 value from a string buffer, expressed as an unsigned int32.
+    /// </summary>
     public static uint ComputeChecksum(string data, Encoding? encoding = null)
     {
         return ComputeChecksum((encoding ?? Encoding.UTF8).GetBytes(data));

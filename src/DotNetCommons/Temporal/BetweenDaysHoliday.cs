@@ -2,6 +2,9 @@
 
 namespace DotNetCommons.Temporal;
 
+/// <summary>
+/// Class that represents a holiday as a given weekday between two possible dates.
+/// </summary>
 public class BetweenDaysHoliday : Holiday
 {
     public int MaxDay { get; }
@@ -26,8 +29,9 @@ public class BetweenDaysHoliday : Holiday
 
         try
         {
-            _ = new DateTime(2020, MinMonth, MinDay);
-            _ = new DateTime(2020, MaxMonth, MaxDay);
+            // Use 1900 as sample year, since the parameters have to be valid for any year
+            _ = new DateTime(1900, MinMonth, MinDay);
+            _ = new DateTime(1900, MaxMonth, MaxDay);
         }
         catch (Exception ex)
         {

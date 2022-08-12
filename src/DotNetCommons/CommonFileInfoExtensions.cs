@@ -1,11 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.IO;
+namespace DotNetCommons;
 
-public static class FileInfoExtensions
+public static class CommonFileInfoExtensions
 {
     /// <summary>
     /// Create a new file, or update the last written timestamp of it.
@@ -14,8 +13,8 @@ public static class FileInfoExtensions
     public static void Touch(this FileInfo file)
     {
         if (file.Exists)
-            using (file.AppendText()) {}
+            using (file.AppendText()) { }
         else
-            using (file.Create()) {}
+            using (file.Create()) { }
     }
 }

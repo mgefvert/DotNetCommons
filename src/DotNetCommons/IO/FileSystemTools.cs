@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using DotNetCommons.Collections;
 
 // ReSharper disable UnusedMember.Global
 
@@ -17,8 +16,8 @@ public static class FileSystemTools
 
         var group = groups.ExtractFirst();
 
-        if (!group.Contains("*") && !group.Contains("?") && groups.Any())
-            return InternalFind(path + "\\" + group, groups);
+        if (!group.Contains('*') && !group.Contains('?') && groups.Any())
+            return InternalFind(path + Path.DirectorySeparatorChar + group, groups);
 
         if (!groups.Any())
             return Directory.EnumerateFileSystemEntries(path, group)
@@ -26,18 +25,22 @@ public static class FileSystemTools
 
         var result = new List<FileSystemInfo>();
         foreach (var entry in Directory.EnumerateDirectories(path, group))
-            result.AddRange(InternalFind(path + "\\" + Path.GetFileName(entry), groups.ToList()));
+            result.AddRange(InternalFind(path + Path.DirectorySeparatorChar + Path.GetFileName(entry), groups.ToList()));
 
         return result;
     }
 
+    /// <summary>
+    /// A simple filename expansion method that can understand paths like a\*\b and return
+    /// a sequence of files found.
+    /// </summary>
     public static IEnumerable<FileSystemInfo> Glob(string pattern)
     {
         if (string.IsNullOrEmpty(pattern))
             pattern = "*";
 
-        var cwd = new Uri(Directory.GetCurrentDirectory() + "\\");
-        var groups = new Uri(cwd, pattern).LocalPath.Split('\\').ToList();
+        var cwd = new Uri(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar);
+        var groups = new Uri(cwd, pattern).LocalPath.Split(Path.DirectorySeparatorChar).ToList();
         var path = groups.ExtractFirst();
 
         return InternalFind(path, groups);

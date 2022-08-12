@@ -183,6 +183,17 @@ public static class TextTools
     }
 
     /// <summary>
+    /// Split a string into lines using either \r\n, \r or \n as line breaks.
+    /// </summary>
+    public static string[] SplitIntoLines(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return Array.Empty<string>();
+
+        return text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+    }
+
+    /// <summary>
     /// Word wrap a certain text to fit the maximum width, optionally indenting the first row.
     /// </summary>
     /// <param name="text">Text to fit.</param>

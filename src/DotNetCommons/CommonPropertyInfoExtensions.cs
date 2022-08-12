@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using DotNetCommons.Text;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -10,24 +9,33 @@ using DotNetCommons.Text;
 
 namespace DotNetCommons;
 
-public static class ObjectExtensions
+public static class CommonObjectExtensions
 {
-    /// <summary>
-    /// Set the value of a property to a specific value, handling conversions from a number
-    /// of recognized formats in the process.
-    /// </summary>
-    public static void SetPropertyValue(this object obj, PropertyInfo property, object? value)
+    public static bool HasDefaultValue(this PropertyInfo propertyInfo, object obj)
     {
-        SetPropertyValue(obj, property, value, CultureInfo.CurrentCulture);
+        var defaultValue = propertyInfo.PropertyType.IsValueType
+            ? Activator.CreateInstance(propertyInfo.PropertyType)
+            : null;
+
+        return propertyInfo.GetValue(obj) == defaultValue;
     }
 
     /// <summary>
     /// Set the value of a property to a specific value, handling conversions from a number
     /// of recognized formats in the process.
     /// </summary>
-    public static void SetPropertyValue(this object obj, PropertyInfo property, object? value, CultureInfo culture)
+    public static void SetPropertyValue(this PropertyInfo property, object obj, object? value)
     {
-        bool ValueIsNull(object? v) => v == null || v is string s && string.IsNullOrEmpty(s);
+        SetPropertyValue(property, obj, value, CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>
+    /// Set the value of a property to a specific value, handling conversions from a number
+    /// of recognized formats in the process.
+    /// </summary>
+    public static void SetPropertyValue(this PropertyInfo property, object obj, object? value, CultureInfo culture)
+    {
+        static bool ValueIsNull(object? v) => v == null || v is string s && string.IsNullOrEmpty(s);
 
         var propertyType = property.PropertyType;
 
