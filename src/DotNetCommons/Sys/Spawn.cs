@@ -1,10 +1,10 @@
-﻿using System;
+﻿using DotNetCommons.Text;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetCommons.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -12,25 +12,90 @@ namespace DotNetCommons.Sys;
 
 public class Spawn : IDisposable
 {
+    /// <summary>
+    /// Command or executable to start.
+    /// </summary>
     public string Command { get; set; }
-    public bool Echo { get; set; }
+
+    /// <summary>
+    /// Command line parameters.
+    /// </summary>
     public string? Parameters { get; set; }
+
+    /// <summary>
+    /// Echo output to console if RedirectOutput is true. If RedirectOutput is false, this property
+    /// is not used - output is always to the console.
+    /// </summary>
+    public bool Echo { get; set; }
+
+    /// <summary>
+    /// Redirect the standard input handle and make <seealso cref="InputStream"/> available to write to.
+    /// </summary>
     public bool RedirectInput { get; set; }
+
+    /// <summary>
+    /// Redirect the standard output and error handles. Enabled by default; set to false to disable and
+    /// write straight through to the console.
+    /// </summary>
+    public bool RedirectOutput { get; set; } = true;
+
+    /// <summary>
+    /// Start directory to use.
+    /// </summary>
     public string? StartDirectory { get; set; }
 
+    /// <summary>
+    /// Process object for detailed control of the running program.
+    /// </summary>
     public Process? Process { get; private set; }
 
+    /// <summary>
+    /// Optional preprocessor for the output; can be used to alter or capture the output stream before
+    /// the regular processing takes over. Return null from the preprocessor to completely disable
+    /// handling of that line.
+    /// </summary>
+    public Func<string, TextWriter, string?>? OutputPreprocessor;
+
+    /// <summary>
+    /// Exit code, if the process has finished, or null if it's still running.
+    /// </summary>
     public int? ExitCode => IsFinished ? Process!.ExitCode : null;
+
+    /// <summary>
+    /// Handle for writing to the input stream for the process, if RedirectInput is enabled.
+    /// </summary>
     public StreamWriter? InputStream => Process?.StandardInput;
+
+    /// <summary>
+    /// True if the process is running.
+    /// </summary>
     public bool IsRunning => Process is { HasExited: false };
+
+    /// <summary>
+    /// True if the process has exited.
+    /// </summary>
     public bool IsFinished => Process is { HasExited: true };
+
+    /// <summary>
+    /// The captured output, if RedirectOutput is enabled.
+    /// </summary>
     public List<string> Output { get; } = new();
+
+    /// <summary>
+    /// String concatenation of the <seealso cref="Output"/> property.
+    /// </summary>
     public string Text => string.Join(Environment.NewLine, Output);
 
     public Spawn(string command)
     {
         Command = command.Chomp(out var remains) ?? throw new ArgumentNullException(nameof(command));
         Parameters = remains;
+    }
+
+    public Spawn(string command, params string[] parameters)
+    {
+        Command = command;
+        Parameters = string.Join(" ", parameters);
     }
 
     private void AssertProcessStarted()
@@ -64,14 +129,27 @@ public class Spawn : IDisposable
         return null;
     }
 
-    private void OnReceivedEventHandler(object sender, DataReceivedEventArgs args)
+    private void OnReceivedErrorHandler(object sender, DataReceivedEventArgs args) =>
+        OnReceivedEventHandler(Console.Error, args);
+
+    private void OnReceivedOutputHandler(object sender, DataReceivedEventArgs args) =>
+        OnReceivedEventHandler(Console.Out, args);
+
+    private void OnReceivedEventHandler(TextWriter writer, DataReceivedEventArgs args)
     {
-        if (args.Data == null)
+        var data = args.Data;
+        if (data == null)
             return;
 
-        Output.Add(args.Data);
+        if (OutputPreprocessor != null)
+            data = OutputPreprocessor(data, writer);
+
+        if (data == null)
+            return;
+
+        Output.Add(data);
         if (Echo)
-            Console.WriteLine(args.Data);
+            Console.WriteLine(data);
     }
 
     /// <summary>
@@ -123,22 +201,28 @@ public class Spawn : IDisposable
             StartInfo = new ProcessStartInfo(Command, Parameters ?? "")
             {
                 CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
+                RedirectStandardError = RedirectOutput,
+                RedirectStandardOutput = RedirectOutput,
                 RedirectStandardInput = RedirectInput,
                 UseShellExecute = false,
                 WorkingDirectory = StartDirectory ?? Directory.GetCurrentDirectory()
             }
         };
 
-        Process.ErrorDataReceived += OnReceivedEventHandler;
-        Process.OutputDataReceived += OnReceivedEventHandler;
+        if (RedirectOutput)
+        {
+            Process.ErrorDataReceived += OnReceivedErrorHandler;
+            Process.OutputDataReceived += OnReceivedOutputHandler;
+        }
 
         if (!Process.Start())
             throw new Exception($"No process started: {Command} {Parameters}");
 
-        Process.BeginErrorReadLine();
-        Process.BeginOutputReadLine();
+        if (RedirectOutput)
+        {
+            Process.BeginErrorReadLine();
+            Process.BeginOutputReadLine();
+        }
 
         return this;
     }
@@ -153,11 +237,14 @@ public class Spawn : IDisposable
 
         Process!.WaitForExit((int?)timeout?.TotalMilliseconds ?? -1);
 
-        // Give the process a chance to finish up
-        Thread.Sleep(10);
+        if (RedirectOutput)
+        {
+            // Give the process a chance to finish up
+            Thread.Sleep(10);
 
-        Process.CancelErrorRead();
-        Process.CancelOutputRead();
+            Process.CancelErrorRead();
+            Process.CancelOutputRead();
+        }
 
         return ExitCode;
     }
@@ -173,12 +260,15 @@ public class Spawn : IDisposable
         var cancel = timeout != null ? new CancellationTokenSource(timeout.Value).Token : CancellationToken.None;
         await Process!.WaitForExitAsync(cancel);
 
-        // Give the process a chance to finish up
-        // ReSharper disable once MethodSupportsCancellation
-        await Task.Delay(10);
+        if (RedirectOutput)
+        {
+            // Give the process a chance to finish up
+            // ReSharper disable once MethodSupportsCancellation
+            await Task.Delay(10);
 
-        Process.CancelErrorRead();
-        Process.CancelOutputRead();
+            Process.CancelErrorRead();
+            Process.CancelOutputRead();
+        }
 
         return ExitCode;
     }
@@ -198,6 +288,16 @@ public class Spawn : IDisposable
     public Spawn WithRedirectInput(bool redirect = true)
     {
         RedirectInput = redirect;
+        return this;
+    }
+
+    /// <summary>
+    /// Redirect the standard output and error streams. Enabled by default, call with false to disable and provide
+    /// a straight output-to-console output.
+    /// </summary>
+    public Spawn WithRedirectOutput(bool redirect = true)
+    {
+        RedirectOutput = redirect;
         return this;
     }
 
