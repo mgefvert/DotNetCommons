@@ -68,7 +68,7 @@ public class SpawnTest
             ? new Spawn("pwd").WithStartDirectory("/tmp").Run()
             : new Spawn("cmd /c cd").WithStartDirectory("c:\\windows").Run();
 
-        result.Text.Should().Be(IsLinux ? "/tmp" : "c:\\windows");
+        result.Text.ToLower().Should().Be(IsLinux ? "/tmp" : "c:\\windows");
     }
 
     [TestMethod]
