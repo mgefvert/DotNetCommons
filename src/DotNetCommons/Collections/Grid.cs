@@ -35,6 +35,29 @@ public class Grid<TRow, TCol, TData>
         }
     }
 
+    public class EqualityComparer : IEqualityComparer<(TRow, TCol)>
+    {
+        private readonly IEqualityComparer<TRow> _rowComparer;
+        private readonly IEqualityComparer<TCol> _columnComparer;
+
+        public EqualityComparer(IEqualityComparer<TRow> rowComparer, IEqualityComparer<TCol> columnComparer)
+        {
+            _rowComparer = rowComparer;
+            _columnComparer = columnComparer;
+        }
+
+        public bool Equals((TRow, TCol) x, (TRow, TCol) y)
+        {
+            return _rowComparer.Equals(x.Item1, y.Item1) && 
+                   _columnComparer.Equals(x.Item2, y.Item2);
+        }
+
+        public int GetHashCode((TRow, TCol) obj)
+        {
+            return HashCode.Combine(_rowComparer.GetHashCode(obj.Item1), _columnComparer.GetHashCode(obj.Item2));
+        }
+    }
+
     private readonly char[] _csvEscapeChars = { '"' };
     private readonly char[] _markupEscapeChars = { '|' };
 
@@ -42,21 +65,41 @@ public class Grid<TRow, TCol, TData>
     /// The defined Columns in the grid. Are added to automatically as data is added, but can be
     /// used to add additional fields beforehand to guarantee sort order.
     /// </summary>
-    public List<TCol> Columns { get; } = new();
+    public HashSet<TCol> Columns { get; }
 
     /// <summary>
     /// The defined Rows in the grid. Are added to automatically as data is added, but can be
     /// modified manually.
     /// </summary>
-    public List<TRow> Rows { get; } = new();
+    public HashSet<TRow> Rows { get; }
 
     /// <summary>
     /// Data elements. Use [row, col] syntax to access these efficiently.
     /// </summary>
-    public Dictionary<(TRow, TCol), TData?> Data { get; } = new();
+    public Dictionary<(TRow, TCol), TData?> Data { get; }
 
     protected (TRow, TCol) Key(TRow row, TCol column) => new(row, column);
 
+    public Grid()
+    {
+        Data = new Dictionary<(TRow, TCol), TData?>();
+        Columns = new HashSet<TCol>();
+        Rows = new HashSet<TRow>();
+    }
+
+    public Grid(IEqualityComparer<TRow> rowComparer, IEqualityComparer<TCol> columnComparer)
+    {
+        Data = new Dictionary<(TRow, TCol), TData?>(new EqualityComparer(rowComparer, columnComparer));
+        Columns = new HashSet<TCol>(columnComparer);
+        Rows = new HashSet<TRow>(rowComparer);
+    }
+
+    public bool Exists(TRow row, TCol column)
+    {
+        var key = Key(row, column);
+        return Data.ContainsKey(key);
+    }
+    
     /// <summary>
     /// Extract a given row/column item from the grid, removing it.
     /// </summary>
@@ -123,6 +166,20 @@ public class Grid<TRow, TCol, TData>
         var key = Key(row, column);
         var value = func(Get(key, defaultValue));
         return Set(key, value);
+    }
+
+    /// <summary>
+    /// Callback to manipulate the value of a given row/column item; main use is to cut down on
+    /// allocations for multiple row/column pairs.
+    /// </summary>
+    public void Manipulate(Func<(TRow, TCol), bool> selector, Func<TData?, TData?> func)
+    {
+        var selection = Data.Keys.Where(selector).ToList();
+        foreach (var item in selection)
+        {
+            var data = Data[item];
+            Data[item] = func(data);
+        }
     }
 
     protected TData? Set((TRow, TCol) key, TData? value)
