@@ -27,6 +27,11 @@ public abstract class Definition<T> where T : struct
 {
     public bool Discard { get; }
     public T ID { get; }
+    
+    /// <summary>
+    /// Generic value that can be used for user-defined things. 
+    /// </summary>
+    public object? Tag { get; set; }
 
     protected Definition(T id, bool discard)
     {

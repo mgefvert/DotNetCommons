@@ -1,8 +1,5 @@
-﻿using DotNetCommons.Collections;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -139,15 +136,7 @@ public class TokenList<T> : List<Token<T>> where T : struct
     /// <param name="insideText">Whether to use InsideText to build the string instead of Text.</param>
     public string ToString(bool insideText)
     {
-        var result = new StringBuilder();
-        foreach (var token in this)
-        {
-            result.Append(insideText ? token.InsideText : token.Text);
-            if (token.Section.Any())
-                result.Append(token.Section);
-        }
-
-        return result.ToString();
+        return string.Join(" ", this.Select(x => x.ToString(insideText)));
     }
 
     /// <summary>

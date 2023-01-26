@@ -107,14 +107,12 @@ public class DictionarySerializer
             {
                 var count = r.ReadInt32();
                 return r.ReadChars(count);
-            }
-            ,
+            },
             "Byte[]" => r =>
             {
                 var count = r.ReadInt32();
                 return r.ReadBytes(count);
-            }
-            ,
+            },
             _ => throw new SerializationException($"{typeof(T).Name} is a complex object and cannot be serialized")
         };
     }
@@ -142,15 +140,13 @@ public class DictionarySerializer
                 var data = (char[])v;
                 w.Write(data.Length);
                 w.Write(data);
-            }
-            ,
+            },
             "Byte[]" => (w, v) =>
             {
                 var data = (byte[])v;
                 w.Write(data.Length);
                 w.Write(data);
-            }
-            ,
+            },
             _ => throw new SerializationException($"{typeof(T).Name} is a complex object and cannot be serialized")
         };
     }

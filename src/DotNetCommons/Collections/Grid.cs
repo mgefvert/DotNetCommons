@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 
 // Written by Mats Gefvert
@@ -10,6 +11,58 @@ using System.Text;
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Collections;
+
+public static class Grid
+{
+    /// <summary>
+    /// Transform a number of objects into a grid, using a key selector to select the key (row) for
+    /// each object, transforming each property into a string value.
+    /// </summary>
+    /// <param name="items">A list of objects to transform into a grid.</param>
+    /// <param name="keySelector">The selector for the key value which becomes the row identity.</param>
+    /// <returns>A grid populated with string values.</returns>
+    public static Grid<TKey, string, string?> BuildFromObjects<TObject, TKey>(IEnumerable<TObject> items, Func<TObject, TKey> keySelector)
+        where TKey : notnull
+        where TObject : class
+    {
+        return BuildFromObjects(items, keySelector, (prop,  value) => value?.ToString());
+    }
+
+    /// <summary>
+    /// Transform a number of objects into a grid, using a key selector to select the key (row) for
+    /// each object and a value transformer to format the values into the grid data type.
+    /// </summary>
+    /// <param name="items">A list of objects to transform into a grid.</param>
+    /// <param name="keySelector">The selector for the key value which becomes the row identity.</param>
+    /// <param name="valueTransform">A delegate that transforms the value in a given field to the grid data type, e.g.
+    ///     runs a ToString() to turn all the values into strings. If the value returns null, nothing will be inserted
+    ///     into the grid and can be used to hide fields entirely.</param>
+    /// <returns>A grid populated with values.</returns>
+    public static Grid<TKey, string, TValue> BuildFromObjects<TObject, TKey, TValue>(
+            IEnumerable<TObject> items, Func<TObject, TKey> keySelector, Func<PropertyInfo, object, TValue> valueTransform)
+        where TKey : notnull
+        where TObject : class
+    {
+        var result = new Grid<TKey, string, TValue>();
+
+        var fields = typeof(TObject).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+        foreach (var item in items)
+        {
+            var key = keySelector(item);
+
+            foreach (var field in fields)
+            {
+                var fieldValue = field.GetValue(item);
+                var value = valueTransform(field, fieldValue);
+
+                result[key, field.Name] = value;
+            }
+        }
+
+        return result;
+    }
+}
 
 /// <summary>
 /// Class that allows you to store values in a grid using any given values for rows or columns and

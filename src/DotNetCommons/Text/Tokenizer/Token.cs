@@ -1,4 +1,6 @@
-﻿namespace DotNetCommons.Text.Tokenizer;
+﻿using System.Linq;
+
+namespace DotNetCommons.Text.Tokenizer;
 
 /// <summary>
 /// Encapsulates a specific token found in a stream.
@@ -64,8 +66,10 @@ public class Token<T> : Token where T : struct
         ID = definition.ID;
     }
 
-    public override string ToString()
+    public override string ToString() => ToString(false);
+
+    public string ToString(bool insideText)
     {
-        return $"[{ID}:{Text}]";
+        return $"[{ID}:{(insideText ? InsideText : Text)}{(Section.Any() ? " " + Section : "")}]";
     }
 }

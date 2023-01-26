@@ -174,9 +174,11 @@ public class CommonWebClient
 
     private static HttpWebRequest CreateRequest(CommonWebRequest request)
     {
+#pragma warning disable CS0618
 #pragma warning disable SYSLIB0014 // Type or member is obsolete
         var http = WebRequest.CreateHttp(request.Uri);
 #pragma warning restore SYSLIB0014 // Type or member is obsolete
+#pragma warning restore CS0618
         http.AllowAutoRedirect = request.AllowRedirect;
         http.CookieContainer = request.CookieContainer;
         http.Headers.Add("Origin", request.Uri.GetLeftPart(UriPartial.Authority));

@@ -18,6 +18,11 @@ public static class CommonDateTimeExtensions
     private static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateTimeOffset UnixEpochOffset = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
+    public static DateTime DayOfMonthDate(this DateTime date, int dayOfMonth)
+    {
+        return new DateTime(date.Year, date.Month, dayOfMonth);
+    }
+
     /// <summary>
     /// Calculate the end of month (e.g. 2019-06-30).
     /// </summary>

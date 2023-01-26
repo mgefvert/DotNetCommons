@@ -153,7 +153,7 @@ public class StringTokenizer<T> where T : struct
             }
             else
                 throw new StringTokenizerException(
-                    $"Unexpected token '{_source[_position]}' at line {_line}, column {_column}");
+                    $"Unexpected token '{_source[_position]}' near '{_source.Mid(_position, 30)}' at line {_line}, column {_column}");
 
             end = _position;
         }
