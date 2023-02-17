@@ -4,20 +4,28 @@
 
 using System;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DotNetCommons;
 
 public enum CaseType
 {
+    /// <summary>thisIsCamelCase</summary>
     CamelCase,
+    /// <summary>this-is-kebab-case</summary>
     KebabCase,
+    /// <summary>ThisIsPascalCase</summary>
     PascalCase,
+    /// <summary>this is sentence case</summary>
     SentenceCase,
+    /// <summary>this_is_snake_case</summary>
     SnakeCase,
 }
 
 public static partial class CommonStringExtensions
 {
+    private static readonly Regex ReplaceCaseRegex = new(@"[^a-zA-Z0-9]");
+
     /// <summary>
     /// Transform a string into a specific case.
     /// </summary>
@@ -36,9 +44,19 @@ public static partial class CommonStringExtensions
 
     private static string ToSeparatorCase(string value, char separator)
     {
-        var search = new string(separator, 2);
-        var replace = separator.ToString();
+        var singleSeparator = separator.ToString();
+        var doubleSeparators = new string(separator, 2);
 
+        // Replace anything not a letter or a digit with the given separator
+        value = ReplaceCaseRegex.Replace(value, singleSeparator);
+
+        // If a separator is in the text, we can assume that words will be separated by the separator.
+        // This comes into play when we have things like multiple uppercase letters; are they to be
+        // treated as a single word or a sequence of words? "IAmAString" should be "i am a string", not
+        // "i am astring"; but "I have a KVM switch" should be "i have a kvm switch", not "i have a k v m switch".
+        var separatorFound = value.Contains(singleSeparator);
+
+        // Allocate space for the new string plus some leeway
         var sb = new StringBuilder(value.Length + value.Length / 4);
         var lastUpper = false;
         foreach (var c in value)
@@ -50,7 +68,7 @@ public static partial class CommonStringExtensions
             }
             else if (char.IsUpper(c))
             {
-                if (!lastUpper && sb.Length > 0)
+                if ((!lastUpper || !separatorFound) && sb.Length > 0)
                     sb.Append(separator);
                 sb.Append(char.ToLower(c));
                 lastUpper = true;
@@ -59,9 +77,10 @@ public static partial class CommonStringExtensions
                 sb.Append(separator);
         }
 
+        // Replace any consecutive separators with a single separator
         var result = sb.ToString();
-        while (result.Contains(search))
-            result = result.Replace(search, replace);
+        while (result.Contains(doubleSeparators))
+            result = result.Replace(doubleSeparators, singleSeparator);
 
         return result.Trim(separator).ToLower();
     }
