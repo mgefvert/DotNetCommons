@@ -3,12 +3,12 @@ using System.Net;
 
 namespace DotNetCommons.Web;
 
-public class ApiException : Exception
+public class AppException : Exception
 {
-    public HttpStatusCode HttpCode { get; }
+    public HttpStatusCode StatusCode { get; }
 
-    public ApiException(HttpStatusCode httpCode, string message, Exception? innerException = null) : base(message, innerException)
+    public AppException(HttpStatusCode statusCode, string message, Exception? innerException = null) : base(message, innerException)
     {
-        HttpCode = httpCode;
+        StatusCode = statusCode;
     }
 }
