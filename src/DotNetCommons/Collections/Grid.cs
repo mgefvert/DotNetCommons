@@ -9,6 +9,7 @@ using System.Text;
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace DotNetCommons.Collections;
 
@@ -25,7 +26,7 @@ public static class Grid
         where TKey : notnull
         where TObject : class
     {
-        return BuildFromObjects(items, keySelector, (prop,  value) => value?.ToString());
+        return BuildFromObjects(items, keySelector, (_,  value) => value?.ToString());
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ public static class Grid
     ///     into the grid and can be used to hide fields entirely.</param>
     /// <returns>A grid populated with values.</returns>
     public static Grid<TKey, string, TValue> BuildFromObjects<TObject, TKey, TValue>(
-            IEnumerable<TObject> items, Func<TObject, TKey> keySelector, Func<PropertyInfo, object, TValue> valueTransform)
+            IEnumerable<TObject> items, Func<TObject, TKey> keySelector, Func<PropertyInfo, object?, TValue> valueTransform)
         where TKey : notnull
         where TObject : class
     {
@@ -237,10 +238,8 @@ public class Grid<TRow, TCol, TData>
 
     protected TData? Set((TRow, TCol) key, TData? value)
     {
-        if (!Columns.Contains(key.Item2))
-            Columns.Add(key.Item2);
-        if (!Rows.Contains(key.Item1))
-            Rows.Add(key.Item1);
+        Columns.Add(key.Item2);
+        Rows.Add(key.Item1);
 
         Data[key] = value;
         return value;
