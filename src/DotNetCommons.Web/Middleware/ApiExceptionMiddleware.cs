@@ -9,12 +9,15 @@ using Newtonsoft.Json;
 
 namespace DotNetCommons.Web.Middleware;
 
+/// <summary>
+/// Middleware that catches unhandled exceptions and returns ProblemDetails JSON data.
+/// </summary>
 public class ApiExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
 
-    public ApiExceptionMiddleware(RequestDelegate next, ILogger<AppException> logger)
+    public ApiExceptionMiddleware(RequestDelegate next, ILogger<HttpStatusException> logger)
     {
         _next = next;
         _logger = logger;
@@ -26,7 +29,7 @@ public class ApiExceptionMiddleware
         {
             await _next(context);
         }
-        catch (AppException e)
+        catch (HttpStatusException e)
         {
             _logger.LogInformation("{Exception}: HTTP/{StatusCode} '{Message}' in {Method} {Path}",
                 e.GetType().Name, (int)e.StatusCode, e.Message, context.Request.Method, context.Request.Path);
