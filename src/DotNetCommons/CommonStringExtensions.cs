@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,16 @@ using System.Text;
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons;
+
+[Flags]
+public enum Spacing
+{
+    Trim = 1,
+    ReplaceTabs = 2,
+    ReplaceCrLfs = 4,
+    ReplaceDoubleSpaces = 8,
+    ReplaceAll = 15
+}
 
 public static partial class CommonStringExtensions
 {
@@ -127,9 +138,9 @@ public static partial class CommonStringExtensions
         return n == -1 ? value : (value ?? "")[..n].Trim();
     }
 
-    public static bool IsEmpty(this string? value) => string.IsNullOrEmpty(value);
+    public static bool IsEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
 
-    public static bool IsSet(this string? value) => !string.IsNullOrEmpty(value);
+    public static bool IsSet([NotNullWhen(true)] this string? value) => !string.IsNullOrEmpty(value);
 
     /// <summary>
     /// Take the left n characters from a string, possibly returning less than
@@ -175,7 +186,11 @@ public static partial class CommonStringExtensions
     /// <returns>A new, masked string</returns>
     public static string MaskLeft(this string value, int length, char mask)
     {
-        return value.Left(-length) + new string(mask, length);
+        if (length < 1)
+            throw new ArgumentOutOfRangeException(nameof(length));
+
+        var effectiveLength = Math.Min(value.Length, length);
+        return new string(mask, effectiveLength) + value.Right(-effectiveLength);
     }
 
     /// <summary>
@@ -187,7 +202,11 @@ public static partial class CommonStringExtensions
     /// <returns>A new, masked string</returns>
     public static string MaskRight(this string value, int length, char mask)
     {
-        return value.Right(-length) + new string(mask, length);
+        if (length < 1)
+            throw new ArgumentOutOfRangeException(nameof(length));
+
+        var effectiveLength = Math.Min(value.Length, length);
+        return value.Left(-effectiveLength) + new string(mask, effectiveLength);
     }
 
     /// <summary>
@@ -231,6 +250,33 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
+    /// Process whitespace in string according to rules. Can trim start/end of the string, replace
+    /// tabs and CRLFs with spaces, and remove duplicate spaces.
+    /// </summary>
+    public static string NormalizeSpacing(this string? s, Spacing spacing = Spacing.ReplaceAll)
+    {
+        s ??= "";
+
+        if ((spacing & Spacing.ReplaceTabs) != 0)
+            s = s.Replace("\t", " ");
+
+        if ((spacing & Spacing.ReplaceCrLfs) != 0)
+            s = s
+                .Replace("\r\n", " ")
+                .Replace("\r", " ")
+                .Replace("\n", " ");
+
+        if ((spacing & Spacing.ReplaceDoubleSpaces) != 0)
+            while (s.Contains("  "))
+                s = s.Replace("  ", " ");
+
+        if ((spacing & Spacing.Trim) != 0)
+            s = s.Trim();
+
+        return s;
+    }
+
+    /// <summary>
     /// Returns null if the string IsNullOrEmpty.
     /// </summary>
     /// <param name="value">String to test.</param>
@@ -241,12 +287,13 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
-    /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
-    /// the common "true"/"false" case.
+    /// Parse a string to a boolean. Handles truthy/falsy numbers, strings like "true/false", "yes/no", "t/f" and "y/n".
+    /// If the input string is empty or cannot be parsed, it returns null.
     /// </summary>
     public static bool? ParseBoolean(this string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        value = value?.Trim();
+        if (string.IsNullOrEmpty(value))
             return null;
 
         if (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
@@ -271,8 +318,8 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
-    /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
-    /// the common "true"/"false" case.
+    /// Parse a string to a boolean. Handles truthy/falsy numbers, strings like "true/false", "yes/no", "t/f" and "y/n".
+    /// If the input string is empty or cannot be parsed, it returns a default value.
     /// </summary>
     public static bool ParseBoolean(this string value, bool defaultValue)
     {
@@ -383,11 +430,22 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
+    /// Return the string with the first letter in lowercase.
+    /// </summary>
+    public static string? StartLowerCase(this string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        return value.Length == 1
+            ? value.ToLower()
+            : char.ToLower(value[0]) + value.Substring(1, value.Length - 1);
+    }
+
+    /// <summary>
     /// Return the string with the first letter in uppercase.
     /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public static string? StartUppercase(this string? value)
+    public static string? StartUpperCase(this string? value)
     {
         if (string.IsNullOrEmpty(value))
             return value;

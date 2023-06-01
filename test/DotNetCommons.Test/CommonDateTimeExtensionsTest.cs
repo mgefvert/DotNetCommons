@@ -1,11 +1,120 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using FluentAssertions;
 
 namespace DotNetCommons.Test;
 
 [TestClass]
 public class CommonDateTimeExtensionsTest
 {
+    [TestMethod]
+    public void Age_Works()
+    {
+        var birthDate = new DateTime(1974, 12, 9);
+
+        birthDate.Age(new DateTime(1974, 12, 9)).Should().Be((0, 0, 0));
+        birthDate.Age(new DateTime(1974, 12, 31)).Should().Be((0, 0, 22));
+        birthDate.Age(new DateTime(1975, 1, 9)).Should().Be((0, 1, 0));
+        birthDate.Age(new DateTime(1975, 2, 9)).Should().Be((0, 2, 0));
+        birthDate.Age(new DateTime(1975, 12, 8)).Should().Be((0, 11, 29));
+
+        birthDate.Age(new DateTime(2022, 12, 8)).Should().Be((47, 11, 29));
+        birthDate.Age(new DateTime(2022, 12, 9)).Should().Be((48, 0, 0));
+    }
+
+    [TestMethod]
+    public void AgeYears_Works()
+    {
+        var birthDate = new DateTime(1974, 12, 9);
+
+        birthDate.AgeYears(new DateTime(1974, 1, 1)).Should().Be(0);
+        birthDate.AgeYears(new DateTime(1974, 12, 1)).Should().Be(0);
+        birthDate.AgeYears(new DateTime(1974, 12, 9)).Should().Be(0);
+        birthDate.AgeYears(new DateTime(1975, 1, 1)).Should().Be(0);
+        birthDate.AgeYears(new DateTime(1975, 12, 8)).Should().Be(0);
+
+        birthDate.AgeYears(new DateTime(1975, 12, 9)).Should().Be(1);
+        birthDate.AgeYears(new DateTime(1976, 12, 8)).Should().Be(1);
+
+        // Note: 1976 is a leap year
+        birthDate.AgeYears(new DateTime(1976, 12, 9)).Should().Be(2);
+
+        birthDate.AgeYears(new DateTime(2022, 12, 1)).Should().Be(47);
+        birthDate.AgeYears(new DateTime(2022, 12, 9)).Should().Be(48);
+    }
+
+    [TestMethod]
+    public void AgeMonths_Works()
+    {
+        var birthDate = new DateTime(1974, 12, 9);
+
+        birthDate.AgeMonths(new DateTime(1974, 1, 1)).Should().Be(0);
+        birthDate.AgeMonths(new DateTime(1974, 12, 1)).Should().Be(0);
+        birthDate.AgeMonths(new DateTime(1974, 12, 9)).Should().Be(0);
+        birthDate.AgeMonths(new DateTime(1974, 12, 31)).Should().Be(0);
+        birthDate.AgeMonths(new DateTime(1975, 1, 1)).Should().Be(0);
+        birthDate.AgeMonths(new DateTime(1975, 1, 8)).Should().Be(0);
+
+        birthDate.AgeMonths(new DateTime(1975, 1, 9)).Should().Be(1);
+        birthDate.AgeMonths(new DateTime(1975, 2, 8)).Should().Be(1);
+
+        birthDate.AgeMonths(new DateTime(1975, 2, 9)).Should().Be(2);
+        birthDate.AgeMonths(new DateTime(1975, 3, 8)).Should().Be(2);
+
+        birthDate.AgeMonths(new DateTime(1975, 3, 9)).Should().Be(3);
+        birthDate.AgeMonths(new DateTime(1975, 4, 8)).Should().Be(3);
+
+        birthDate.AgeMonths(new DateTime(1975, 4, 9)).Should().Be(4);
+        birthDate.AgeMonths(new DateTime(1975, 5, 8)).Should().Be(4);
+
+        birthDate.AgeMonths(new DateTime(1975, 5, 9)).Should().Be(5);
+        birthDate.AgeMonths(new DateTime(1975, 6, 8)).Should().Be(5);
+
+        birthDate.AgeMonths(new DateTime(1975, 6, 9)).Should().Be(6);
+        birthDate.AgeMonths(new DateTime(1975, 7, 8)).Should().Be(6);
+
+        birthDate.AgeMonths(new DateTime(1975, 7, 9)).Should().Be(7);
+        birthDate.AgeMonths(new DateTime(1975, 8, 8)).Should().Be(7);
+
+        birthDate.AgeMonths(new DateTime(1975, 8, 9)).Should().Be(8);
+        birthDate.AgeMonths(new DateTime(1975, 9, 8)).Should().Be(8);
+
+        birthDate.AgeMonths(new DateTime(1975, 9, 9)).Should().Be(9);
+        birthDate.AgeMonths(new DateTime(1975, 10, 8)).Should().Be(9);
+
+        birthDate.AgeMonths(new DateTime(1975, 10, 9)).Should().Be(10);
+        birthDate.AgeMonths(new DateTime(1975, 11, 8)).Should().Be(10);
+
+        birthDate.AgeMonths(new DateTime(1975, 11, 9)).Should().Be(11);
+        birthDate.AgeMonths(new DateTime(1975, 12, 8)).Should().Be(11);
+
+        birthDate.AgeMonths(new DateTime(1975, 12, 9)).Should().Be(12);
+        birthDate.AgeMonths(new DateTime(1976, 1, 8)).Should().Be(12);
+
+        // Note: 1976 is a leap year
+        birthDate.AgeMonths(new DateTime(1976, 12, 9)).Should().Be(24);
+
+        birthDate.AgeMonths(new DateTime(2022, 12, 1)).Should().Be(575);
+        birthDate.AgeMonths(new DateTime(2022, 12, 9)).Should().Be(576);
+    }
+
+    [TestMethod]
+    public void AgeDays_Works()
+    {
+        var birthDate = new DateTime(1974, 12, 9);
+
+        birthDate.AgeDays(new DateTime(1974, 1, 1)).Should().Be(0);
+        birthDate.AgeDays(new DateTime(1974, 12, 1)).Should().Be(0);
+        birthDate.AgeDays(new DateTime(1974, 12, 8)).Should().Be(0);
+        birthDate.AgeDays(new DateTime(1974, 12, 9)).Should().Be(0);
+        birthDate.AgeDays(new DateTime(1974, 12, 10)).Should().Be(1);
+        birthDate.AgeDays(new DateTime(1974, 12, 11)).Should().Be(2);
+        birthDate.AgeDays(new DateTime(1974, 12, 31)).Should().Be(22);
+        birthDate.AgeDays(new DateTime(1975, 1, 1)).Should().Be(23);
+        birthDate.AgeDays(new DateTime(1975, 12, 31)).Should().Be(387);
+        birthDate.AgeDays(new DateTime(2022, 12, 9)).Should().Be(17532);
+    }
+
     [TestMethod]
     public void TestDateTime()
     {

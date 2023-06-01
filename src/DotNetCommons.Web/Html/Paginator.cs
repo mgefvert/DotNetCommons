@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DotNetCommons.Web;
+namespace DotNetCommons.Web.Html;
 
 public class PaginatorLink
 {

@@ -459,6 +459,13 @@ public static class CommonCollectionExtensions
         return true;
     }
 
+    /// <summary>
+    /// Walk a tree, returning all the nodes either depth-first or shallow-first.
+    /// </summary>
+    /// <param name="nodes">Node tree to operate on</param>
+    /// <param name="childNodes">Selector for retrieving the list of child nodes for a given node</param>
+    /// <param name="mode">Mode of operation, depth-first or shallow-first</param>
+    /// <returns>An IEnumerable of nodes</returns>
     public static IEnumerable<T> WalkTree<T>(this ICollection<T> nodes, Func<T, ICollection<T>> childNodes, WalkTreeMode mode)
     {
         return mode switch

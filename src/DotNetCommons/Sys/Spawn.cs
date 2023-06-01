@@ -90,6 +90,11 @@ public class Spawn : IDisposable
     public string Text => string.Join(Environment.NewLine, Output);
 
     /// <summary>
+    /// Environment variables overrides.
+    /// </summary>
+    public Dictionary<string, string> EnvironmentVariables = new();
+
+    /// <summary>
     /// Create a Spawn object that encapsulates a given command and arguments.
     /// </summary>
     public Spawn(string command, params string[] arguments)
@@ -209,9 +214,12 @@ public class Spawn : IDisposable
                 RedirectStandardOutput = RedirectOutput,
                 RedirectStandardInput = RedirectInput,
                 UseShellExecute = false,
-                WorkingDirectory = StartDirectory ?? Directory.GetCurrentDirectory()
+                WorkingDirectory = StartDirectory ?? Directory.GetCurrentDirectory(),
             }
         };
+
+        foreach (var item in EnvironmentVariables)
+            Process.StartInfo.Environment[item.Key] = item.Value;
 
         if (RedirectOutput)
         {
