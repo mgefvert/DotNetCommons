@@ -3,7 +3,7 @@ using System.Linq;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Web;
+namespace DotNetCommons.Web.Html;
 
 public class MenuItem
 {

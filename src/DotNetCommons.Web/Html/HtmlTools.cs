@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Html;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Web;
+namespace DotNetCommons.Web.Html;
 
 public static class HtmlTools
 {

@@ -5,39 +5,37 @@ using System;
 namespace DotNetCommons.Test.CheckDigits
 {
     [TestClass]
-    public class LuhnCheckDigitsTests
+    public class AbaCheckDigitsTests
     {
         private ICheckDigits _checkDigits = null!;
 
         [TestInitialize]
         public void Setup()
         {
-            _checkDigits = new LuhnCheckDigits();
+            _checkDigits = new AbaCheckDigits();
         }
 
         [TestMethod]
         public void TestCalculate()
         {
-            Assert.AreEqual('3', _checkDigits.Calculate("1234567890"));
-            Assert.AreEqual('3', _checkDigits.Calculate("FC-1234-5678-90-"));
-            Assert.AreEqual('2', _checkDigits.Calculate("909"));
+            Assert.AreEqual('8', _checkDigits.Calculate("01120060"));
+            Assert.AreEqual('8', _checkDigits.Calculate("FC-01120060-"));
         }
 
         [TestMethod]
         public void TestAppend()
         {
-            Assert.AreEqual("12345678903", _checkDigits.Append("1234567890"));
-            Assert.AreEqual("FC-1234-5678-90-3", _checkDigits.Append("FC-1234-5678-90-"));
-            Assert.AreEqual("9092", _checkDigits.Append("909"));
+            Assert.AreEqual("011200608", _checkDigits.Append("01120060"));
+            Assert.AreEqual("FC-01120060-8", _checkDigits.Append("FC-01120060-"));
         }
 
         [TestMethod]
         public void TestValidate()
         {
-            Assert.IsTrue(_checkDigits.Validate("49927398716"));
-            Assert.IsFalse(_checkDigits.Validate("49927398717"));
-            Assert.IsFalse(_checkDigits.Validate("1234567812345678"));
-            Assert.IsTrue(_checkDigits.Validate("1234567812345670"));
+            Assert.IsTrue(_checkDigits.Validate("011200608"));
+            Assert.IsFalse(_checkDigits.Validate("011200609"));
+            Assert.IsTrue(_checkDigits.Validate("111000025"));
+            Assert.IsFalse(_checkDigits.Validate("111000024"));
         }
 
         [TestMethod, ExpectedException(typeof(InvalidOperationException))]

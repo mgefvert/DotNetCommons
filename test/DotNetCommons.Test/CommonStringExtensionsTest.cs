@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using FluentAssertions;
 
 namespace DotNetCommons.Test;
 
@@ -67,18 +68,6 @@ public class CommonStringExtensionsTest
     }
 
     [TestMethod]
-    public void TestLeft()
-    {
-        Assert.AreEqual("", "".Left(5));
-        Assert.AreEqual("", ((string?)null).Left(5));
-
-        Assert.AreEqual("", "ABCD".Left(0));
-        Assert.AreEqual("AB", "ABCD".Left(2));
-        Assert.AreEqual("ABCD", "ABCD".Left(4));
-        Assert.AreEqual("ABCD", "ABCD".Left(10));
-    }
-
-    [TestMethod]
     public void TestEqualsInsensitive()
     {
         Assert.IsTrue(((string?)null).EqualsInsensitive(null));
@@ -96,6 +85,64 @@ public class CommonStringExtensionsTest
         Assert.IsTrue("Abcd".EqualsInsensitive("abcd"));
         Assert.IsTrue("Abcd".EqualsInsensitive("Abcd"));
         Assert.IsTrue("Abcd".EqualsInsensitive("ABCD"));
+    }
+
+    [TestMethod]
+    public void TestIsEmpty()
+    {
+        Assert.IsTrue(((string?)null).IsEmpty());
+        Assert.IsTrue("".IsEmpty());
+        Assert.IsFalse("X".IsEmpty());
+    }
+
+    [TestMethod]
+    public void TestIsSet()
+    {
+        Assert.IsFalse(((string?)null).IsSet());
+        Assert.IsFalse("".IsSet());
+        Assert.IsTrue("X".IsSet());
+    }
+
+    [TestMethod]
+    public void TestLeft()
+    {
+        Assert.AreEqual("", "".Left(5));
+        Assert.AreEqual("", ((string?)null).Left(5));
+
+        Assert.AreEqual("", "ABCD".Left(0));
+        Assert.AreEqual("AB", "ABCD".Left(2));
+        Assert.AreEqual("ABCD", "ABCD".Left(4));
+        Assert.AreEqual("ABCD", "ABCD".Left(10));
+    }
+
+    [TestMethod]
+    public void TestMaskLeft()
+    {
+        Assert.AreEqual("", "".MaskLeft(4, '*'));
+        Assert.AreEqual("*", "1".MaskLeft(4, '*'));
+        Assert.AreEqual("****", "1234".MaskLeft(4, '*'));
+        Assert.AreEqual("**** 5678", "1234 5678".MaskLeft(4, '*'));
+
+        Assert.AreEqual("*234 5678 9ABC", "1234 5678 9ABC".MaskLeft(1, '*'));
+        Assert.AreEqual("**34 5678 9ABC", "1234 5678 9ABC".MaskLeft(2, '*'));
+        Assert.AreEqual("***4 5678 9ABC", "1234 5678 9ABC".MaskLeft(3, '*'));
+        Assert.AreEqual("**** 5678 9ABC", "1234 5678 9ABC".MaskLeft(4, '*'));
+        Assert.AreEqual("*****5678 9ABC", "1234 5678 9ABC".MaskLeft(5, '*'));
+    }
+
+    [TestMethod]
+    public void TestMaskRight()
+    {
+        Assert.AreEqual("", "".MaskRight(4, '*'));
+        Assert.AreEqual("*", "1".MaskRight(4, '*'));
+        Assert.AreEqual("****", "1234".MaskRight(4, '*'));
+        Assert.AreEqual("1234 ****", "1234 5678".MaskRight(4, '*'));
+
+        Assert.AreEqual("1234 5678 9AB*", "1234 5678 9ABC".MaskRight(1, '*'));
+        Assert.AreEqual("1234 5678 9A**", "1234 5678 9ABC".MaskRight(2, '*'));
+        Assert.AreEqual("1234 5678 9***", "1234 5678 9ABC".MaskRight(3, '*'));
+        Assert.AreEqual("1234 5678 ****", "1234 5678 9ABC".MaskRight(4, '*'));
+        Assert.AreEqual("1234 5678*****", "1234 5678 9ABC".MaskRight(5, '*'));
     }
 
     [TestMethod]
@@ -125,6 +172,58 @@ public class CommonStringExtensionsTest
         Assert.AreEqual("CD", "ABCD".Mid(2, 10));
         Assert.AreEqual("", "ABCD".Mid(4, 10));
         Assert.AreEqual("", "ABCD".Mid(6, 10));
+    }
+
+    [TestMethod]
+    public void TestNormalizeSpacing()
+    {
+        "\r\nThis\t is a test      of spacing ".NormalizeSpacing().Should().Be("This is a test of spacing");
+        "\r\nThis\t is a test      of spacing ".NormalizeSpacing(Spacing.Trim).Should().Be("This\t is a test      of spacing");
+        "\r\nThis\t is a test      of spacing ".NormalizeSpacing(Spacing.ReplaceDoubleSpaces).Should().Be("\r\nThis\t is a test of spacing ");
+        "\r\nThis\t is a test      of spacing ".NormalizeSpacing(Spacing.ReplaceTabs).Should().Be("\r\nThis  is a test      of spacing ");
+        "\r\nThis\t is a test      of spacing ".NormalizeSpacing(Spacing.ReplaceCrLfs).Should().Be(" This\t is a test      of spacing ");
+    }
+
+    [TestMethod]
+    public void TestParseBoolean()
+    {
+        Assert.IsTrue("1".ParseBoolean());
+        Assert.IsTrue("-1".ParseBoolean());
+        Assert.IsTrue("999".ParseBoolean());
+        Assert.IsTrue(int.MaxValue.ToString().ParseBoolean());
+        Assert.IsTrue(long.MaxValue.ToString().ParseBoolean());
+        Assert.IsTrue(int.MinValue.ToString().ParseBoolean());
+        Assert.IsTrue(long.MinValue.ToString().ParseBoolean());
+        Assert.IsTrue("TRUE".ParseBoolean());
+        Assert.IsTrue("True".ParseBoolean());
+        Assert.IsTrue("true".ParseBoolean());
+        Assert.IsTrue("T".ParseBoolean());
+        Assert.IsTrue("t".ParseBoolean());
+        Assert.IsTrue("YES".ParseBoolean());
+        Assert.IsTrue("Yes".ParseBoolean());
+        Assert.IsTrue("yes".ParseBoolean());
+        Assert.IsTrue("Y".ParseBoolean());
+        Assert.IsTrue("y".ParseBoolean());
+        
+        Assert.IsFalse("0".ParseBoolean());
+        Assert.IsFalse("FALSE".ParseBoolean());
+        Assert.IsFalse("False".ParseBoolean());
+        Assert.IsFalse("false".ParseBoolean());
+        Assert.IsFalse("F".ParseBoolean());
+        Assert.IsFalse("f".ParseBoolean());
+        Assert.IsFalse("NO".ParseBoolean());
+        Assert.IsFalse("No".ParseBoolean());
+        Assert.IsFalse("no".ParseBoolean());
+        Assert.IsFalse("N".ParseBoolean());
+        Assert.IsFalse("n".ParseBoolean());
+        Assert.IsFalse("0".ParseBoolean());
+
+        Assert.IsNull("".ParseBoolean());
+        Assert.IsNull(((string?)null).ParseBoolean());
+        Assert.IsNull("X".ParseBoolean());
+        Assert.IsNull("FALSY".ParseBoolean());
+        Assert.IsNull("falsy".ParseBoolean());
+        Assert.IsNull("3.14".ParseBoolean());
     }
 
     [TestMethod]
@@ -185,5 +284,31 @@ public class CommonStringExtensionsTest
         Assert.AreEqual("CD", "ABCD".Right(2));
         Assert.AreEqual("ABCD", "ABCD".Right(4));
         Assert.AreEqual("ABCD", "ABCD".Right(10));
+    }
+
+    [TestMethod]
+    public void TestStartLowerCase()
+    {
+        Assert.IsNull(((string?)null).StartLowerCase());
+        Assert.AreEqual("", "".StartLowerCase());
+        Assert.AreEqual("x", "x".StartLowerCase());
+        Assert.AreEqual("x", "X".StartLowerCase());
+        Assert.AreEqual("1234", "1234".StartLowerCase());
+        Assert.AreEqual("word", "Word".StartLowerCase());
+        Assert.AreEqual("word", "word".StartLowerCase());
+        Assert.AreEqual("wORD", "WORD".StartLowerCase());
+    }
+
+    [TestMethod]
+    public void TestStartUpperCase()
+    {
+        Assert.IsNull(((string?)null).StartUpperCase());
+        Assert.AreEqual("", "".StartUpperCase());
+        Assert.AreEqual("X", "x".StartUpperCase());
+        Assert.AreEqual("X", "X".StartUpperCase());
+        Assert.AreEqual("1234", "1234".StartUpperCase());
+        Assert.AreEqual("Word", "Word".StartUpperCase());
+        Assert.AreEqual("Word", "word".StartUpperCase());
+        Assert.AreEqual("WORD", "WORD".StartUpperCase());
     }
 }

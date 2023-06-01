@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -18,10 +19,78 @@ public static class CommonDateTimeExtensions
     private static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateTimeOffset UnixEpochOffset = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    public static DateTime DayOfMonthDate(this DateTime date, int dayOfMonth)
+    /// <summary>
+    /// Calculate the age of a person in years, months, and days. For instance, a given person could be
+    /// 47 years, 2 months, and 18 days old.
+    /// </summary>
+    public static (int Years, int Months, int Days) Age(this DateTime birthDate, DateTime? today = null)
     {
-        return new DateTime(date.Year, date.Month, dayOfMonth);
+        var t = today?.Date ?? DateTime.Today;
+        birthDate = birthDate.Date;
+
+        if (t < birthDate)
+            return (0, 0, 0);
+
+        var y = AgeYears(birthDate, today);
+        birthDate = birthDate.AddYears(y);
+        var m = AgeMonths(birthDate, today);
+        birthDate = birthDate.AddMonths(m);
+        var d = AgeDays(birthDate, today);
+
+        return (y, m, d);
     }
+
+    /// <summary>
+    /// Calculate the age of a person in number of years from the birth date.
+    /// </summary>
+    public static int AgeYears(this DateTime birthDate, DateTime? today = null)
+    {
+        var t = today?.Date ?? DateTime.Today;
+        birthDate = birthDate.Date;
+
+        if (t < birthDate)
+            return 0;
+
+        var years = t.Year - birthDate.Year;
+        if (t.Month < birthDate.Month || (t.Month == birthDate.Month && t.Day < birthDate.Day))
+            years--;
+
+        return years;
+    }
+
+    /// <summary>
+    /// Calculate the age of a person in number of months from the birth date (e.g. 520 months returned equals 43 years and 3 months).
+    /// </summary>
+    public static int AgeMonths(this DateTime birthDate, DateTime? today = null)
+    {
+        var t = today?.Date ?? DateTime.Today;
+        birthDate = birthDate.Date;
+
+        if (t < birthDate)
+            return 0;
+
+        var birthMonths = birthDate.Year * 12 + birthDate.Month - 1;
+        var todayMonths = t.Year * 12 + t.Month - 1;
+
+        var months = todayMonths - birthMonths;
+        return t.Day >= birthDate.Day ? months : months - 1;
+    }
+
+    /// <summary>
+    /// Calculate the age of a person in number of days from the birth date (e.g. 3650 days returned equals about 10 years, may differ
+    /// due to leap years).
+    /// </summary>
+    public static int AgeDays(this DateTime birthDate, DateTime? today = null)
+    {
+        var t = today?.Date ?? DateTime.Today;
+        birthDate = birthDate.Date;
+
+        if (t < birthDate)
+            return 0;
+
+        return (int)t.ToOADate() - (int)birthDate.ToOADate();
+    }
+
 
     /// <summary>
     /// Calculate the end of month (e.g. 2019-06-30).
@@ -93,6 +162,14 @@ public static class CommonDateTimeExtensions
     public static int OADay(this DateTime datetime)
     {
         return (int)datetime.ToOADate();
+    }
+
+    /// <summary>
+    /// Modify a date and set it to a different day of the month.
+    /// </summary>
+    public static DateTime SetDayOfMonth(this DateTime date, int dayOfMonth)
+    {
+        return new DateTime(date.Year, date.Month, dayOfMonth);
     }
 
     /// <summary>
