@@ -17,7 +17,7 @@ public class ApiExceptionMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
 
-    public ApiExceptionMiddleware(RequestDelegate next, ILogger<HttpStatusException> logger)
+    public ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExceptionMiddleware> logger)
     {
         _next = next;
         _logger = logger;

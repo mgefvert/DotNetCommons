@@ -438,6 +438,16 @@ public static class CommonCollectionExtensions
     }
 
     /// <summary>
+    /// Exclude all null items
+    /// </summary>
+    public static IEnumerable<T> NotNulls<T>(this IEnumerable<T?> items) where T : class
+    {
+        foreach (var item in items)
+            if (item != null)
+                yield return item;
+    }
+
+    /// <summary>
     /// Repeat a collection a number of times
     /// </summary>
     public static IEnumerable<T> Repeat<T>(this ICollection<T> collection, int times = 2)
