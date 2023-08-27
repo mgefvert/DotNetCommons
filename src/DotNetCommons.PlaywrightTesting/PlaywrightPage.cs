@@ -10,13 +10,15 @@ public class PlaywrightPage : IAsyncDisposable
     private readonly ScreenShotHelper? _screenShots;
     private readonly Uri _root;
     private readonly string _name;
+    private readonly int _timeout;
 
     public IPage Page { get; }
     
-    internal PlaywrightPage(IPage page, Uri root, string name, ScreenShotHelper? screenShots)
+    internal PlaywrightPage(IPage page, Uri root, string name, int timeout, ScreenShotHelper? screenShots)
     {
         _root = root;
         _name = name;
+        _timeout = timeout;
         _screenShots = screenShots;
         
         Page = page;
@@ -27,13 +29,10 @@ public class PlaywrightPage : IAsyncDisposable
         };
         Page.RequestFailed += (_, request) => throw new PlaywrightTestingException($"Request failed ({request.Failure}): {request.Url}");
         Page.PageError += (_, s) => throw new PlaywrightTestingException($"Error occurred on page: {s}");
-        
-        Console.WriteLine($"-> Creating new page: {_name}");
     }
 
     public async ValueTask DisposeAsync()
     {
-        Console.WriteLine($"<- Disposing page: {_name}");
         await Page.CloseAsync();
     }
 
@@ -54,7 +53,7 @@ public class PlaywrightPage : IAsyncDisposable
     public async Task Verify(Func<Task<bool>> condition, string failMessage)
     {
         var waiting = false;
-        var timeout = DateTime.UtcNow.AddSeconds(3);
+        var timeout = DateTime.UtcNow.AddSeconds(_timeout);
         while (DateTime.UtcNow < timeout)
         {
             var result = await condition();
@@ -128,6 +127,7 @@ public class PlaywrightPage : IAsyncDisposable
     {
         Console.WriteLine($"{_name}: Check {selector}={onOrOff}");
         await Page.SetCheckedAsync(selector, onOrOff);
+        await Task.Delay(100);
     }
 
     public async Task Click(string selector)
@@ -138,6 +138,7 @@ public class PlaywrightPage : IAsyncDisposable
 
         await Page.ClickAsync(selector);
         await Page.WaitForLoadStateAsync(LoadState.Load);
+        await Task.Delay(100);
     }
 
     public async Task<bool> ContainsText(string text)
@@ -154,8 +155,9 @@ public class PlaywrightPage : IAsyncDisposable
 
         await Page.FocusAsync(selector, new PageFocusOptions
         {
-            Timeout = 1000
+            Timeout = _timeout * 1000
         });
+        await Task.Delay(100);
     }
 
     public async Task Navigate(string path)
@@ -167,21 +169,24 @@ public class PlaywrightPage : IAsyncDisposable
             throw new PlaywrightTestingException($"Unable to navigate to {uri}");
 
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await Task.Delay(100);
     }
 
-    public async Task Screenshot(string actionName)
+    public async Task<string?> Screenshot(string actionName)
     {
         if (_screenShots == null)
-            return;
+            return null;
 
         await ScreenShotLock.WaitAsync();
         try
         {
             Console.WriteLine($"{_name}: Screenshot: {actionName}");
+            var fileName = _screenShots.MakeFileName(actionName); 
             await Page.ScreenshotAsync(new PageScreenshotOptions
             {
-                Path = _screenShots.MakeFileName(actionName)
+                Path = fileName
             });
+            return fileName;
         }
         finally
         {
@@ -206,5 +211,6 @@ public class PlaywrightPage : IAsyncDisposable
         await Focus(selector);
         Console.WriteLine($"{_name}: TypeIn: '{text}'");
         await Page.Keyboard.TypeAsync(text);
+        await Task.Delay(100);
     }
 }

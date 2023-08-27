@@ -29,7 +29,7 @@ public class TestRunner
 
         foreach (var type in types)
         {
-            Console.WriteLine($"## {type.Name}");
+            Console.WriteLine($"# {type.Name}");
             try
             {
                 await RunTests(type);
@@ -37,7 +37,7 @@ public class TestRunner
             catch (Exception ex)
             {
                 using (new SetConsoleColor(ConsoleColor.Red))
-                    Console.WriteLine(ex.GetType().Name + ": " + ex.Message);
+                    Console.WriteLine(ex);
             }
             finally
             {
@@ -108,6 +108,8 @@ public class TestRunner
 
     private async Task RunIndividualTest(PlaywrightContext context, object instance, MethodInfo method, MethodInfo? testSetup, MethodInfo? testTeardown)
     {
+        Console.WriteLine($"## {instance.GetType().Name}.{method.Name}");
+        
         await using var page = await context.NewPage(method.Name);
         await CallMethod(instance, testSetup, page);
         try

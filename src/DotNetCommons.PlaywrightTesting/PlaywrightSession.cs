@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Reflection;
 using DotNetCommons.Sys;
 using Microsoft.Playwright;
@@ -7,12 +6,15 @@ namespace DotNetCommons.PlaywrightTesting;
 
 public class PlaywrightSession : IAsyncDisposable
 {
+    private readonly bool _headless;
     public DirectoryInfo? ScreenShotDirectory { get; }
     public IPlaywright? Session { get; private set; }
-    public IBrowser? Browser { get; private set; } 
+    public IBrowser? Browser { get; private set; }
+    public int Timeout { get; set; } = 10;
 
-    public PlaywrightSession(string? screenShotDirectory = null)
+    public PlaywrightSession(string? screenShotDirectory = null, bool headless = true)
     {
+        _headless = headless;
         if (screenShotDirectory != null)
         {
             ScreenShotDirectory = new DirectoryInfo(screenShotDirectory);
@@ -48,7 +50,8 @@ public class PlaywrightSession : IAsyncDisposable
         Session ??= await Playwright.CreateAsync();
         Browser ??= await Session.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
-            Headless = !Debugger.IsAttached
+            Headless = _headless,
+            SlowMo = 500
         });
     }
 

@@ -27,7 +27,7 @@ public class PlaywrightContext : IAsyncDisposable
             ? new ScreenShotHelper(_session.ScreenShotDirectory, name)
             : null;
 
-        return new PlaywrightPage(await Context.NewPageAsync(), _root, name, screenShotHelper);
+        return new PlaywrightPage(await Context.NewPageAsync(), _root, name, _session.Timeout, screenShotHelper);
     }
 
     public async Task RunInNewPage(string name, Func<PlaywrightPage, Task> action)
