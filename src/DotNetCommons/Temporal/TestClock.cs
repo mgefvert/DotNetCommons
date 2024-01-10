@@ -26,4 +26,9 @@ public class TestClock : IClock
     {
         Value = new DateTime(year, month, day, hour, minute, second, millis);
     }
+
+    public DateTime Advance(TimeSpan time)
+    {
+        return Value = Value.Add(time);
+    }
 }
