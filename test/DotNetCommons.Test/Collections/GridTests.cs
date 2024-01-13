@@ -28,7 +28,11 @@ public class GridTest
             new Names(3, "Charlie", "Chaplin")
         };
 
-        var csv = Grid.BuildFromObjects(objects, n => n.Id).ToCsv();
+        var csv = Grid.BuildFromObjects(objects, n => n.Id)
+            .ToCsv(new GridRenderOptions<int, string, string?>
+            {
+                IncludeColumnHeader = true
+            });
         csv.Should().NotBeEmpty();
 
         csv = csv!.Replace('\"', '\''); // For easier debugging

@@ -12,7 +12,7 @@ public class NumericToolsTests
     public void ToDelimitedSequence_Works()
     {
         NumericTools.ToDelimitedSequence(new[] { 1 }).Should().Be("1");
-        NumericTools.ToDelimitedSequence(Array.Empty<int>()).Should().Be(null);
+        NumericTools.ToDelimitedSequence(Array.Empty<int>()).Should().Be("");
         NumericTools.ToDelimitedSequence(new[] { 1, 3 }).Should().Be("1 and 3");
         NumericTools.ToDelimitedSequence(new[] { 10, 11, 12 }).Should().Be("10-12");
         NumericTools.ToDelimitedSequence(new[] { 10, 11, 12, 13, 16, 17 }).Should().Be("10-13 and 16-17");

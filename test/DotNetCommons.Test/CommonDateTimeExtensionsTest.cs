@@ -144,6 +144,23 @@ public class CommonDateTimeExtensionsTest
     }
 
     [TestMethod]
+    public void TestIsCloseTo()
+    {
+        var t20230101145556 = new DateTime(2023, 1, 1, 14, 55, 56);
+        var t202301011455 = new DateTime(2023, 1, 1, 14, 55, 0);
+        var t20230101 = new DateTime(2023, 1, 1);
+
+        t20230101145556.IsCloseTo(t20230101145556, TimeSpan.TicksPerSecond).Should().BeTrue();
+        t20230101145556.IsCloseTo(t202301011455, TimeSpan.TicksPerSecond).Should().BeFalse();
+        t20230101145556.IsCloseTo(t202301011455, TimeSpan.TicksPerMinute).Should().BeTrue();
+        t20230101145556.IsCloseTo(t20230101, TimeSpan.TicksPerMinute).Should().BeFalse();
+        t20230101145556.IsCloseTo(t20230101, TimeSpan.TicksPerHour).Should().BeFalse();
+        t20230101145556.IsCloseTo(t20230101, TimeSpan.TicksPerDay).Should().BeTrue();
+        t202301011455.IsCloseTo(t20230101, TimeSpan.TicksPerDay).Should().BeTrue();
+        t20230101.IsCloseTo(t20230101, TimeSpan.TicksPerDay).Should().BeTrue();
+    }
+
+    [TestMethod]
     public void TestTimestamp()
     {
         var dt = new DateTime(2016, 7, 23, 14, 40, 16, DateTimeKind.Utc);

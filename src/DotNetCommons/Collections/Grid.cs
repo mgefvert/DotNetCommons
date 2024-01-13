@@ -13,6 +13,21 @@ using System.Text;
 
 namespace DotNetCommons.Collections;
 
+public class GridRenderOptions<TRow, TCol, TData>
+{
+    public bool IncludeColumnHeader { get; set; }
+    public bool IncludeRowHeader { get; set; }
+    public bool SortColumns { get; set; }
+    public bool SortRows { get; set; }
+
+    public char CsvSeparator { get; set; } = ',';
+    public string CsvLineSeparator { get; set; } = Environment.NewLine;
+
+    public Func<TRow, string?>? RowFormatter { get; set; }
+    public Func<TCol, string?>? ColumnFormatter { get; set; }
+    public Func<TData?, string?>? ValueFormatter { get; set; }
+}
+
 public static class Grid
 {
     /// <summary>
@@ -26,7 +41,7 @@ public static class Grid
         where TKey : notnull
         where TObject : class
     {
-        return BuildFromObjects(items, keySelector, (_,  value) => value?.ToString());
+        return BuildFromObjects(items, keySelector, (prop,  value) => value?.ToString());
     }
 
     /// <summary>
@@ -236,10 +251,67 @@ public class Grid<TRow, TCol, TData>
         }
     }
 
+    public void RemoveValues(Func<TRow, TCol, TData?, bool> selector)
+    {
+        var keys = Data
+            .Where(x => selector(x.Key.Item1, x.Key.Item2, x.Value))
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keys)
+            Data.Remove(key);
+    }
+
+    public void RemoveColumn(TCol col)
+    {
+        Columns.Remove(col);
+        var keys = Data
+            .Where(x => x.Key.Item2.Equals(col))
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keys)
+            Data.Remove(key);
+    }
+
+    public void RemoveEmptyColumns()
+    {
+        var existingColumns = Data
+            .Select(x => x.Key.Item2)
+            .Distinct()
+            .ToHashSet();
+
+        Columns.RemoveWhere(c => !existingColumns.Contains(c));
+    }
+
+    public void RemoveEmptyRows()
+    {
+        var existingRows = Data
+            .Select(x => x.Key.Item1)
+            .Distinct()
+            .ToHashSet();
+
+        Rows.RemoveWhere(r => !existingRows.Contains(r));
+    }
+
+    public void RemoveRow(TRow row)
+    {
+        Rows.Remove(row);
+        var keys = Data
+            .Where(x => x.Key.Item1.Equals(row))
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var key in keys)
+            Data.Remove(key);
+    }
+
     protected TData? Set((TRow, TCol) key, TData? value)
     {
-        Columns.Add(key.Item2);
-        Rows.Add(key.Item1);
+        if (!Columns.Contains(key.Item2))
+            Columns.Add(key.Item2);
+        if (!Rows.Contains(key.Item1))
+            Rows.Add(key.Item1);
 
         Data[key] = value;
         return value;
@@ -287,25 +359,28 @@ public class Grid<TRow, TCol, TData>
         return result;
     }
 
-    private List<List<string?>> RenderToStrings(bool rowHeader, bool colHeader, Func<string?, string?> formatter)
+    private List<List<string?>> RenderToStrings(GridRenderOptions<TRow, TCol, TData> options, Func<string?, string?> formatter)
     {
-        var result = new List<List<string?>>(Rows.Count + 1);
+        var columns = options.SortColumns ? Columns.OrderBy(x => x).ToList() : Columns.ToList();
+        var rows = options.SortRows ? Rows.OrderBy(x => x).ToList() : Rows.ToList();
 
-        if (colHeader)
+        var result = new List<List<string?>>(rows.Count + 1);
+
+        if (options.IncludeColumnHeader)
         {
-            var header = new List<string?>(Columns.Count + 1);
-            if (rowHeader)
+            var header = new List<string?>(columns.Count + 1);
+            if (options.IncludeRowHeader)
                 header.Add(formatter("Row"));
-            header.AddRange(Columns.Select(x => formatter(x.ToString())));
+            header.AddRange(columns.Select(x => formatter(x.ToString())));
             result.Add(header);
         }
 
-        foreach (var row in Rows)
+        foreach (var row in rows)
         {
-            var strings = new List<string?>(Columns.Count + 1);
-            if (rowHeader)
+            var strings = new List<string?>(columns.Count + 1);
+            if (options.IncludeRowHeader)
                 strings.Add(formatter(row.ToString()));
-            strings.AddRange(Columns.Select(c => formatter(Get(row, c)?.ToString())));
+            strings.AddRange(columns.Select(c => formatter(Get(row, c)?.ToString())));
             result.Add(strings);
         }
 
@@ -315,46 +390,51 @@ public class Grid<TRow, TCol, TData>
     /// <summary>
     /// Generate a CSV string from the grid.
     /// </summary>
-    public string? ToCsv(bool includeRowHeader = false, char separator = ',', string? lineSeparator = null)
+    public string? ToCsv(GridRenderOptions<TRow, TCol, TData> options)
     {
-        lineSeparator ??= Environment.NewLine;
         if (!Columns.Any() || !Rows.Any())
             return null;
 
-        var strings = RenderToStrings(includeRowHeader, true, v => EscapeString(v, _csvEscapeChars, true));
+        var strings = RenderToStrings(options, v => EscapeString(v, _csvEscapeChars, true));
 
         var result = new StringBuilder();
         foreach (var row in strings)
-            result.Append(string.Join(separator, row) + lineSeparator);
+            result.Append(string.Join(options.CsvSeparator, row) + options.CsvLineSeparator);
 
         return result.ToString();
     }
 
-    protected string? RenderHtml(Func<TRow, string?>? rowFormatter, Func<TCol, string?>? columnFormatter, Func<TData?, string?>? valueFormatter)
+    /// <summary>
+    /// Render grid to HTML.
+    /// </summary>
+    public string? ToHtml(GridRenderOptions<TRow, TCol, TData> options)
     {
         if (!Columns.Any() || !Rows.Any())
             return null;
 
-        rowFormatter ??= row => row.ToString();
-        columnFormatter ??= col => col.ToString();
-        valueFormatter ??= v => v?.ToString();
+        var rowFormatter = options.RowFormatter ?? (row => row.ToString());
+        var columnFormatter = options.ColumnFormatter ?? (col => col.ToString());
+        var valueFormatter = options.ValueFormatter ?? (v => v?.ToString());
+
+        var columns = options.SortColumns ? Columns.OrderBy(x => x).ToList() : Columns.ToList();
+        var rows = options.SortRows ? Rows.OrderBy(x => x).ToList() : Rows.ToList();
 
         var result = new StringBuilder();
         result.AppendLine("<table>");
         result.AppendLine("  <thead>");
         result.AppendLine("    <tr>");
         result.AppendLine("      <th>Row</th>");
-        foreach (var col in Columns)
+        foreach (var col in columns)
             result.AppendLine("      <th>" + WebUtility.HtmlEncode(columnFormatter(col)) + "</th>");
         result.AppendLine("    </tr>");
         result.AppendLine("  </thead>");
         result.AppendLine("  <tbody>");
 
-        foreach (var row in Rows)
+        foreach (var row in rows)
         {
             result.AppendLine("    <tr>");
             result.AppendLine("      <th>" + WebUtility.HtmlEncode(rowFormatter(row)) + "</th>");
-            foreach (var col in Columns)
+            foreach (var col in columns)
                 result.AppendLine("      <td>" + WebUtility.HtmlEncode(valueFormatter(Get(row, col))) + "</td>");
             result.AppendLine("    </tr>");
         }
@@ -365,36 +445,15 @@ public class Grid<TRow, TCol, TData>
     }
 
     /// <summary>
-    /// Render grid to HTML.
-    /// </summary>
-    public string? ToHtml()
-    {
-        return RenderHtml(null, null, null);
-    }
-
-    /// <summary>
-    /// Render grid to HTML using a specific value formatter.
-    /// </summary>
-    public string? ToHtml(Func<TData?, string?>? valueFormatter)
-    {
-        return RenderHtml(null, null, valueFormatter);
-    }
-
-    public string? ToHtml(Func<TRow, string?>? rowFormatter, Func<TCol, string?>? columnFormatter, Func<TData?, string?>? valueFormatter)
-    {
-        return RenderHtml(rowFormatter, columnFormatter, valueFormatter);
-    }
-
-    /// <summary>
     /// Generate a MarkDown table (fields separated by pipe symbol).
     /// </summary>
     /// <returns></returns>
-    public string? ToMarkup(bool includeRowHeader)
+    public string? ToMarkDown(GridRenderOptions<TRow, TCol, TData> options)
     {
         if (!Columns.Any() || !Rows.Any())
             return null;
 
-        var strings = RenderToStrings(includeRowHeader, true, v => EscapeString(v, _markupEscapeChars, false));
+        var strings = RenderToStrings(options, v => EscapeString(v, _markupEscapeChars, false));
         var colCount = strings.First().Count;
         var colLengths = Enumerable.Range(0, colCount)
             .Select(col => strings.Select(s => s[col]?.Length ?? 0).Max())

@@ -90,7 +90,6 @@ public static class CommonDateTimeExtensions
         return (int)t.ToOADate() - (int)birthDate.ToOADate();
     }
 
-
     /// <summary>
     /// Calculate the end of month (e.g. 2019-06-30).
     /// </summary>
@@ -153,6 +152,15 @@ public static class CommonDateTimeExtensions
     public static bool IsBetween(this DateTime datetime, DateTime? dateStart, DateTime? dateEnd)
     {
         return datetime >= (dateStart ?? DateTime.MinValue) && datetime < (dateEnd ?? DateTime.MaxValue);
+    }
+
+    /// <summary>
+    /// Compares two datetimes with a given precision, default TimeSpan.TicksPerSecond. Other precision can be used,
+    /// based in tick counts, like TimeSpan.TicksPerMinute, TimeSpan.TicksPerDay etc.
+    /// </summary>
+    public static bool IsCloseTo(this DateTime datetime, DateTime another, long precision = TimeSpan.TicksPerSecond)
+    {
+        return datetime.Truncate(precision) == another.Truncate(precision);
     }
 
     /// <summary>

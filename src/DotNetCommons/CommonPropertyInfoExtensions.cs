@@ -35,7 +35,7 @@ public static class CommonObjectExtensions
     /// </summary>
     public static void SetPropertyValue(this PropertyInfo property, object obj, object? value, CultureInfo culture)
     {
-        static bool ValueIsNull(object? v) => v == null || v is string s && string.IsNullOrEmpty(s);
+        bool ValueIsNull(object? v) => v == null || v is string s && string.IsNullOrEmpty(s);
 
         var propertyType = property.PropertyType;
 
