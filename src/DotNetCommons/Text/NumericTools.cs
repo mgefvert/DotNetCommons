@@ -1,10 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DotNetCommons.Text;
 
 public static class NumericTools
 {
+    public static IEnumerable<int> FindFactors(this int number)
+    {
+        var root = (int)Math.Sqrt(number);
+        
+        for (var i = 2; i <= root; i++)
+        {
+            if (number % i != 0) 
+                continue;
+
+            yield return i;
+            if (i != root)
+                yield return number / i;
+        }
+    }
+    
     /// <summary>
     /// Render a sequence of unordered numbers to a sorted list, like "1-3, 5, 9, 13-17 and 20-21"
     /// </summary>
