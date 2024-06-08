@@ -1,6 +1,4 @@
 ﻿using DotNetCommons.Text.Tokenizer;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 // ReSharper disable UnusedMember.Global
@@ -12,6 +10,8 @@ namespace DotNetCommons.Text.Parsers;
 /// </summary>
 public class ConfigStringParser
 {
+    private readonly bool _allowSingleKeywords;
+
     public enum Token
     {
         Whitespace,
@@ -23,13 +23,14 @@ public class ConfigStringParser
 
     private readonly List<Definition<Token>> _definitions = new();
 
-    public ConfigStringParser(string separator = ";")
+    public ConfigStringParser(string separator = ";", bool allowSingleKeywords = false)
     {
+        _allowSingleKeywords = allowSingleKeywords;
         _definitions.AddRange(new Definition<Token>[] {
             new Characters<Token>(Token.Text, false)
                 .Add(TokenMode.Letter, TokenMode.Digit, TokenMode.Symbols)
-                .AddSpecific(" ")
-                .Except(";="),
+                .Except(separator + "="),
+            new Strings<Token>(Token.Whitespace, " ", true),
             new Strings<Token>(Token.Separator, separator, false),
             new Strings<Token>(Token.Equal, "=", false),
             new Section<Token>(Token.Quote, "\"", "\"", false, false)
@@ -45,7 +46,6 @@ public class ConfigStringParser
         var items = tokens.Split(Token.Separator);
         foreach (var item in items)
         {
-            item.Trim(Token.Whitespace);
             if (!item.Any())
                 break;
 
@@ -53,9 +53,16 @@ public class ConfigStringParser
             if (key == null)
                 continue;
 
-            item.Trim(Token.Whitespace);
+            if (!item.Any())
+            {
+                if (_allowSingleKeywords && key.Text.IsSet())
+                    result[key.Text] = "true";
+                else if (!_allowSingleKeywords)
+                    throw new StringTokenizerException($"Invalid keyword in text at {key.Line}:{key.Column}");
+                continue;
+            }
+            
             item.Consume(true, Token.Equal);
-            item.Trim(Token.Whitespace);
 
             var sb = new StringBuilder();
             foreach (var token in item.ConsumeAll(Token.Text, Token.Quote))
