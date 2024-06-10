@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Web;
+﻿namespace DotNetCommons.Web;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class SiteMapAttribute : Attribute

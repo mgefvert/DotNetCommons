@@ -23,18 +23,25 @@ public class ConfigStringParser
 
     private readonly List<Definition<Token>> _definitions = new();
 
-    public ConfigStringParser(string separator = ";", bool allowSingleKeywords = false)
+    public ConfigStringParser(string separator = ";", bool allowSingleKeywords = false, bool allowSpacesInKeywords = false)
     {
         _allowSingleKeywords = allowSingleKeywords;
-        _definitions.AddRange(new Definition<Token>[] {
-            new Characters<Token>(Token.Text, false)
-                .Add(TokenMode.Letter, TokenMode.Digit, TokenMode.Symbols)
-                .Except(separator + "="),
-            new Strings<Token>(Token.Whitespace, " ", true),
-            new Strings<Token>(Token.Separator, separator, false),
-            new Strings<Token>(Token.Equal, "=", false),
-            new Section<Token>(Token.Quote, "\"", "\"", false, false)
-        });
+
+        var chars = new Characters<Token>(Token.Text, false)
+            .Add(TokenMode.Letter, TokenMode.Digit, TokenMode.Symbols)
+            .Except(separator + "=");
+
+        if (allowSpacesInKeywords)
+            chars.Add(TokenMode.Whitespace);
+        
+        _definitions.Add(chars);
+
+        _definitions.Add(new Strings<Token>(Token.Separator, separator, false));
+        _definitions.Add(new Strings<Token>(Token.Equal, "=", false));
+        _definitions.Add(new Section<Token>(Token.Quote, "\"", "\"", false, false));
+        
+        if (!allowSpacesInKeywords)
+            _definitions.Add(new Strings<Token>(Token.Whitespace, " ", true));
     }
 
     public Dictionary<string, string> Parse(string text)

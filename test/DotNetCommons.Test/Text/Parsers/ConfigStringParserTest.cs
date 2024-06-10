@@ -9,7 +9,7 @@ public class ConfigStringParserTest
     [TestMethod]
     public void Parse_Works()
     {
-        var cfg = new ConfigStringParser().Parse(
+        var cfg = new ConfigStringParser(allowSpacesInKeywords: true).Parse(
             "Data Source=MYSERVER;Initial Catalog=A_DATABASE;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=false;");
 
         Assert.AreEqual(5, cfg.Count);
@@ -23,7 +23,7 @@ public class ConfigStringParserTest
     [TestMethod]
     public void Parse_WithQuotes_Works()
     {
-        var cfg = new ConfigStringParser().Parse(
+        var cfg = new ConfigStringParser(allowSpacesInKeywords: true).Parse(
             "Data Source=MYSERVER\\Instance;Initial Catalog=MyDatabase;Integrated Security=True;Connect Timeout=30;" +
             "Application Name=\"SSIS-execute spRunBatchJob-{C7786B48-1383-1111-2222-22747007DC66}02\\Integration Daily\";");
 
@@ -37,7 +37,7 @@ public class ConfigStringParserTest
     [TestMethod]
     public void Parse_WithQuotesAndSemicolons_Works()
     {
-        var cfg = new ConfigStringParser().Parse(
+        var cfg = new ConfigStringParser(allowSpacesInKeywords: true).Parse(
             "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=\\\\myserver\\temp\\exports.xls;Extended Properties=\"Excel 8.0;HDR=YES\";");
 
         Assert.AreEqual("Microsoft.Jet.OLEDB.4.0", cfg["Provider"]);
