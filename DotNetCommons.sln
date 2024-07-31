@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.PlaywrightTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.EF", "src\DotNetCommons.EF\DotNetCommons.EF.csproj", "{9BE7B199-0C1C-467A-9461-473AD3108345}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.Services", "src\DotNetCommons.Services\DotNetCommons.Services.csproj", "{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{9BE7B199-0C1C-467A-9461-473AD3108345}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BE7B199-0C1C-467A-9461-473AD3108345}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BE7B199-0C1C-467A-9461-473AD3108345}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,6 +80,7 @@ Global
 		{FCFA496A-9854-41E5-A106-0783DFC9EFF2} = {3B5E0F1C-3195-454F-9270-0FF1525418EF}
 		{FBDAE42F-D900-4AB4-9E7E-B32B3A9C8CE2} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
 		{9BE7B199-0C1C-467A-9461-473AD3108345} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
+		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ACF2AE89-03F6-4E0F-BB13-5576A5D994EF}
