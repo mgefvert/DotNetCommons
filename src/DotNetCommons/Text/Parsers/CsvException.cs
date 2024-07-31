@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Text.Parsers;
+﻿namespace DotNetCommons.Text.Parsers;
 
 public class CsvException : Exception
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace DotNetCommons.CheckDigits;
+﻿namespace DotNetCommons.CheckDigits;
 
 /// <summary>
 /// Class that calculates an ABA account check digit for check routing. Handles extra characters and punctuation

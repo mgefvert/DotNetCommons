@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-// ReSharper disable UnusedMember.Global
+﻿// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Collections;
 

@@ -1,17 +1,24 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace DotNetCommons.Security;
 
 public class TotpGeneratorRfc6238
 {
+    public enum Algorithm
+    {
+        HmacSha1,
+        HmacSha256,
+        HmacSha384,
+        HmacSha512
+    }
+    
     private readonly int _digits;
-    private readonly string _algorithm;
+    private readonly Algorithm _algorithm;
     private readonly int _timeStep;
     private readonly byte[] _secret;
     
-    public TotpGeneratorRfc6238(string secret, int digits, string algorithm = "hmacsha256", int timeStep = 30)
+    public TotpGeneratorRfc6238(string secret, int digits, Algorithm algorithm = Algorithm.HmacSha256, int timeStep = 30)
     {
         if (secret.IsEmpty())
             throw new Exception("Rfc6238Totp: Shared secret is empty");
@@ -34,7 +41,7 @@ public class TotpGeneratorRfc6238
         if (BitConverter.IsLittleEndian)
             Array.Reverse(counterBytes);
 
-        var hmac = HMAC.Create(_algorithm) ?? throw new Exception("Unable to create HMAC hash");
+        var hmac = CreateHmac(_algorithm);
         hmac.Key = _secret;
         var hash = hmac.ComputeHash(counterBytes);
         
@@ -46,5 +53,17 @@ public class TotpGeneratorRfc6238
         var totp = binaryCode % (int)Math.Pow(10, _digits);
 
         return totp.ToString().PadLeft(_digits, '0');
+    }
+
+    private static HMAC CreateHmac(Algorithm algorithm)
+    {
+        return algorithm switch
+        {
+            Algorithm.HmacSha1   => new HMACSHA1(),
+            Algorithm.HmacSha256 => new HMACSHA256(),
+            Algorithm.HmacSha384 => new HMACSHA384(),
+            Algorithm.HmacSha512 => new HMACSHA512(),
+            _                    => throw new ArgumentException("Invalid TOTP algorithm", nameof(algorithm))
+        };
     }
 }

@@ -24,7 +24,6 @@
 #nullable disable
 
 using System.Collections;
-using System.Collections.Generic;
 
 namespace DotNetCommons.Text;
 

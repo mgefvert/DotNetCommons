@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Temporal;
+﻿namespace DotNetCommons.Temporal;
 
 /// <summary>
 /// Class that represents a holiday occurring relative to another holiday (days after or before).

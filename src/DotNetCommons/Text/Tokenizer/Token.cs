@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace DotNetCommons.Text.Tokenizer;
+﻿namespace DotNetCommons.Text.Tokenizer;
 
 /// <summary>
 /// Encapsulates a specific token found in a stream.

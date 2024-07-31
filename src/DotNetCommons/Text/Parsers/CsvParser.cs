@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using DotNetCommons.Text.Tokenizer;
+﻿using DotNetCommons.Text.Tokenizer;
 
 // ReSharper disable UnusedMember.Global
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace DotNetCommons;
+﻿namespace DotNetCommons;
 
 public class StateMachineException : Exception
 {

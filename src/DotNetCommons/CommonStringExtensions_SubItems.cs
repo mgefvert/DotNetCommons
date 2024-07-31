@@ -2,9 +2,6 @@
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-using System;
-using System.Linq;
-
 namespace DotNetCommons;
 
 public static partial class CommonStringExtensions

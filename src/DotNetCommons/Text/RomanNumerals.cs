@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 // From https://stackoverflow.com/questions/7040289/converting-integers-to-roman-numerals
 

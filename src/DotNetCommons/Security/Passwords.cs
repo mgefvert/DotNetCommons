@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 // Written by Mats Gefvert
@@ -88,7 +84,7 @@ public static class Passwords
     /// </summary>
     private static string ComputeHash(string plaintext, byte[] salt, int complexity)
     {
-        using var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity);
+        using var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity, HashAlgorithmName.SHA1);
         using var mem = new MemoryStream();
         using var writer = new BinaryWriter(mem);
 

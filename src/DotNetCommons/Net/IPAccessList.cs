@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -84,7 +82,7 @@ public class IPAccessList
             return;
         }
 
-        if (IPNetwork.TryParse(address, out var range) && range != null)
+        if (IPNetwork.TryParse(address, out var range))
         {
             Add(range);
             return;

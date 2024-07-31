@@ -2,7 +2,6 @@
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
-using System;
 using System.Text;
 using System.Text.RegularExpressions;
 

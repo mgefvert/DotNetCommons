@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Temporal;
+﻿namespace DotNetCommons.Temporal;
 
 /// <summary>
 /// Class that encapsulates a given weekday of a given month (e.g. the third Wednesday in March).

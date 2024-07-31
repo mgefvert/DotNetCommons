@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace DotNetCommons.CheckDigits;
+﻿namespace DotNetCommons.CheckDigits;
 
 /// <summary>
 /// Class that calculates a Luhn (mod-10) check digit for credit card numbers, IMEI numbers,

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace DotNetCommons.Text;
+﻿namespace DotNetCommons.Text;
 
 public static class NumericTools
 {

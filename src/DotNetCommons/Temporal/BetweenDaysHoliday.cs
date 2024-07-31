@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Temporal;
+﻿namespace DotNetCommons.Temporal;
 
 /// <summary>
 /// Class that represents a holiday as a given weekday between two possible dates.

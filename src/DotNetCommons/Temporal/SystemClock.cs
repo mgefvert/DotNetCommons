@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Temporal;
+﻿namespace DotNetCommons.Temporal;
 
 // ReSharper disable once UnusedType.Global
 public class SystemClock : IClock
