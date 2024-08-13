@@ -373,6 +373,11 @@ public static class CommonCollectionExtensions
         return result;
     }
 
+    public static bool IsEmpty<T>(this ICollection<T>? collection) => collection == null || collection.Count == 0;
+    public static bool IsOne<T>(this ICollection<T>? collection) => collection is { Count: 1 };
+    public static bool IsAtLeastOne<T>(this ICollection<T>? collection) => collection is { Count: >= 1 };
+    public static bool IsMany<T>(this ICollection<T>? collection) => collection is { Count: > 1 };
+
     /// <summary>
     /// Javascript-like String.Join.
     /// </summary>

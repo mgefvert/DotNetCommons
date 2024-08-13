@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using DotNetCommons.Sys;
+﻿using DotNetCommons.Sys;
 
 namespace DotNetCommons.Test.Sys;
 

@@ -1,8 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DotNetCommons.Test;
 
@@ -226,6 +223,42 @@ public class CommonCollectionExtensionsTest
     {
         Assert.AreEqual(2.99M, _dictD.Increment("A", 1.99M));
         Assert.AreEqual(2.45M, _dictD.Increment("Z", 2.45M));
+    }
+
+    [TestMethod]
+    public void TestIsEmpty()
+    {
+        ((int[]?)null).IsEmpty().Should().BeTrue();
+        Array.Empty<int>().IsEmpty().Should().BeTrue();
+        new[] { 1 }.IsEmpty().Should().BeFalse();
+        new[] { 1, 2 }.IsEmpty().Should().BeFalse();
+    }
+    
+    [TestMethod]
+    public void TestIsOne()
+    {
+        ((int[]?)null).IsOne().Should().BeFalse();
+        Array.Empty<int>().IsOne().Should().BeFalse();
+        new[] { 1 }.IsOne().Should().BeTrue();
+        new[] { 1, 2 }.IsOne().Should().BeFalse();
+    }
+    
+    [TestMethod]
+    public void TestAtLeastOne()
+    {
+        ((int[]?)null).IsAtLeastOne().Should().BeFalse();
+        Array.Empty<int>().IsAtLeastOne().Should().BeFalse();
+        new[] { 1 }.IsAtLeastOne().Should().BeTrue();
+        new[] { 1, 2 }.IsAtLeastOne().Should().BeTrue();
+    }
+    
+    [TestMethod]
+    public void TestIsMany()
+    {
+        ((int[]?)null).IsMany().Should().BeFalse();
+        Array.Empty<int>().IsMany().Should().BeFalse();
+        new[] { 1 }.IsMany().Should().BeFalse();
+        new[] { 1, 2 }.IsMany().Should().BeTrue();
     }
 
     [TestMethod]

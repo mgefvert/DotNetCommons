@@ -1,7 +1,5 @@
 ﻿using DotNetCommons.Text.Parsers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Linq;
 
 namespace DotNetCommons.Test.Text.Parsers;
 

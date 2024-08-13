@@ -1,5 +1,4 @@
-﻿using System;
-using DotNetCommons.Collections;
+﻿using DotNetCommons.Collections;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -1,5 +1,4 @@
-﻿using System;
-using DotNetCommons.Security;
+﻿using DotNetCommons.Security;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -21,7 +20,7 @@ public class TotpGeneratorRfc6238Test
     [TestMethod]
     public void Generate_HMAC_SHA1()
     {
-        var totp = new TotpGeneratorRfc6238("12345678901234567890", 8, "hmacsha1");
+        var totp = new TotpGeneratorRfc6238("12345678901234567890", 8, TotpGeneratorRfc6238.Algorithm.HmacSha1);
 
         totp.GeneratePassword(new DateTime(1970, 1, 1, 0, 0, 59, DateTimeKind.Utc)).Should().Be("94287082");
         totp.GeneratePassword(new DateTime(2005, 3, 18, 01, 58, 29, DateTimeKind.Utc)).Should().Be("07081804");

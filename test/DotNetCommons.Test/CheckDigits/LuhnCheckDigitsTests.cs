@@ -1,6 +1,5 @@
 ﻿using DotNetCommons.CheckDigits;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace DotNetCommons.Test.CheckDigits
 {
