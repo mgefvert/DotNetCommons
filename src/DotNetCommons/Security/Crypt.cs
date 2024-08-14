@@ -1,4 +1,4 @@
-﻿using DotNetCommons.IO;
+﻿using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -7,112 +7,96 @@ using System.Text;
 namespace DotNetCommons.Security;
 
 /// <summary>
-/// Class that provides easy encryption and decryption of data using AES-256 encryption.
+/// Class that provides easy encryption and decryption of data using AES-256 encryption and CBC mode with an automatically
+/// generated IV, if need be. 
 /// </summary>
 public static class Crypt
 {
-    public const int KeyLength = 32;
-
-    /// <summary>
-    /// Create a new key using HMAC-SHA256 based on a master key and a specific message key.
-    /// </summary>
-    public static byte[] CreateKey(byte[] masterKey, byte[] messageKey)
+    public static CryptIoReader GetDecryptionStream(CryptKey key, Stream encryptedStream, bool decompress)
     {
-        using var hmac = new HMACSHA256(masterKey);
-        return hmac.ComputeHash(messageKey);
-    }
-
-    /// <summary>
-    /// Create a new key using HMAC-SHA256 based on a master key and a specific message key.
-    /// </summary>
-    public static byte[] CreateKey(string masterKey, string messageKey)
-    {
-        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(masterKey));
-        return hmac.ComputeHash(Encoding.UTF8.GetBytes(messageKey));
-    }
-
-    /// <summary>
-    /// Decrypt a byte message using a given key. Keys are padded if they're not the exact length required.
-    /// </summary>
-    public static byte[] Decrypt(byte[] key, byte[] data)
-    {
-        using var aes = Aes.Create();
-        aes.Key = PadKey(key, KeyLength);
-        using var mem = new MemoryStream(data);
-        byte[] buffer;
-
-        using (var reader = new BinaryReader(mem, Encoding.UTF8, true))
+        var aes = Aes.Create();
+        aes.Key = key.KeyBuffer;
+        int messageSize;
+        
+        using (var header = new BinaryReader(encryptedStream, Encoding.UTF8, true))
         {
-            var ivlen = reader.ReadInt32();
-            aes.IV = reader.ReadBytes(ivlen);
-            buffer = new byte[reader.ReadInt32()];
+            var ivSize = header.ReadInt32();
+            aes.IV = header.ReadBytes(ivSize); 
+            messageSize = header.ReadInt32();
         }
 
-        using var crypto = new CryptoStream(mem, aes.CreateDecryptor(), CryptoStreamMode.Read);
+        var cryptoStream = new CryptoStream(encryptedStream, aes.CreateDecryptor(), CryptoStreamMode.Read);
 
-        var read = StreamTools.ReadIntoBuffer(crypto, buffer);
-        if (read != buffer.Length)
-            throw new Exception($"Expected {buffer.Length} of decrypted data, got {read}.");
+        GZipStream? gzipStream = null;
+        if (decompress)
+            gzipStream = new GZipStream(cryptoStream, CompressionMode.Decompress);
 
-        return buffer;
+        return new CryptIoReader(aes, messageSize, encryptedStream, gzipStream, cryptoStream);
     }
-
-    /// <summary>
-    /// Decrypt a string message using a given key. Keys are padded if they're not the exact length required.
-    /// </summary>
-    public static string Decrypt(byte[] key, string data)
-    {
-        var bytes = Convert.FromBase64String(data);
-        return Encoding.UTF8.GetString(Decrypt(key, bytes));
-    }
-
-    /// <summary>
-    /// Encrypt a byte message using a given key. Keys are padded if they're not the exact length required.
-    /// </summary>
-    public static byte[] Encrypt(byte[] key, byte[] data)
+    
+    public static CryptIoWriter GetEncryptionStream(CryptKey key, int messageSize, Stream encryptedStream, bool compress)
     {
         using var aes = Aes.Create();
         aes.GenerateIV();
-        aes.Key = PadKey(key, KeyLength);
+        aes.Key = key.KeyBuffer;
 
+        encryptedStream.Write(BitConverter.GetBytes(aes.IV.Length), 0, 4);
+        encryptedStream.Write(aes.IV, 0, aes.IV.Length);
+        encryptedStream.Write(BitConverter.GetBytes(messageSize), 0, 4);
+
+        var cryptoStream = new CryptoStream(encryptedStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
+
+        GZipStream? gzipStream = null;
+        if (compress)
+            gzipStream = new GZipStream(cryptoStream, CompressionLevel.Optimal);
+
+        return new CryptIoWriter(aes, messageSize, encryptedStream, gzipStream, cryptoStream);
+    }
+    
+    /// <summary>
+    /// Decrypt a byte message using a given key.
+    /// </summary>
+    public static byte[] Decrypt(CryptKey key, byte[] data, bool decompress)
+    {
+        using var mem = new MemoryStream(data);
+        using var io = GetDecryptionStream(key, mem, decompress);
+        
+        var result = new byte[io.MessageSize];
+        io.IoStream.ReadExactly(result, 0, result.Length);
+        
+        return result;
+    }
+
+    /// <summary>
+    /// Decrypt a Base64-encoded string message using a given key.
+    /// </summary>
+    public static string Decrypt(CryptKey key, string data, bool decompress)
+    {
+        var bytes = Convert.FromBase64String(data);
+        return Encoding.UTF8.GetString(Decrypt(key, bytes, decompress));
+    }
+
+    /// <summary>
+    /// Encrypt a byte message using a given key.
+    /// </summary>
+    public static byte[] Encrypt(CryptKey key, byte[] data, bool compress)
+    {
         using var mem = new MemoryStream();
-        mem.Write(BitConverter.GetBytes(aes.IV.Length), 0, 4);
-        mem.Write(aes.IV, 0, aes.IV.Length);
-        mem.Write(BitConverter.GetBytes(data.Length), 0, 4);
-
-        using (var crypto = new CryptoStream(mem, aes.CreateEncryptor(), CryptoStreamMode.Write))
+        using (var io = GetEncryptionStream(key, data.Length, mem, compress))
         {
-            crypto.Write(data, 0, data.Length);
+            io.IoStream.Write(data, 0, data.Length);
         }
 
         return mem.ToArray();
     }
 
     /// <summary>
-    /// Encrypt a string message using a given key. Keys are padded if they're not the exact length required.
+    /// Encrypt a Base64-encoded string message using a given key.
     /// </summary>
-    public static string Encrypt(byte[] key, string data)
+    public static string Encrypt(CryptKey key, string data, bool compress)
     {
         var bytes = Encoding.UTF8.GetBytes(data);
-        return Convert.ToBase64String(Encrypt(key, bytes));
-    }
-
-    private static byte[] PadKey(byte[] key, int length)
-    {
-        var result = new byte[length];
-        var maxlen = Math.Max(length, key.Length);
-        for (var i = 0; i < maxlen; i++)
-            result[i % length] ^= key[i % key.Length];
-
-        return result;
-    }
-
-    /// <summary>
-    /// Burn a key after use to prevent information leaks.
-    /// </summary>
-    public static void Zero(byte[] key)
-    {
-        for (var i = 0; i < key.Length; i++)
-            key[i] = 0;
+        var result = Encrypt(key, bytes, compress);
+        return Convert.ToBase64String(result);
     }
 }
