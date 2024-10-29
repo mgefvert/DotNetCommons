@@ -318,7 +318,7 @@ public static partial class CommonStringExtensions
     /// Parse a string to a boolean. Handles truthy/falsy numbers, strings like "true/false", "yes/no", "t/f" and "y/n".
     /// If the input string is empty or cannot be parsed, it returns a default value.
     /// </summary>
-    public static bool ParseBoolean(this string value, bool defaultValue)
+    public static bool ParseBoolean(this string? value, bool defaultValue)
     {
         return ParseBoolean(value) ?? defaultValue;
     }
