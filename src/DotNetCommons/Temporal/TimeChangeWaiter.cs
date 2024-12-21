@@ -65,12 +65,12 @@ public class TimeChangeWaiter
             if (current != Last)
                 return;
 
-            await Task.Delay(GetTimeUntilNext());
+            await Task.Delay(GetTimeUntilNext()).ConfigureAwait(false);
             for(;;)
             {
                 current = GetCurrent();
                 if (Last == current)
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                 else
                     return;
             }
