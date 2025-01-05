@@ -1,4 +1,4 @@
-﻿namespace DotNetCommons.Text;
+﻿namespace DotNetCommons.Numerics;
 
 public static class NumericTools
 {
@@ -16,8 +16,8 @@ public static class NumericTools
                 yield return number / i;
         }
     }
-    
-    /// <summary>
+
+	/// <summary>
     /// Render a sequence of unordered numbers to a sorted list, like "1-3, 5, 9, 13-17 and 20-21"
     /// </summary>
     public static string ToDelimitedSequence(IEnumerable<int> number, string andWord = "and")

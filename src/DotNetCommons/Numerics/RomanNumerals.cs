@@ -2,7 +2,7 @@
 
 // From https://stackoverflow.com/questions/7040289/converting-integers-to-roman-numerals
 
-namespace DotNetCommons.Text;
+namespace DotNetCommons.Numerics;
 
 public static class RomanNumerals
 {

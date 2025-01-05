@@ -1,8 +1,8 @@
-﻿using DotNetCommons.Text;
+﻿using DotNetCommons.Numerics;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DotNetCommons.Test.Text;
+namespace DotNetCommons.Test.Numerics;
 
 [TestClass]
 public class RomanNumeralsTests
