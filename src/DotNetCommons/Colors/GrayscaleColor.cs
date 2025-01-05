@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace DotNetCommons.Colors;
+﻿namespace DotNetCommons.Colors;
 
 public class GrayscaleColor
 {

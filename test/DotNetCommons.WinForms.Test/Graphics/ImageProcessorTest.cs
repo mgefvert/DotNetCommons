@@ -1,6 +1,4 @@
-﻿using System;
-using System.Drawing;
-using DotNetCommons.WinForms.Graphics;
+﻿using DotNetCommons.WinForms.Graphics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.WinForms.Test.Graphics;
