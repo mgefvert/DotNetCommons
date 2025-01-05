@@ -11,13 +11,13 @@ public class JiwiConverterTests
     public void ToJiwi_Works()
     {
         var s = JiwiConverter.ToJiwi(4711);
-        s.Should().Be("cumi5-8");
+        s.Should().Be("mafy8");
     }
 
     [TestMethod]
     public void FromJiwi_Works()
     {
-        var n = JiwiConverter.FromJiwi("cumi5-8");
+        var n = JiwiConverter.FromJiwi("mafy8");
         n.Should().Be(4711);
     }
 
@@ -38,4 +38,20 @@ public class JiwiConverterTests
             n.Should().Be(i);
         }
     }
+
+    // [TestMethod]
+    // public void MakeNumbers()
+    // {
+    //     var buf = new StringBuilder();
+    //     buf.AppendLine($"{JiwiConverter.SyllableCount} syllables");
+    //     
+    //     for (var i = 0L; i < 1_000_000; i++)
+    //     {
+    //         var num = i * 391;
+    //         var jiwi = JiwiConverter.ToJiwi(num);
+    //         buf.AppendLine($"{num} = {jiwi}");
+    //     }
+    //     
+    //     File.WriteAllText(@"d:\temp\jiwi.txt", buf.ToString());
+    // }
 }

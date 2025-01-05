@@ -4,12 +4,14 @@ namespace DotNetCommons.Numerics;
 
 public static class JiwiConverter
 {
-    private const string L1 = "bcdfghjklmnprstvwyz";
-    private const string L2 = "aeiou";
+    private const string L1 = "bcdfghjklmnprstvwz";
+    private const string L2 = "aeiouy";
     
     private static readonly List<string> Syllables;
     private static readonly LuhnCheckDigits CheckDigits = new();
 
+    public static int SyllableCount => Syllables.Count;
+    
     static JiwiConverter()
     {
         Syllables = Initialize();
@@ -101,7 +103,7 @@ public static class JiwiConverter
         var c = 0;
         while (id != 0)
         {
-            if (c++ % 3 == 0)
+            if (c++ % 3 == 2)
             {
                 buf.Add($"{id % 10}-");
                 id /= 10;
