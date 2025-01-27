@@ -10,7 +10,7 @@ public static class ApiLoggingMiddlewareExtension
         serviceCollection.AddScoped<ApiLogRequest>();
     }
 
-    public static void UseLoggingMiddleware(this WebApplication hostBuilder)
+    public static void UseLoggingMiddleware(this IApplicationBuilder hostBuilder)
     {
         hostBuilder.UseMiddleware<ApiLoggingMiddleware>();
     }
