@@ -31,10 +31,13 @@ public class StringTokenizer<T> where T : struct
     public StringTokenizer(params Definition<T>[] definitions)
     {
         Definitions.AddRange(definitions);
-
+        
+        // remove incorrect warning for incompatible types
+        #pragma warning disable CA2021   
+        
         // Build a list of end of line characters
         _endOfLine = new StringDefinitions();
-        foreach (var definition in definitions.OfType<EndOfLine<T>>())
+        foreach (var definition in Definitions.OfType<EndOfLine<T>>())
             _endOfLine.Add(definition.Texts.Strings.ToArray());
 
         // Build a list of escape characters
@@ -43,7 +46,7 @@ public class StringTokenizer<T> where T : struct
             .Select(x => x.EscapeChar)
             .ToList();
 
-        // Build a list of charater modes
+        // Build a list of character modes
         _modes = Definitions
             .OfType<Characters<T>>()
             .ToList();
@@ -55,6 +58,8 @@ public class StringTokenizer<T> where T : struct
             .SelectMany(def => def.Texts.Strings.Select(s => new MatchResult(s, def)))
             .OrderByDescending(x => x.MatchText.Length)
             .ToLookup(x => x.MatchText[0]);
+        
+        #pragma warning restore CA2021
     }
 
     /// <summary>
