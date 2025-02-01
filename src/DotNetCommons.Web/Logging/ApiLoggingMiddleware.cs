@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -21,13 +20,12 @@ public class ApiLoggingMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logRequest = context.RequestServices.GetRequiredService<ApiLogRequest>();
+        var logRequest    = context.RequestServices.GetRequiredService<ApiLogRequest>();
         
-        var controller = context.GetRouteData().Values["controller"]?.ToString();
-        var action     = context.GetRouteData().Values["action"]?.ToString();
-        var logger     = loggerFactory.CreateLogger(controller ?? "Unknown");
+        var logger = loggerFactory.CreateLogger(nameof(ApiLoggingMiddleware));
         try
         {
+
             await _next(context);
 
             var elapsed = logRequest.Elapsed;
@@ -35,22 +33,22 @@ public class ApiLoggingMiddleware
             var data = logRequest.DataToString();
            
             if (!string.IsNullOrEmpty(data))
-                logger.LogInformation("{controller}.{action}{request} => {status} in {time}ms: {data}",
-                    controller, action, request, context.Response.StatusCode, elapsed, data);
+                logger.LogInformation("{path}{request} => {status} in {time}ms: {data}",
+                    context.Request.Path, request, context.Response.StatusCode, elapsed, data);
             else
-                logger.LogInformation("{controller}.{action}{request} => {status} in {time}ms",
-                    controller, action, request, context.Response.StatusCode, elapsed);
+                logger.LogInformation("{path}{request} => {status} in {time}ms",
+                    context.Request.Path, request, context.Response.StatusCode, elapsed);
         }
         catch (AppException ex)
         {
-            logger.LogWarning("{controller}.{action} => {status} in {time}ms: {message}",
-                controller, action, (int)ex.StatusCode, logRequest.Elapsed, ex.Message);
+            logger.LogWarning("{path} => {status} in {time}ms: {message}",
+                context.Request.Path, (int)ex.StatusCode, logRequest.Elapsed, ex.Message);
             await HandleError(context, ex.StatusCode, ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError("{controller}.{action}: Unhandled {exception} after {time}ms: {message}",
-                controller, action, ex.GetType().Name, logRequest.Elapsed, ex.Message);
+            logger.LogError("{path}: Unhandled {exception} after {time}ms: {message}",
+                context.Request.Path, ex.GetType().Name, logRequest.Elapsed, ex.Message);
             await HandleError(context, HttpStatusCode.InternalServerError, "Internal server error");
         }
     }
