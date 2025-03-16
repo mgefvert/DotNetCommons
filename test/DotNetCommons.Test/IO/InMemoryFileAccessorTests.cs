@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using DotNetCommons.IO;
+using DotNetCommons.Temporal;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -9,10 +10,11 @@ namespace DotNetCommons.Test.IO;
 public class InMemoryFileAccessorTests
 {
     private readonly InMemoryFileAccessor _accessor;
+    private readonly TestClock _clock = new();
 
     public InMemoryFileAccessorTests()
     {
-        _accessor = new InMemoryFileAccessor();
+        _accessor = new InMemoryFileAccessor(_clock);
         
         _accessor.CreateDirectory("/bin");
         _accessor.CreateDirectory("/etc");
@@ -311,6 +313,26 @@ public class InMemoryFileAccessorTests
     public void GetFileTime_NotFound_ThrowsException()
     {
         _accessor.GetFileTime("/bin/xyzzy");
+    }
+
+    [TestMethod]
+    public void ListFiles_Works()
+    {
+        _accessor.Touch("/usr/foo");
+        _accessor.WriteAllText("/usr/foobar", "This is the end, beautiful friend");
+        var now = _clock.Now;
+
+        var files = _accessor.ListFiles("/usr").ToList();
+        files.Should().BeEquivalentTo([
+            new IFileAccessor.ListItem { Name = "bin",    Directory = true, Size = 0,   LastWriteTime = now },
+            new IFileAccessor.ListItem { Name = "sbin",   Directory = true, Size = 0,   LastWriteTime = now },
+            new IFileAccessor.ListItem { Name = "foo",    Directory = false, Size = 0,  LastWriteTime = now },
+            new IFileAccessor.ListItem { Name = "foobar", Directory = false, Size = 33, LastWriteTime = now },
+        ]);
+        
+        _accessor.ChangeDirectory("usr");
+        var files2 = _accessor.ListFiles().ToList();
+        files2.Should().BeEquivalentTo(files);
     }
     
     [TestMethod]

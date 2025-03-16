@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using DotNetCommons.Temporal;
 using DotNetCommons.Text;
 
 namespace DotNetCommons.IO;
@@ -13,16 +14,18 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <summary>
     /// Wrapper around a MemoryBlock; disposing it ensures that we update the file time, but we don't clear the contents.
     /// </summary>
-    protected class NonDisposableStreamWrapper : Stream
+    private class NonDisposableStreamWrapper : Stream
     {
         private readonly MemoryBlock _data;
         private readonly File _entry;
         private readonly FileAccess _access;
+        private readonly IClock _clock;
         private bool _disposed;
 
-        public NonDisposableStreamWrapper(File entry, FileAccess access)
+        public NonDisposableStreamWrapper(File entry, FileAccess access, IClock clock)
         {
             _access = access;
+            _clock  = clock;
             _entry  = entry;
             _data   = entry.Data;
         }
@@ -35,7 +38,7 @@ public class InMemoryFileAccessor : IFileAccessor
         public override void Close()
         {
             if (_access.HasFlag(FileAccess.Write))
-                _entry.Time = DateTime.Now;
+                _entry.Time = _clock.Now;
             
             _disposed = true;
         }
@@ -108,11 +111,11 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <summary>
     /// Base class for either a directory or a file.
     /// </summary>
-    protected abstract class Entry(Directory? parent, string? name)
+    protected abstract class Entry(Directory? parent, string? name, DateTime time)
     {
         public string? Name { get; set; } = name;
         public Directory? Parent { get; set; } = parent;
-        public DateTime Time { get; set; } = DateTime.Now;
+        public DateTime Time { get; set; } = time;
        
         public List<Entry> Elements()
         {
@@ -141,8 +144,8 @@ public class InMemoryFileAccessor : IFileAccessor
     {
         internal MemoryBlock Data { get; set; } = new();
 
-        public File(Directory parent, string name, string? data, Encoding? encoding = null)
-            : base(parent, name)
+        public File(Directory parent, string name, DateTime time, string? data, Encoding? encoding = null)
+            : base(parent, name, time)
         {
             if (!data.IsSet()) 
                 return;
@@ -165,7 +168,7 @@ public class InMemoryFileAccessor : IFileAccessor
         public List<Directory> Directories { get; } = [];
         public List<File> Files { get; } = [];
 
-        public Directory(Directory? parent, string? name) : base(parent, name)
+        public Directory(Directory? parent, string? name, DateTime time) : base(parent, name, time)
         {
         }
 
@@ -175,6 +178,7 @@ public class InMemoryFileAccessor : IFileAccessor
         }
     }
 
+    private readonly IClock _clock;
     private readonly Directory _root;
     private Directory _currentDirectory;
 
@@ -184,9 +188,10 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <inheritdoc/>
     public Encoding Encoding { get; set; } = Encoding.UTF8;
 
-    public InMemoryFileAccessor()
+    public InMemoryFileAccessor(IClock clock)
     {
-        _root              = new Directory(null, null);
+        _clock            = clock;
+        _root             = new Directory(null, null, _clock.Now);
         _currentDirectory = _root;
     }
 
@@ -237,7 +242,7 @@ public class InMemoryFileAccessor : IFileAccessor
             {
                 if (create)
                 {
-                    subdir = new Directory(dir, segment);
+                    subdir = new Directory(dir, segment, _clock.Now);
                     dir.Directories.Add(subdir);
                 }
                 else
@@ -316,7 +321,6 @@ public class InMemoryFileAccessor : IFileAccessor
         FindDirectory(path, true);
     }
 
-    /// <inheritdoc/>
     private File CreateFileInternal(string fileName)
     {
         var result = FindFile(fileName);
@@ -324,12 +328,12 @@ public class InMemoryFileAccessor : IFileAccessor
         {
             var (path, file) = SplitPath(GetAbsolutePath(fileName));
             var dir = FindDirectory(path, false) ?? throw DirectoryNotFound(path);
-            result = new File(dir, file, null);
+            result = new File(dir, file, _clock.Now, null);
             dir.Files.Add(result);
         }
 
         result.Data.Clear();
-        result.Time = DateTime.Now;
+        result.Time = _clock.Now;
         
         return result;
     }
@@ -338,7 +342,7 @@ public class InMemoryFileAccessor : IFileAccessor
     public Stream CreateFile(string fileName, FileAccess access)
     {
         var file = CreateFileInternal(fileName);
-        return new NonDisposableStreamWrapper(file, access);
+        return new NonDisposableStreamWrapper(file, access, _clock);
     }
 
     /// <inheritdoc/>
@@ -400,6 +404,29 @@ public class InMemoryFileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
+    public IEnumerable<IFileAccessor.ListItem> ListFiles(string? directory = null)
+    {
+        var dir = FindDirectory(directory ?? ".", false) ?? throw DirectoryNotFound(directory ?? ".");
+
+        foreach (var item in dir.Directories.OrderBy(x => x.Name))
+            yield return new IFileAccessor.ListItem
+            {
+                Name          = item.Name!,
+                Directory     = true,
+                LastWriteTime = item.Time
+            };
+
+        foreach (var item in dir.Files.OrderBy(x => x.Name))
+            yield return new IFileAccessor.ListItem
+            {
+                Name          = item.Name!,
+                Directory     = false,
+                Size          = (long)item.Data.Length,
+                LastWriteTime = item.Time
+            };
+    }
+
+    /// <inheritdoc/>
     public void MoveFile(string sourceName, string targetName, bool overwrite)
     {
         var source = FindFile(sourceName) ?? throw FileNotFound(sourceName);
@@ -423,7 +450,7 @@ public class InMemoryFileAccessor : IFileAccessor
     public Stream OpenFile(string fileName, bool canCreate, FileAccess access)
     {
         var file = FindFile(fileName) ?? (canCreate ? CreateFileInternal(fileName) : throw FileNotFound(fileName));
-        return new NonDisposableStreamWrapper(file, access);
+        return new NonDisposableStreamWrapper(file, access, _clock);
     }
 
     /// <inheritdoc/>

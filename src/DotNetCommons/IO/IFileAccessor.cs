@@ -4,6 +4,14 @@ namespace DotNetCommons.IO;
 
 public interface IFileAccessor
 {
+    public class ListItem
+    {
+        public string Name { get; set; } = null!;
+        public bool Directory { get; set; }
+        public long Size { get; set; }
+        public DateTime LastWriteTime { get; set; }
+    }
+    
     /// <summary>
     /// The current directory in the file system.
     /// </summary>
@@ -73,6 +81,11 @@ public interface IFileAccessor
     /// Get the last written time of a given file.
     /// </summary>
     DateTime GetFileTime(string fileName);
+
+    /// <summary>
+    /// List files and directories in the current directory, or optionally another directory.
+    /// </summary>
+    IEnumerable<ListItem> ListFiles(string? directory = null);
     
     /// <summary>
     /// Move a file across the file system. If overwrite is selected, it will overwrite the target file if it already exists; if overwrite

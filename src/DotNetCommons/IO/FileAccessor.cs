@@ -81,6 +81,30 @@ public class FileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
+    public IEnumerable<IFileAccessor.ListItem> ListFiles(string? directory = null)
+    {
+        var dir = new DirectoryInfo(directory ?? Environment.CurrentDirectory);
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException($"Directory {dir.FullName} does not exist.");
+
+        foreach (var item in dir.EnumerateDirectories("*", SearchOption.TopDirectoryOnly).OrderBy(x => x.Name))
+            yield return new IFileAccessor.ListItem
+            {
+                Name      = item.Name,
+                Directory = true
+            };
+
+        foreach (var item in dir.EnumerateFiles("*", SearchOption.TopDirectoryOnly).OrderBy(x => x.Name))
+            yield return new IFileAccessor.ListItem
+            {
+                Name          = item.Name,
+                Directory     = false,
+                Size          = item.Length,
+                LastWriteTime = item.LastWriteTime
+            };
+    }
+
+    /// <inheritdoc/>
     public long GetFileSize(string fileName)
     {
         return new FileInfo(fileName).Length;
