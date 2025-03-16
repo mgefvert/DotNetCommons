@@ -6,13 +6,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DotNetCommons.Test.IO;
 
 [TestClass]
-public class FakeFileAccessorTests
+public class InMemoryFileAccessorTests
 {
-    private readonly FakeFileAccessor _accessor;
+    private readonly InMemoryFileAccessor _accessor;
 
-    public FakeFileAccessorTests()
+    public InMemoryFileAccessorTests()
     {
-        _accessor = new FakeFileAccessor();
+        _accessor = new InMemoryFileAccessor();
         
         _accessor.CreateDirectory("/bin");
         _accessor.CreateDirectory("/etc");

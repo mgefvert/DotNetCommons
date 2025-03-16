@@ -8,7 +8,7 @@ namespace DotNetCommons.IO;
 /// Implements IFileAccessor in an internal, memory-driven, Unix-like file system. All files are stored in a root ("/")
 /// with subdirectories and files. Implemented using MemoryBlock as the individual file storage.
 /// </summary>
-public class FakeFileAccessor : IFileAccessor
+public class InMemoryFileAccessor : IFileAccessor
 {
     /// <summary>
     /// Wrapper around a MemoryBlock; disposing it ensures that we update the file time, but we don't clear the contents.
@@ -184,7 +184,7 @@ public class FakeFileAccessor : IFileAccessor
     /// <inheritdoc/>
     public Encoding Encoding { get; set; } = Encoding.UTF8;
 
-    public FakeFileAccessor()
+    public InMemoryFileAccessor()
     {
         _root              = new Directory(null, null);
         _currentDirectory = _root;
