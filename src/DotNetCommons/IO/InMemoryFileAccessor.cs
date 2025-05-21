@@ -14,7 +14,7 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <summary>
     /// Wrapper around a MemoryBlock; disposing it ensures that we update the file time, but we don't clear the contents.
     /// </summary>
-    private class NonDisposableStreamWrapper : Stream
+    internal class NonDisposableStreamWrapper : Stream
     {
         private readonly MemoryBlock _data;
         private readonly File _entry;
@@ -111,7 +111,7 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <summary>
     /// Base class for either a directory or a file.
     /// </summary>
-    protected abstract class Entry(Directory? parent, string? name, DateTime time)
+    internal abstract class Entry(Directory? parent, string? name, DateTime time)
     {
         public string? Name { get; set; } = name;
         public Directory? Parent { get; set; } = parent;
@@ -140,7 +140,7 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <summary>
     /// Represents a file in the virtual file system.
     /// </summary>
-    protected class File : Entry
+    internal class File : Entry
     {
         internal MemoryBlock Data { get; set; } = new();
 
@@ -163,7 +163,7 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <summary>
     /// Represents a directory in the virtual file system.
     /// </summary>
-    protected class Directory : Entry
+    internal class Directory : Entry
     {
         public List<Directory> Directories { get; } = [];
         public List<File> Files { get; } = [];
@@ -178,7 +178,7 @@ public class InMemoryFileAccessor : IFileAccessor
         }
     }
 
-    private readonly IClock _clock;
+    internal readonly IClock Clock;
     private readonly Directory _root;
     private Directory _currentDirectory;
 
@@ -186,12 +186,18 @@ public class InMemoryFileAccessor : IFileAccessor
     public string CurrentDirectory => _currentDirectory.FullName();
 
     /// <inheritdoc/>
+    public IFileItem CurrentItem => new InMemoryItem(_currentDirectory, this);
+
+    /// <inheritdoc/>
+    public char DirectorySeparator => '/';
+
+    /// <inheritdoc/>
     public Encoding Encoding { get; set; } = Encoding.UTF8;
 
     public InMemoryFileAccessor(IClock clock)
     {
-        _clock            = clock;
-        _root             = new Directory(null, null, _clock.Now);
+        Clock             = clock;
+        _root             = new Directory(null, null, Clock.Now);
         _currentDirectory = _root;
     }
 
@@ -242,7 +248,7 @@ public class InMemoryFileAccessor : IFileAccessor
             {
                 if (create)
                 {
-                    subdir = new Directory(dir, segment, _clock.Now);
+                    subdir = new Directory(dir, segment, Clock.Now);
                     dir.Directories.Add(subdir);
                 }
                 else
@@ -274,15 +280,15 @@ public class InMemoryFileAccessor : IFileAccessor
         return dir.Files.FirstOrDefault(x => x.Name == fileName);
     }
 
-    private IEnumerable<string> InternalEnumerateFiles(Directory directory, Regex regex, bool recursive, string stub)
+    private IEnumerable<IFileItem> InternalEnumerateFiles(Directory directory, Regex regex, bool recursive)
     {
         foreach (var file in directory.Files.Where(x => regex.IsMatch(x.Name!)))
-            yield return stub + file.Name;
+            yield return new InMemoryItem(file, this);
 
         if (recursive)
         {
             foreach (var subdir in directory.Directories)
-                foreach (var x in InternalEnumerateFiles(subdir, regex, recursive, $"{stub}{subdir.Name}/"))
+                foreach (var x in InternalEnumerateFiles(subdir, regex, recursive))
                     yield return x;
         }
     }
@@ -300,7 +306,7 @@ public class InMemoryFileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public void CopyFile(string sourceName, string targetName, bool overwrite)
+    public IFileItem CopyFile(string sourceName, string targetName, bool overwrite)
     {
         var source = FindFile(sourceName) ?? throw FileNotFound(sourceName);
         var target = FindFile(targetName);
@@ -313,12 +319,8 @@ public class InMemoryFileAccessor : IFileAccessor
         var file = CreateFileInternal(targetName);
         file.Data = source.Data.Clone();
         file.Time = source.Time;
-    }
 
-    /// <inheritdoc/>
-    public void CreateDirectory(string path)
-    {
-        FindDirectory(path, true);
+        return new InMemoryItem(file, this);
     }
 
     private File CreateFileInternal(string fileName)
@@ -328,29 +330,22 @@ public class InMemoryFileAccessor : IFileAccessor
         {
             var (path, file) = SplitPath(GetAbsolutePath(fileName));
             var dir = FindDirectory(path, false) ?? throw DirectoryNotFound(path);
-            result = new File(dir, file, _clock.Now, null);
+            result = new File(dir, file, Clock.Now, null);
             dir.Files.Add(result);
         }
 
         result.Data.Clear();
-        result.Time = _clock.Now;
+        result.Time = Clock.Now;
         
         return result;
     }
 
     /// <inheritdoc/>
-    public Stream CreateFile(string fileName, FileAccess access)
-    {
-        var file = CreateFileInternal(fileName);
-        return new NonDisposableStreamWrapper(file, access, _clock);
-    }
-
-    /// <inheritdoc/>
-    public void DeleteDirectory(string path, bool recursive)
+    public bool DeleteDirectory(string path, bool recursive)
     {
         var directory = FindDirectory(path, false);
         if (directory == null)
-            return;
+            return false;
         
         if (!recursive)
         {
@@ -359,13 +354,16 @@ public class InMemoryFileAccessor : IFileAccessor
         }
         
         directory.Remove();
+        return true;
     }
 
     /// <inheritdoc/>
-    public void DeleteFile(string fileName)
+    public bool DeleteFile(string fileName)
     {
         var file = FindFile(fileName);
         file?.Remove();
+
+        return file != null;
     }
 
     /// <inheritdoc/>
@@ -381,12 +379,29 @@ public class InMemoryFileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetFiles(string path, string searchPattern, bool recursive)
+    public IFileItem? GetDirectory(string path, bool canCreate)
+    {
+        var dir = FindDirectory(path, canCreate);
+        return dir != null ? new InMemoryItem(dir, this) : null;
+    }
+
+    /// <inheritdoc/>
+    public IFileItem? GetFile(string fileName, bool canCreate)
+    {
+        var file = FindFile(fileName);
+        if (file == null && canCreate)
+            file = CreateFileInternal(fileName);
+        
+        return file != null ? new InMemoryItem(file, this) : null;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IFileItem> GetFiles(string path, string searchPattern, bool recursive)
     {
         var dir   = FindDirectory(path, false) ?? throw DirectoryNotFound(path);
         var regex = Wildcards.ToRegex(searchPattern, true);
 
-        return InternalEnumerateFiles(dir, regex, recursive, "");
+        return InternalEnumerateFiles(dir, regex, recursive);
     }
 
     /// <inheritdoc/>
@@ -404,30 +419,19 @@ public class InMemoryFileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public IEnumerable<IFileAccessor.ListItem> ListFiles(string? directory = null)
+    public IEnumerable<IFileItem> ListFiles(string? directory = null)
     {
         var dir = FindDirectory(directory ?? ".", false) ?? throw DirectoryNotFound(directory ?? ".");
 
         foreach (var item in dir.Directories.OrderBy(x => x.Name))
-            yield return new IFileAccessor.ListItem
-            {
-                Name          = item.Name!,
-                Directory     = true,
-                LastWriteTime = item.Time
-            };
+            yield return new InMemoryItem(item, this);
 
         foreach (var item in dir.Files.OrderBy(x => x.Name))
-            yield return new IFileAccessor.ListItem
-            {
-                Name          = item.Name!,
-                Directory     = false,
-                Size          = (long)item.Data.Length,
-                LastWriteTime = item.Time
-            };
+            yield return new InMemoryItem(item, this);
     }
 
     /// <inheritdoc/>
-    public void MoveFile(string sourceName, string targetName, bool overwrite)
+    public IFileItem MoveFile(string sourceName, string targetName, bool overwrite)
     {
         var source = FindFile(sourceName) ?? throw FileNotFound(sourceName);
         var target = FindFile(targetName);
@@ -444,13 +448,51 @@ public class InMemoryFileAccessor : IFileAccessor
         source.Parent = newParent;
         source.Name   = name;
         newParent.Files.Add(source);
+
+        return new InMemoryItem(source, this);
     }
 
     /// <inheritdoc/>
-    public Stream OpenFile(string fileName, bool canCreate, FileAccess access)
+    public Stream OpenFile(string fileName, FileMode mode, FileAccess access)
     {
-        var file = FindFile(fileName) ?? (canCreate ? CreateFileInternal(fileName) : throw FileNotFound(fileName));
-        return new NonDisposableStreamWrapper(file, access, _clock);
+        var file = FindFile(fileName);
+
+        switch (mode)
+        {
+            case FileMode.CreateNew:
+                if (file != null)
+                    throw new IOException($"File {fileName} already exists.");
+                file = CreateFileInternal(fileName);
+                return new NonDisposableStreamWrapper(file, access, Clock);
+            
+            case FileMode.Create:
+                file = CreateFileInternal(fileName);
+                return new NonDisposableStreamWrapper(file, access, Clock);
+            
+            case FileMode.Open:
+                if (file == null)
+                    throw FileNotFound(fileName);
+                return new NonDisposableStreamWrapper(file, access, Clock);
+            
+            case FileMode.OpenOrCreate:
+                file ??= CreateFileInternal(fileName);
+                return new NonDisposableStreamWrapper(file, access, Clock);
+            
+            case FileMode.Truncate:
+                if (file == null)
+                    throw FileNotFound(fileName);
+                file.Data.Clear();
+                return new NonDisposableStreamWrapper(file, access, Clock);
+            
+            case FileMode.Append:
+                file ??= CreateFileInternal(fileName);
+                var stream = new NonDisposableStreamWrapper(file, access, Clock);
+                stream.Position = stream.Length;
+                return stream;
+            
+            default:
+                throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+        }
     }
 
     /// <inheritdoc/>
@@ -489,16 +531,19 @@ public class InMemoryFileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public void Touch(string fileName)
+    public IFileItem Touch(string fileName)
     {
-        using var file = OpenFile(fileName, true, FileAccess.ReadWrite);
+        var file = FindFile(fileName) ?? CreateFileInternal(fileName);
+        file.Time = Clock.Now;
+        return new InMemoryItem(file, this);
     }
 
     /// <inheritdoc/>
     public void WriteAllBytes(string fileName, byte[] content)
     {
-        using var stream = CreateFile(fileName, FileAccess.Write);
-        stream.Write(content);
+        var file = CreateFileInternal(fileName);
+        file.Data.Clear();
+        file.Data.Write(content, 0);
     }
 
     /// <inheritdoc/>

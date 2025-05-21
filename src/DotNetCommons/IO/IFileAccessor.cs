@@ -4,19 +4,21 @@ namespace DotNetCommons.IO;
 
 public interface IFileAccessor
 {
-    public class ListItem
-    {
-        public string Name { get; set; } = null!;
-        public bool Directory { get; set; }
-        public long Size { get; set; }
-        public DateTime LastWriteTime { get; set; }
-    }
-    
     /// <summary>
     /// The current directory in the file system.
     /// </summary>
     string CurrentDirectory { get; }
     
+    /// <summary>
+    /// The current directory as a FileItem.
+    /// </summary>
+    IFileItem CurrentItem { get; }
+    
+    /// <summary>
+    /// The character used to separate paths.
+    /// </summary>
+    char DirectorySeparator { get; }
+
     /// <summary>
     /// Encoding to use for string-based text-to-byte conversions; UTF8 by default.
     /// </summary>
@@ -33,44 +35,43 @@ public interface IFileAccessor
     /// is deselected, it will throw an exception. Both sourceName and targetName are relative to the current directory, if no absolute
     /// paths are given.
     /// </summary>
-    void CopyFile(string sourceName, string targetName, bool overwrite);
-    
-    /// <summary>
-    /// Create a directory; can create several subdirectories in a single call if the whole parent chain needs to be created.
-    /// </summary>
-    /// <param name="path"></param>
-    void CreateDirectory(string path);
-    
-    /// <summary>
-    /// Create a file for opening.
-    /// </summary>
-    Stream CreateFile(string fileName, FileAccess access);
+    IFileItem CopyFile(string sourceName, string targetName, bool overwrite);
     
     /// <summary>
     /// Delete a directory. If recursive, will also delete all the contents including any subdirectories.
     /// </summary>
-    void DeleteDirectory(string path, bool recursive);
+    bool DeleteDirectory(string path, bool recursive);
     
     /// <summary>
     /// Delete a file. If the file doesn't exist, the call will ignore the operation and return.
     /// </summary>
-    void DeleteFile(string fileName);
-    
+    bool DeleteFile(string fileName);
+
     /// <summary>
-    /// Check to see whether a given directory exists or not, relative or absolute paths.
+    /// Shortcut to GetDirectoryIfExists != null
     /// </summary>
     bool DirectoryExists(string path);
     
     /// <summary>
-    /// Check to see whether a given file exists or not, relative or absolute paths.
+    /// Shortcut to GetFileIfExists != null
     /// </summary>
     bool FileExists(string fileName);
+    
+    /// <summary>
+    /// Check to see whether a given directory exists or not, relative or absolute paths.
+    /// </summary>
+    IFileItem? GetDirectory(string path, bool canCreate);
+    
+    /// <summary>
+    /// Open a file for reading or writing, optionally creating a new file if it doesn't exist.
+    /// </summary>
+    IFileItem? GetFile(string fileName, bool canCreate);
     
     /// <summary>
     /// List files in a given directory, according to a search pattern (i.e. "*.txt" or similar) and optionally searches recursively.
     /// Does not enumerate directories.
     /// </summary>
-    IEnumerable<string> GetFiles(string path, string searchPattern, bool recursive);
+    IEnumerable<IFileItem> GetFiles(string path, string searchPattern, bool recursive);
     
     /// <summary>
     /// Get the file size of a given file.
@@ -85,19 +86,19 @@ public interface IFileAccessor
     /// <summary>
     /// List files and directories in the current directory, or optionally another directory.
     /// </summary>
-    IEnumerable<ListItem> ListFiles(string? directory = null);
+    IEnumerable<IFileItem> ListFiles(string? directory = null);
     
     /// <summary>
     /// Move a file across the file system. If overwrite is selected, it will overwrite the target file if it already exists; if overwrite
     /// is deselected, it will throw an exception. Both sourceName and targetName are relative to the current directory, if no absolute
     /// paths are given.
     /// </summary>
-    void MoveFile(string sourceName, string targetName, bool overwrite);
-    
+    IFileItem MoveFile(string sourceName, string targetName, bool overwrite);
+
     /// <summary>
-    /// Open a file for reading or writing, optionally creating a new file if it doesn't exist.
+    /// Create or open a file for reading/writing. 
     /// </summary>
-    Stream OpenFile(string fileName, bool canCreate, FileAccess access);
+    Stream OpenFile(string fileName, FileMode mode, FileAccess access);
     
     /// <summary>
     /// Read all bytes from a given file.
@@ -127,8 +128,7 @@ public interface IFileAccessor
     /// <summary>
     /// Touch a given file, updating the last write time to the current time. If the file does not exist, create it.
     /// </summary>
-    /// <param name="fileName"></param>
-    void Touch(string fileName);
+    IFileItem Touch(string fileName);
     
     /// <summary>
     /// Write contents to a given file, replacing the file if it already exists.

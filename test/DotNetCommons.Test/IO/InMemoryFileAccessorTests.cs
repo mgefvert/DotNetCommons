@@ -16,16 +16,16 @@ public class InMemoryFileAccessorTests
     {
         _accessor = new InMemoryFileAccessor(_clock);
         
-        _accessor.CreateDirectory("/bin");
-        _accessor.CreateDirectory("/etc");
-        _accessor.CreateDirectory("/home");
-        _accessor.CreateDirectory("/home/jim");
-        _accessor.CreateDirectory("/home/pam");
-        _accessor.CreateDirectory("/sbin");
-        _accessor.CreateDirectory("/var");
-        _accessor.CreateDirectory("/usr");
-        _accessor.CreateDirectory("/usr/bin");
-        _accessor.CreateDirectory("/usr/sbin");
+        _accessor.GetDirectory("/bin", true);
+        _accessor.GetDirectory("/etc", true);
+        _accessor.GetDirectory("/home", true);
+        _accessor.GetDirectory("/home/jim", true);
+        _accessor.GetDirectory("/home/pam", true);
+        _accessor.GetDirectory("/sbin", true);
+        _accessor.GetDirectory("/var", true);
+        _accessor.GetDirectory("/usr", true);
+        _accessor.GetDirectory("/usr/bin", true);
+        _accessor.GetDirectory("/usr/sbin", true);
         
         _accessor.WriteAllBytes("/bin/bash", TestFile(0xCD, 4296));
         _accessor.WriteAllBytes("/sbin/sudo", TestFile(0x41, 996));
@@ -100,7 +100,7 @@ public class InMemoryFileAccessorTests
     public void CreateDirectory_Works()
     {
         _accessor.DirectoryExists("/home/jim/test/xyzzy").Should().BeFalse();
-        _accessor.CreateDirectory("/home/jim/test/xyzzy");
+        _accessor.GetDirectory("/home/jim/test/xyzzy", true);
         _accessor.DirectoryExists("/home/jim/test/xyzzy").Should().BeTrue();
     }
     
@@ -108,9 +108,9 @@ public class InMemoryFileAccessorTests
     public void CreateFile_AbsolutePath_Works()
     {
         _accessor.FileExists("/home/jim/foobar").Should().BeFalse();
-        using (var file = _accessor.CreateFile("/home/jim/foobar", FileAccess.Write))
+        using (var stream = _accessor.OpenFile("/home/jim/foobar", FileMode.Create, FileAccess.Write))
         {
-            file.Write("Hello, world!"u8);
+            stream.Write("Hello, world!"u8);
         }
         
         _accessor.FileExists("/home/jim/foobar").Should().BeTrue();
@@ -124,9 +124,9 @@ public class InMemoryFileAccessorTests
         _accessor.ChangeDirectory("/home/pam");
         
         _accessor.FileExists("foobar").Should().BeFalse();
-        using (var file = _accessor.CreateFile("foobar", FileAccess.Write))
+        using (var stream = _accessor.OpenFile("foobar", FileMode.Create, FileAccess.Write))
         {
-            file.Write("Hello, world!"u8);
+            stream.Write("Hello, world!"u8);
         }
         
         _accessor.FileExists("/home/pam/foobar").Should().BeTrue();
@@ -138,7 +138,7 @@ public class InMemoryFileAccessorTests
     public void CreateFile_OverExisting_Works()
     {
         _accessor.FileExists("/bin/bash").Should().BeTrue();
-        using (var file = _accessor.CreateFile("/bin/bash", FileAccess.Write))
+        using (var file = _accessor.OpenFile("/bin/bash", FileMode.Create, FileAccess.Write))
         {
             var buffer = "Hello, world!"u8.ToArray(); 
             file.Write(buffer, 0, buffer.Length);
@@ -233,24 +233,24 @@ public class InMemoryFileAccessorTests
         _accessor.Touch("/bar");
         _accessor.Touch("/xyzzy");
         
-        var files = _accessor.GetFiles("/", "*", false).OrderBy(x => x).ToList();
+        var files = _accessor.GetFiles("/", "*", false).Select(x => x.FullName).OrderBy(x => x).ToList();
         files.Should().BeEquivalentTo(
-            "bar",
-            "foo", 
-            "foobar", 
-            "xyzzy" 
+            "/bar",
+            "/foo", 
+            "/foobar", 
+            "/xyzzy" 
         );
         
-        files = _accessor.GetFiles("/bin", "*", false).OrderBy(x => x).ToList();
+        files = _accessor.GetFiles("/bin", "*", false).Select(x => x.FullName).OrderBy(x => x).ToList();
         files.Should().BeEquivalentTo(
-            "bash",
-            "old"
+            "/bin/bash",
+            "/bin/old"
         );
         
-        files = _accessor.GetFiles("/", "foo*", false).OrderBy(x => x).ToList();
+        files = _accessor.GetFiles("/", "foo*", false).Select(x => x.FullName).OrderBy(x => x).ToList();
         files.Should().BeEquivalentTo(
-            "foo",
-            "foobar"
+            "/foo",
+            "/foobar"
         );
     }
     
@@ -263,29 +263,29 @@ public class InMemoryFileAccessorTests
         _accessor.Touch("/xyzzy");
         _accessor.Touch("/sbin/foodie");
         
-        var files = _accessor.GetFiles("/", "*", true).OrderBy(x => x).ToList();
+        var files = _accessor.GetFiles("/", "*", true).Select(x => x.FullName).OrderBy(x => x).ToList();
         files.Should().BeEquivalentTo(
-            "bar",
-            "foo", 
-            "foobar", 
-            "xyzzy",
-            "bin/bash",
-            "bin/old",
-            "sbin/sudo",
-            "sbin/foodie"
+            "/bar",
+            "/foo", 
+            "/foobar", 
+            "/xyzzy",
+            "/bin/bash",
+            "/bin/old",
+            "/sbin/sudo",
+            "/sbin/foodie"
         );
         
-        files = _accessor.GetFiles("/bin", "*", true).OrderBy(x => x).ToList();
+        files = _accessor.GetFiles("/bin", "*", true).Select(x => x.FullName).OrderBy(x => x).ToList();
         files.Should().BeEquivalentTo(
-            "bash",
-            "old"
+            "/bin/bash",
+            "/bin/old"
         );
         
-        files = _accessor.GetFiles("/", "foo*", true).OrderBy(x => x).ToList();
+        files = _accessor.GetFiles("/", "foo*", true).Select(x => x.FullName).OrderBy(x => x).ToList();
         files.Should().BeEquivalentTo(
-            "foo",
-            "foobar",
-            "sbin/foodie"
+            "/foo",
+            "/foobar",
+            "/sbin/foodie"
         );
     }
     
@@ -320,18 +320,23 @@ public class InMemoryFileAccessorTests
     {
         _accessor.Touch("/usr/foo");
         _accessor.WriteAllText("/usr/foobar", "This is the end, beautiful friend");
-        var now = _clock.Now;
+        var now = _clock.Now.ToString("s");
 
-        var files = _accessor.ListFiles("/usr").ToList();
-        files.Should().BeEquivalentTo([
-            new IFileAccessor.ListItem { Name = "bin",    Directory = true, Size = 0,   LastWriteTime = now },
-            new IFileAccessor.ListItem { Name = "sbin",   Directory = true, Size = 0,   LastWriteTime = now },
-            new IFileAccessor.ListItem { Name = "foo",    Directory = false, Size = 0,  LastWriteTime = now },
-            new IFileAccessor.ListItem { Name = "foobar", Directory = false, Size = 33, LastWriteTime = now },
-        ]);
+        var files = _accessor.ListFiles("/usr")
+            .Select(f => $"{f.Name},{f.Directory},{f.Size},{f.LastWriteTime:s}")
+            .ToList();
+        
+        files.Should().BeEquivalentTo(
+            $"bin,True,0,{now}",
+            $"sbin,True,0,{now}",
+            $"foo,False,0,{now}",
+            $"foobar,False,33,{now}"
+        );
         
         _accessor.ChangeDirectory("usr");
-        var files2 = _accessor.ListFiles().ToList();
+        var files2 = _accessor.ListFiles()
+            .Select(f => $"{f.Name},{f.Directory},{f.Size},{f.LastWriteTime:s}")
+            .ToList();
         files2.Should().BeEquivalentTo(files);
     }
     
@@ -369,13 +374,13 @@ public class InMemoryFileAccessorTests
     [TestMethod, ExpectedException(typeof(FileNotFoundException))]
     public void OpenFile_NotFound_Fails()
     {
-        _ = _accessor.OpenFile("/bin/xyzzy", false, FileAccess.Read);
+        _ = _accessor.OpenFile("/bin/xyzzy", FileMode.Open, FileAccess.Read);
     }
     
     [TestMethod]
     public void OpenFile_Read_Works()
     {
-        using var file = _accessor.OpenFile("/sbin/sudo", false, FileAccess.Read);
+        using var file = _accessor.OpenFile("/sbin/sudo", FileMode.Open, FileAccess.Read);
         file.Length.Should().Be(996);
         file.Position.Should().Be(0);
         file.CanRead.Should().BeTrue();

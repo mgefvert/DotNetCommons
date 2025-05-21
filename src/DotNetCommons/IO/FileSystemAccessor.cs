@@ -2,10 +2,18 @@
 
 namespace DotNetCommons.IO;
 
-public class FileAccessor : IFileAccessor
+public class FileSystemAccessor : IFileAccessor
 {
+    private Exception DirectoryNotFound(string path) => new DirectoryNotFoundException($"Directory not found: {path}");
+    
     /// <inheritdoc/>
     public string CurrentDirectory => Directory.GetCurrentDirectory();
+
+    /// <inheritdoc/>
+    public IFileItem CurrentItem => new FileSystemItem(new DirectoryInfo(Directory.GetCurrentDirectory()), this);
+
+    /// <inheritdoc/>
+    public char DirectorySeparator => Path.DirectorySeparatorChar;
 
     /// <inheritdoc/>
     public Encoding Encoding { get; set; } = Encoding.UTF8;
@@ -17,61 +25,76 @@ public class FileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public void CopyFile(string sourceName, string targetName, bool overwrite = false)
+    public IFileItem CopyFile(string sourceName, string targetName, bool overwrite = false)
     {
         File.Copy(sourceName, targetName, overwrite);
+        return new FileSystemItem(new FileInfo(targetName), this);
     }
 
     /// <inheritdoc/>
-    public void CreateDirectory(string path)
+    public bool DeleteDirectory(string path, bool recursive)
     {
-        Directory.CreateDirectory(path);
-    }
-
-    /// <inheritdoc/>
-    public Stream CreateFile(string fileName, FileAccess access)
-    {
-        return new FileStream(fileName, FileMode.Create, access);
-    }
-
-    /// <inheritdoc/>
-    public void DeleteDirectory(string path, bool recursive)
-    {
+        if (!Directory.Exists(path))
+            return false;
+        
         Directory.Delete(path, recursive);
+        return true;
     }
 
     /// <inheritdoc/>
-    public void DeleteFile(string fileName)
+    public bool DeleteFile(string fileName)
     {
+        if (!File.Exists(fileName))
+            return false;
+        
         File.Delete(fileName);
+        return true;
     }
 
-    /// <inheritdoc/>
     public bool DirectoryExists(string path)
     {
         return Directory.Exists(path);
     }
 
-    /// <inheritdoc/>
     public bool FileExists(string fileName)
     {
         return File.Exists(fileName);
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetFiles(string path, string searchPattern, bool recursive)
+    public IFileItem? GetDirectory(string path, bool canCreate)
     {
-        var files = Directory.EnumerateFiles(path, searchPattern, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-        if (!Path.EndsInDirectorySeparator(path))
-            path += Path.PathSeparator;
+        var dir = new DirectoryInfo(path);
+        if (!dir.Exists && canCreate)
+            dir.Create();
+        
+        return dir.Exists ? new FileSystemItem(dir, this) : null;
+    }
 
+    /// <inheritdoc/>
+    public IFileItem? GetFile(string fileName, bool canCreate)
+    {
+        var file = new FileInfo(fileName);
+        if (file.Exists)
+            return new FileSystemItem(file, this);
+
+        if (!canCreate)
+            return null;
+        
+        using (file.Create()) {}
+        return new FileSystemItem(file, this);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IFileItem> GetFiles(string path, string searchPattern, bool recursive)
+    {
+        var dir = new DirectoryInfo(path);
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException();
+        
+        var files = dir.EnumerateFiles(searchPattern, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         foreach (var file in files)
-        {
-            var s = file;
-            if (s.StartsWith(path))
-                s = s.Mid(path.Length);
-            yield return s;
-        }
+            yield return new FileSystemItem(file, this);
     }
 
     /// <inheritdoc/>
@@ -81,27 +104,17 @@ public class FileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public IEnumerable<IFileAccessor.ListItem> ListFiles(string? directory = null)
+    public IEnumerable<IFileItem> ListFiles(string? directory = null)
     {
         var dir = new DirectoryInfo(directory ?? Environment.CurrentDirectory);
         if (!dir.Exists)
-            throw new DirectoryNotFoundException($"Directory {dir.FullName} does not exist.");
+            throw DirectoryNotFound(directory ?? Environment.CurrentDirectory);
 
         foreach (var item in dir.EnumerateDirectories("*", SearchOption.TopDirectoryOnly).OrderBy(x => x.Name))
-            yield return new IFileAccessor.ListItem
-            {
-                Name      = item.Name,
-                Directory = true
-            };
+            yield return new FileSystemItem(item, this);
 
         foreach (var item in dir.EnumerateFiles("*", SearchOption.TopDirectoryOnly).OrderBy(x => x.Name))
-            yield return new IFileAccessor.ListItem
-            {
-                Name          = item.Name,
-                Directory     = false,
-                Size          = item.Length,
-                LastWriteTime = item.LastWriteTime
-            };
+            yield return new FileSystemItem(item, this);
     }
 
     /// <inheritdoc/>
@@ -111,15 +124,16 @@ public class FileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public void MoveFile(string sourceName, string targetName, bool overwrite)
+    public IFileItem MoveFile(string sourceName, string targetName, bool overwrite)
     {
         File.Move(sourceName, targetName, overwrite);
+        return new FileSystemItem(new FileInfo(targetName), this);
     }
-    
+
     /// <inheritdoc/>
-    public Stream OpenFile(string fileName, bool canCreate, FileAccess access)
+    public Stream OpenFile(string fileName, FileMode mode, FileAccess access)
     {
-        return new FileStream(fileName, canCreate ? FileMode.OpenOrCreate : FileMode.Open, access);
+        return new FileStream(fileName, mode, access);
     }
 
     /// <inheritdoc/>
@@ -153,9 +167,11 @@ public class FileAccessor : IFileAccessor
     }
 
     /// <inheritdoc/>
-    public void Touch(string fileName)
+    public IFileItem Touch(string fileName)
     {
-        if (File.Exists(fileName))
+        var file = new FileInfo(fileName);
+        
+        if (file.Exists)
         {
             var now = DateTime.Now;
             File.SetLastWriteTime(fileName, now);
@@ -164,7 +180,10 @@ public class FileAccessor : IFileAccessor
         else
         {
             using (File.Create(fileName)) { }
+            file.Refresh();
         }
+
+        return new FileSystemItem(file, this);
     }
     
     /// <inheritdoc/>
