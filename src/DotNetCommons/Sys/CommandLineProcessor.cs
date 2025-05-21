@@ -6,7 +6,7 @@
 
 namespace DotNetCommons.Sys;
 
-internal class CommandLineProcessor<T> where T : class, new()
+internal class CommandLineProcessor
 {
     private enum OptionType
     {
@@ -15,17 +15,19 @@ internal class CommandLineProcessor<T> where T : class, new()
         Long
     }
 
-    public List<string> Arguments;
-    public List<CommandLineDefinition> Definitions;
-    public T Result = new();
+    public List<string> Arguments { get; }
+    public List<CommandLineDefinition> Definitions { get; }
+    public object Result { get; }
+
     private int _position;
 
-    public CommandLineProcessor(List<string> args, List<CommandLineDefinition> definitions)
+    public CommandLineProcessor(Type resultType, List<string> args, List<CommandLineDefinition> definitions)
     {
-        Arguments = args;
+        Arguments   = args;
         Definitions = definitions;
+        Result      = Activator.CreateInstance(resultType) 
+                      ?? throw new CommandLineException($"Unable to create instance of type {resultType}");
     }
-
 
     public void Process()
     {
