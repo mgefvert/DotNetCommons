@@ -1,4 +1,5 @@
-﻿using DotNetCommons.Numerics;
+﻿using System.Text;
+using DotNetCommons.Numerics;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -39,19 +40,22 @@ public class JiwiConverterTests
         }
     }
 
-    // [TestMethod]
-    // public void MakeNumbers()
-    // {
-    //     var buf = new StringBuilder();
-    //     buf.AppendLine($"{JiwiConverter.SyllableCount} syllables");
-    //     
-    //     for (var i = 0L; i < 1_000_000; i++)
-    //     {
-    //         var num = i * 391;
-    //         var jiwi = JiwiConverter.ToJiwi(num);
-    //         buf.AppendLine($"{num} = {jiwi}");
-    //     }
-    //     
-    //     File.WriteAllText(@"d:\temp\jiwi.txt", buf.ToString());
-    // }
+    [TestMethod]
+    public void MakeNumbers()
+    {
+        var buf = new StringBuilder();
+        buf.AppendLine($"{JiwiConverter.SyllableCount} syllables");
+
+        for (var i = 0L; i < 100_000; i++)
+        {
+            var num = i * 139147;
+            var jiwi = JiwiConverter.ToJiwi(num);
+            buf.AppendLine($"{num} = {jiwi}");
+        }
+
+        var file = new FileInfo("jiwi.txt");
+
+        File.WriteAllText(file.FullName, buf.ToString());
+        Console.WriteLine(file.FullName);
+    }
 }
