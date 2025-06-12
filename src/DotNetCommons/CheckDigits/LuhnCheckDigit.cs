@@ -5,13 +5,13 @@
 /// etc (U.S. Patent 2,950,048, ISO/IEC 7812-1). Handles extra characters and punctuation gracefully
 /// but does not include them in the calculation.
 /// </summary>
-public class LuhnCheckDigits : ICheckDigits
+public class LuhnCheckDigit : CheckDigit
 {
-    public char Calculate(string input)
+    public override char Calculate(string input)
     {
         var digits = (input ?? "").Where(char.IsDigit).Select(c => (byte)(c - '0')).ToArray();
         if (digits.Length == 0)
-            throw new InvalidOperationException($"{nameof(LuhnCheckDigits)}: No digits in input string.");
+            throw new InvalidOperationException($"{nameof(LuhnCheckDigit)}: No digits in input string.");
 
         var sum = 0;
         for (int i = digits.Length - 1, weight = 2; i >= 0; i--, weight = 3 - weight)

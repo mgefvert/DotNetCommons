@@ -3,20 +3,26 @@
 /// <summary>
 /// Check digit calculations.
 /// </summary>
-public interface ICheckDigits
+public abstract class CheckDigit
 {
     /// <summary>
     /// Calculate a new check digit from a given input string.
     /// </summary>
-    char Calculate(string input);
+    public abstract char Calculate(string input);
 
     /// <summary>
     /// Append a new check digit to a given input string.
     /// </summary>
-    string Append(string input) => input + Calculate(input);
+    public string Append(string input)
+    {
+        return input + Calculate(input);
+    }
 
     /// <summary>
     /// Validate whether the input string has a correct check digit or not.
     /// </summary>
-    bool Validate(string input) => input == Append(input[0..^1]);
+    public bool Validate(string input)
+    {
+        return input == Append(input[..^1]);
+    }
 }

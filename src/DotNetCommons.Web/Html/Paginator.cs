@@ -1,32 +1,87 @@
 ﻿using System.Text;
+using System.Web;
 
 namespace DotNetCommons.Web.Html;
 
-public class PaginatorLink
-{
-    public const int Previous = -1;
-    public const int Next = -2;
-    public const int Ellipsis = -3;
-
-    public int Display { get; set; }
-    public int? Page { get; set; }
-
-    public PaginatorLink(int display, int? page)
-    {
-        Display = display;
-        Page = page;
-    }
-}
-
+/// <summary>
+/// Represents a pagination component for managing navigation within a range of pages.
+/// </summary>
 public class Paginator
 {
-    public int Current;
-    public int? Next;
-    public int? Previous;
-    public int Max;
-    public int Count;
-    public int Mid;
+    /// <summary>
+    /// The current active page number
+    /// </summary>
+    public int Current { get; set; }
+
+    /// <summary>
+    /// The next page number if available, null if there is no next page
+    /// </summary>
+    public int? Next { get; set; }
+
+    /// <summary>
+    /// The previous page number if available, null if there is no previous page
+    /// </summary>
+    public int? Previous { get; set; }
+
+    /// <summary>
+    /// The maximum page number available
+    /// </summary>
+    public int Max { get; set; }
+
+    /// <summary>
+    /// The total number of items across all pages
+    /// </summary>
+    public int Count { get; set; }
+
+    /// <summary>
+    /// The middle point used for calculating pagination ranges
+    /// </summary>
+    public int Mid { get; set; }
+
+    /// <summary>
+    /// Collection of pagination links representing the paginator's layout
+    /// </summary>
     public List<PaginatorLink> Layout = new();
+
+    /// <summary>
+    /// Text to display for ellipsis (truncated page numbers)
+    /// </summary>
+    public string EllipsisText { get; set; } = "…";
+
+    /// <summary>
+    /// Text to display for the 'Next' navigation link
+    /// </summary>
+    public string NextText { get; set; } = "Next";
+
+    /// <summary>
+    /// Text to display for the 'Previous' navigation link
+    /// </summary>
+    public string PreviousText { get; set; } = "Previous";
+
+    /// <summary>
+    /// HTML attribute name used for page selection
+    /// </summary>
+    public string PageSelectAttribute { get; set; } = "p";
+
+    /// <summary>
+    /// CSS class name applied to the main pagination container
+    /// </summary>
+    public string PaginatorClass { get; set; } = "pagination";
+
+    /// <summary>
+    /// CSS class name applied to each pagination list item
+    /// </summary>
+    public string PaginatorListItemClass { get; set; } = "page-item";
+
+    /// <summary>
+    /// CSS class name applied to the active pagination item
+    /// </summary>
+    public string PaginatorListItemActiveClass { get; set; } = "active";
+
+    /// <summary>
+    /// CSS class name applied to pagination links
+    /// </summary>
+    public string PaginatorLinkClass { get; set; } = "page-link";
 
     protected Paginator()
     {
@@ -126,34 +181,48 @@ public class Paginator
         Layout = result;
     }
 
-    public string Render(string style = "pagination")
+    /// <summary>
+    /// Renders the paginator object as an HTML unordered list based on the specified CSS class style.
+    /// Each list item corresponds to a page link, an ellipsis, or navigation links such as "Previous" and "Next".
+    /// </summary>
+    /// <returns>A string containing the HTML representation of the paginator.</returns>
+    public string Render()
     {
+        var paginatorClass      = HttpUtility.HtmlAttributeEncode(PaginatorClass);
+        var listItemClass       = HttpUtility.HtmlAttributeEncode(PaginatorListItemClass);
+        var listItemActiveClass = HttpUtility.HtmlAttributeEncode(PaginatorListItemActiveClass);
+        var linkClass           = HttpUtility.HtmlAttributeEncode(PaginatorLinkClass);
+
+        var ellipsisText = HttpUtility.HtmlEncode(EllipsisText);
+        var nextText     = HttpUtility.HtmlEncode(NextText);
+        var previousText = HttpUtility.HtmlEncode(PreviousText);
+
         var result = new StringBuilder();
-        result.AppendLine($"<ul class=\"{style}\">");
+        result.AppendLine($"<ul class=\"{paginatorClass}\">");
 
         foreach (var link in Layout)
         {
             switch (link.Display)
             {
                 case PaginatorLink.Previous:
-                    result.AppendLine($"<li class=\"page-item\"><a class=\"page-link\" href=\"?p={link.Page}\">Previous</a></li>");
+                    result.AppendLine($"<li class=\"{listItemClass}\"><a class=\"{linkClass}\" href=\"?{PageSelectAttribute}={link.Page}\">{previousText}</a></li>");
                     break;
                 case PaginatorLink.Next:
-                    result.AppendLine($"<li class=\"page-item\"><a class=\"page-link\" href=\"?p={link.Page}\">Next</a></li>");
+                    result.AppendLine($"<li class=\"{listItemClass}\"><a class=\"{linkClass}\" href=\"?{PageSelectAttribute}={link.Page}\">{nextText}</a></li>");
                     break;
                 case PaginatorLink.Ellipsis:
-                    result.AppendLine("<li class=\"page-item\"><span>...</span></li>");
+                    result.AppendLine($"<li class=\"{listItemClass}\"><span>{ellipsisText}</span></li>");
                     break;
                 default:
                     {
-                        var active = link.Page == Current ? "active" : "";
-                        result.AppendLine($"<li class=\"page-item {active}\"><a class=\"page-link\" href=\"?p={link.Page}\">{link.Display}</a></li>");
+                        var active = link.Page == Current ? listItemActiveClass : "";
+                        result.AppendLine($"<li class=\"{listItemClass} {active}\"><a class=\"{linkClass}\" href=\"?p={link.Page}\">{link.Display}</a></li>");
                         break;
                     }
             }
         }
-        result.AppendLine("</ul>");
 
+        result.AppendLine("</ul>");
         return result.ToString();
     }
 }

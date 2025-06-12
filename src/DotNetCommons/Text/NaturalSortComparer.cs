@@ -1,5 +1,9 @@
 ﻿namespace DotNetCommons.Text;
 
+/// <summary>
+/// Provides a comparer for sorting strings using natural sorting logic,
+/// which considers numerical values within strings in addition to their lexicographical order.
+/// </summary>
 public class NaturalSortComparer : IComparer<string>
 {
     private readonly bool _caseSensitive;
@@ -8,7 +12,10 @@ public class NaturalSortComparer : IComparer<string>
     {
         _caseSensitive = caseSensitive;
     }
-    
+
+    /// <summary>
+    /// Compares two strings using natural sorting logic with optional case sensitivity.
+    /// </summary>
     public int Compare(string? a, string? b)
     {
         if (ReferenceEquals(a, b)) return 0;

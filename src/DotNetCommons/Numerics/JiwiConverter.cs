@@ -22,7 +22,7 @@ public static class JiwiConverter
     private const string L2 = "aeiouy";
     
     private static readonly List<string> Syllables;
-    private static readonly LuhnCheckDigits CheckDigits = new();
+    private static readonly LuhnCheckDigit CheckDigit = new();
 
     /// <summary>
     /// Total count of syllables available. This is fixed and should never change.
@@ -117,7 +117,7 @@ public static class JiwiConverter
 
         // Verify the check digit
         var resultString = result.ToString();
-        var realCheckDigit = CheckDigits.Calculate(resultString);
+        var realCheckDigit = CheckDigit.Calculate(resultString);
         if (checkDigit != realCheckDigit)
             throw ChecksumIncorrect(realCheckDigit);
         
@@ -141,7 +141,7 @@ public static class JiwiConverter
 
         // Calculate check digit
         var ids = id.ToString();
-        var checkDigit = CheckDigits.Calculate(ids);
+        var checkDigit = CheckDigit.Calculate(ids);
         var checkNum = (checkDigit - '0') + 1;
 
         // Pad the number slightly, to introduce some variability and to avoid pure zeroes

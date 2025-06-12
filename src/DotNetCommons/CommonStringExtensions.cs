@@ -83,6 +83,13 @@ public static partial class CommonStringExtensions
         return result;
     }
 
+    /// <summary>
+    /// Splits a string into multiple segments based on a specified separator and quote character, extracting each part sequentially.
+    /// </summary>
+    /// <param name="value">The input string to split. Can be null or empty.</param>
+    /// <param name="separator">The character used as the delimiter between segments. Defaults to a space (' ').</param>
+    /// <param name="quote">The character used to denote quoted sections, which may include the separator within them. Defaults to a double quote ('"').</param>
+    /// <returns>An enumerable collection of strings containing the extracted segments. Empty if the input string is null or empty.</returns>
     public static IEnumerable<string> ChompAll(this string? value, char separator = ' ', char quote = '"')
     {
         while (!string.IsNullOrEmpty(value))
@@ -135,8 +142,18 @@ public static partial class CommonStringExtensions
         return n == -1 ? value : (value ?? "")[..n].Trim();
     }
 
+    /// <summary>
+    /// Determines whether the specified string is empty or null.
+    /// </summary>
+    /// <param name="value">The string to check for null or emptiness.</param>
+    /// <returns>True if the string is null or empty; otherwise, false.</returns>
     public static bool IsEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
 
+    /// <summary>
+    /// Determines whether the specified string is set to a value different from null or empty.
+    /// </summary>
+    /// <param name="value">The string to evaluate.</param>
+    /// <returns>Returns true if the string is not null or empty; otherwise, false.</returns>
     public static bool IsSet([NotNullWhen(true)] this string? value) => !string.IsNullOrEmpty(value);
 
     /// <summary>
@@ -159,12 +176,14 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
-    /// Get count characters from the left, adding an ellipsis (...) symbol if there's
-    /// more text beyond that.
+    /// Truncates the input string to a specified number of characters from the left and appends an ellipsis if the string exceeds the given length.
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="count"></param>
-    /// <returns></returns>
+    /// <param name="value">The input string to truncate. Can be null.</param>
+    /// <param name="count">The maximum number of characters to retain from the start of the string.</param>
+    /// <returns>
+    /// A string truncated to the specified length with an appended ellipsis if required.
+    /// Returns an empty string if the input is null or empty.
+    /// </returns>
     public static string LeftEllipsis(this string? value, int count)
     {
         var result = Left(value, count);

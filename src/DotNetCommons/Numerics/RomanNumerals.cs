@@ -34,6 +34,9 @@ public static class RomanNumerals
         { 1, "I" },
     };
 
+    /// <summary>
+    /// Converts an integer into its Roman numeral representation.
+    /// </summary>
     public static string Render(int number)
     {
         var roman = new StringBuilder();
@@ -50,9 +53,12 @@ public static class RomanNumerals
         return roman.ToString();
     }
 
+    /// <summary>
+    /// Converts a Roman numeral string into its integer representation.
+    /// </summary>
     public static int Parse(string roman)
     {
-        var result = 0;
+        var result         = 0;
         var previousLetter = '\0';
 
         foreach (var currentRoman in roman)

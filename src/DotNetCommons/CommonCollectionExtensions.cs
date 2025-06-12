@@ -373,9 +373,24 @@ public static class CommonCollectionExtensions
         return result;
     }
 
+    /// <summary>
+    /// Determines whether a collection is null or contains no elements.
+    /// </summary>
     public static bool IsEmpty<T>(this ICollection<T>? collection) => collection == null || collection.Count == 0;
+
+    /// <summary>
+    /// Determines whether a collection contains exactly one element.
+    /// </summary>
     public static bool IsOne<T>(this ICollection<T>? collection) => collection is { Count: 1 };
+
+    /// <summary>
+    /// Determines whether a collection contains at least one element.
+    /// </summary>
     public static bool IsAtLeastOne<T>(this ICollection<T>? collection) => collection is { Count: >= 1 };
+
+    /// <summary>
+    /// Determines whether the collection contains more than one element.
+    /// </summary>
     public static bool IsMany<T>(this ICollection<T>? collection) => collection is { Count: > 1 };
 
     /// <summary>

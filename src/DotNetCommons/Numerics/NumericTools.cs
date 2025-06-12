@@ -2,6 +2,11 @@
 
 public static class NumericTools
 {
+    /// <summary>
+    /// Finds all factors of a given integer, excluding 1 and the number itself.
+    /// </summary>
+    /// <param name="number">The integer for which to find the factors.</param>
+    /// <returns>An enumerable collection of factors of the input number.</returns>
     public static IEnumerable<int> FindFactors(this int number)
     {
         var root = (int)Math.Sqrt(number);

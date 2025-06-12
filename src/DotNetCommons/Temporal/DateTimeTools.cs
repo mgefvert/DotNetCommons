@@ -7,6 +7,17 @@ namespace DotNetCommons.Temporal;
 /// </summary>
 public static class DateTimeTools
 {
+    /// <summary>
+    /// Generates a sequence of DateTime values starting at a specified value,
+    /// and creating subsequent values using the provided function until a specified end value is reached or exceeded.
+    /// </summary>
+    /// <param name="start">The starting DateTime of the sequence.</param>
+    /// <param name="end">The upper limit for the sequence. The sequence stops when the generated DateTime exceeds this value.</param>
+    /// <param name="next">A function that defines how to calculate the next DateTime in the sequence from the current one.</param>
+    /// <returns>
+    /// An enumerable sequence of DateTime values starting at <paramref name="start"/>
+    /// and continuing up to <paramref name="end"/>, calculated using <paramref name="next"/>.
+    /// </returns>
     public static IEnumerable<DateTime> Generate(DateTime start, DateTime end, Func<DateTime, DateTime> next)
     {
         while (start <= end)
@@ -16,6 +27,17 @@ public static class DateTimeTools
         }
     }
 
+    /// <summary>
+    /// Generates a sequence of DateTime values starting at a specified value,
+    /// and creating a specified number of subsequent values using the provided function.
+    /// </summary>
+    /// <param name="start">The starting DateTime of the sequence.</param>
+    /// <param name="count">The number of DateTime values to generate in the sequence.</param>
+    /// <param name="next">A function that defines how to calculate the next DateTime in the sequence from the current one.</param>
+    /// <returns>
+    /// An enumerable sequence of DateTime values starting at <paramref name="start"/>
+    /// and containing <paramref name="count"/> values, calculated using <paramref name="next"/>.
+    /// </returns>
     public static IEnumerable<DateTime> Generate(DateTime start, int count, Func<DateTime, DateTime> next)
     {
         for (var i = 0; i < count; i++)
@@ -44,9 +66,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the lesser of two datetimes.
     /// </summary>
-    /// <param name="datetime1"></param>
-    /// <param name="datetime2"></param>
-    /// <returns></returns>
     public static DateTime MinDate(DateTime datetime1, DateTime datetime2)
     {
         return datetime1.Ticks < datetime2.Ticks ? datetime1 : datetime2;
@@ -55,9 +74,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the lesser of two datetimes.
     /// </summary>
-    /// <param name="datetime1"></param>
-    /// <param name="datetime2"></param>
-    /// <returns></returns>
     public static DateTimeOffset MinDate(DateTimeOffset datetime1, DateTimeOffset datetime2)
     {
         return datetime1.Ticks < datetime2.Ticks ? datetime1 : datetime2;
@@ -66,8 +82,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the minimum date from a sequence of datetimes.
     /// </summary>
-    /// <param name="dateTimes"></param>
-    /// <returns></returns>
     public static DateTime? MinDate(IEnumerable<DateTime?> dateTimes)
     {
         var all = dateTimes.Where(x => x.HasValue).ToList();
@@ -77,8 +91,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the minimum date from a sequence of datetimes.
     /// </summary>
-    /// <param name="dateTimes"></param>
-    /// <returns></returns>
     public static DateTimeOffset? MinDate(IEnumerable<DateTimeOffset?> dateTimes)
     {
         var all = dateTimes.Where(x => x.HasValue).ToList();
@@ -88,9 +100,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the greater of two datetimes.
     /// </summary>
-    /// <param name="datetime1"></param>
-    /// <param name="datetime2"></param>
-    /// <returns></returns>
     public static DateTime MaxDate(DateTime datetime1, DateTime datetime2)
     {
         return datetime1.Ticks > datetime2.Ticks ? datetime1 : datetime2;
@@ -99,9 +108,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the greater of two datetimes.
     /// </summary>
-    /// <param name="datetime1"></param>
-    /// <param name="datetime2"></param>
-    /// <returns></returns>
     public static DateTimeOffset MaxDate(DateTimeOffset datetime1, DateTimeOffset datetime2)
     {
         return datetime1.Ticks > datetime2.Ticks ? datetime1 : datetime2;
@@ -110,8 +116,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the maximum date from a sequence of datetimes.
     /// </summary>
-    /// <param name="dateTimes"></param>
-    /// <returns></returns>
     public static DateTime? MaxDate(IEnumerable<DateTime?> dateTimes)
     {
         var all = dateTimes.Where(x => x.HasValue).ToList();
@@ -121,8 +125,6 @@ public static class DateTimeTools
     /// <summary>
     /// Return the maximum date from a sequence of datetimes.
     /// </summary>
-    /// <param name="dateTimes"></param>
-    /// <returns></returns>
     public static DateTimeOffset? MaxDate(IEnumerable<DateTimeOffset?> dateTimes)
     {
         var all = dateTimes.Where(x => x.HasValue).ToList();

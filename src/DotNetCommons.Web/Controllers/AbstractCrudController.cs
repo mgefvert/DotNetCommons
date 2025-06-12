@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.EF;
-using DotNetCommons.Web.Logging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetCommons.Web.Controllers;
@@ -11,76 +10,136 @@ public abstract class AbstractCrudController<TDataKey, TDataObject, TListQuery, 
     where TListQuery : class
     where TCrudService : ICrudService<TDataKey, TDataObject, TListQuery>
 {
-    protected ApiLogRequest Log { get; }
     protected TCrudService Service { get; }
+    protected ICrudLogOperation<TDataObject, TDataKey>? Logger { get; }
 
-    protected abstract string ObjectToString(TDataObject item);
-
-    protected AbstractCrudController(TCrudService crudService, ApiLogRequest log)
+    protected AbstractCrudController(TCrudService crudService, ICrudLogOperation<TDataObject, TDataKey>? logger = null)
     {
-        Log = log;
         Service = crudService;
+        Logger  = logger;
     }
 
-    [Route("create"), HttpPost()]
-    public async Task<ActionResult<TDataKey[]>> Create([FromBody] TDataObject[] items)
+    [HttpPost("create")]
+    public async Task<ActionResult<TDataKey[]>> Create([FromBody] TDataObject[] items, CancellationToken cancellationToken = default)
     {
-        Log.Request($"{items.Length} items");
-        var result = await Service.Create(items);
-        
-        Log.Data($"Created: " + string.Join(",", result));
-        Log.Data(items.Select(ObjectToString));
-        return result;
+        ArgumentNullException.ThrowIfNull(items);
+
+        try
+        {
+            var result = await Service.Create(items, cancellationToken);
+
+            if (Logger != null)
+                await Logger.CompletedRequest(nameof(Create), items);
+            return result;
+        }
+        catch (Exception e)
+        {
+            if (Logger != null)
+                await Logger.AbortedRequest(nameof(Create), items, e);
+            throw;
+        }
     }
 
     [HttpGet("get")]
-    public async Task<ActionResult<TDataObject[]>> Get([FromQuery] TDataKey[] ids)
+    public async Task<ActionResult<TDataObject[]>> Get([FromQuery] TDataKey[] ids, CancellationToken cancellationToken = default)
     {
-        Log.Request(string.Join(",", ids));
-        var result = await Service.Get(ids);
-        
-        Log.Data($"{result.Length} items");
-        return result;
+        ArgumentNullException.ThrowIfNull(ids);
+
+        try
+        {
+            var result = await Service.Get(ids, cancellationToken);
+
+            if (Logger != null)
+                await Logger.CompletedRequest(nameof(Get), ids);
+            return result;
+        }
+        catch (Exception e)
+        {
+            if (Logger != null)
+                await Logger.AbortedRequest(nameof(Get), ids, e);
+            throw;
+        }
     }
 
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<TDataObject>> Get(TDataKey id)
+    public async Task<ActionResult<TDataObject>> Get(TDataKey id, CancellationToken cancellationToken = default)
     {
-        Log.Request(id.ToString());
-        
-        var result = await Service.Get(id);
-        return result;
+        ArgumentNullException.ThrowIfNull(id);
+
+        try
+        {
+            var result = await Service.Get(id, cancellationToken);
+
+            if (Logger != null)
+                await Logger.CompletedRequest(nameof(Get), [id]);
+            return result;
+        }
+        catch (Exception e)
+        {
+            if (Logger != null)
+                await Logger.AbortedRequest(nameof(Get), [id], e);
+            throw;
+        }
     }
 
     [HttpGet("list")]
-    public async Task<ActionResult<TDataObject[]>> List([FromQuery] TListQuery? query)
+    public async Task<ActionResult<TDataObject[]>> List([FromQuery] TListQuery? query, CancellationToken cancellationToken = default)
     {
-        Log.Request(Request.QueryString);
-        var result = await Service.List(query);
-        
-        Log.Data($"{result.Length} items");
-        return result;
+        try
+        {
+            var result = await Service.List(query, cancellationToken);
+
+            if (Logger != null)
+                await Logger.CompletedRequest(nameof(List), Request.QueryString.ToString(), result.Length);
+            return result;
+        }
+        catch (Exception e)
+        {
+            if (Logger != null)
+                await Logger.AbortedRequest(nameof(List), Request.QueryString.ToString(), e);
+            throw;
+        }
     }
 
     [HttpPost("update")]
-    public async Task<ActionResult<TDataKey[]>> Update([FromBody] TDataObject[] items)
+    public async Task<ActionResult<TDataKey[]>> Update([FromBody] TDataObject[] items, CancellationToken cancellationToken = default)
     {
-        Log.Request($"{items.Length} items");
-        var result = await Service.Update(items);
-        
-        Log.Data($"{result.Length} items updated");
-        Log.Data(items.Select(ObjectToString));
-        return result;
+        ArgumentNullException.ThrowIfNull(items);
+
+        try
+        {
+            var result = await Service.Update(items, cancellationToken);
+
+            if (Logger != null)
+                await Logger.CompletedRequest(nameof(Update), items);
+            return result;
+        }
+        catch (Exception e)
+        {
+            if (Logger != null)
+                await Logger.AbortedRequest(nameof(Update), items, e);
+            throw;
+        }
     }
 
     [HttpPost("delete")]
-    public async Task<ActionResult<TDataKey[]>> Delete([FromForm] TDataKey[] ids)
+    public async Task<ActionResult<TDataKey[]>> Delete([FromForm] TDataKey[] ids, CancellationToken cancellationToken = default)
     {
-        Log.Request(string.Join(",", ids));
-        var result = await Service.Delete(ids);
-        
-        Log.Data($"{result} items deleted");
-        Log.Data(string.Join(",", result));
-        return result;
+        ArgumentNullException.ThrowIfNull(ids);
+
+        try
+        {
+            var result = await Service.Delete(ids, cancellationToken);
+
+            if (Logger != null)
+                await Logger.CompletedRequest(nameof(Delete), ids);
+            return result;
+        }
+        catch (Exception e)
+        {
+            if (Logger != null)
+                await Logger.AbortedRequest(nameof(Delete), ids, e);
+            throw;
+        }
     }
 }
