@@ -11,7 +11,7 @@ public static class TextTools
     public static readonly Encoding Win1252 = Encoding.GetEncoding(1252);
 
     private static readonly string?[] HighBitsTranslate =
-    {
+    [
         /* 0x80 */ null, null, "\'", "f",  "\"", "...", null, null, "^",  null,   "S",  "<", "OE",  null,  "Z",   null,
         /* 0x90 */ null, "\'", "\'", "\"", "\"", "*",   "-",  "-",  "~",  "(tm)", "s",  ">", "oe",  null,  "z",   "Y",
         /* 0xA0 */ " ",  "!",  "c",  null, "$",  null,  "|",  null, null, "(c)",  null, "<", null,  null,  "(r)", null,
@@ -20,7 +20,7 @@ public static class TextTools
         /* 0xD0 */ "DH", "N",  "O",  "O",  "O",  "O",   "OE", "x",  "O",  "U",    "U",  "U", "U",   "Y",   "TH",  "ss",
         /* 0xE0 */ "a",  "a",  "a",  "a",  "ae", "a",   "ae", "c",  "e",  "e",    "e",  "e", "i",   "i",   "i",   "i",
         /* 0xF0 */ "dh", "n",  "o",  "o",  "o",  "o",   "oe", "/",  "o",  "u",    "u",  "u", "u",   "y",   "th",  "y"
-    };
+    ];
 
     /// <summary>
     /// Turn text into ASCII (7-bit), using some letter transformations as necessary. Handles ANSI and UTF8 gracefully.
@@ -185,7 +185,7 @@ public static class TextTools
     public static string[] SplitIntoLines(string? text)
     {
         if (string.IsNullOrEmpty(text))
-            return Array.Empty<string>();
+            return [];
 
         return text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
     }
@@ -205,7 +205,7 @@ public static class TextTools
 
         var maxLength = width - 1;
         if (string.IsNullOrEmpty(text) || text.Length < maxLength)
-            return new List<string> { indentFirst + text };
+            return [indentFirst + text];
 
         var result = new List<string>();
         while (text != "")

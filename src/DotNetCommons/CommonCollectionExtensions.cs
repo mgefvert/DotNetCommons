@@ -17,16 +17,16 @@ public static class CommonCollectionExtensions
         /// <summary>
         /// Records that were found in the left list.
         /// </summary>
-        public List<T1> Left { get; } = new();
+        public List<T1> Left { get; } = [];
         /// <summary>
         /// Records that were found to be identical in both lists (a tuple is used to contain
         /// a reference to both items, from left and right, in case there are internal differences).
         /// </summary>
-        public List<(T1, T2)> Both { get; } = new();
+        public List<(T1, T2)> Both { get; } = [];
         /// <summary>
         /// Records that were found in the right list.
         /// </summary>
-        public List<T2> Right { get; } = new();
+        public List<T2> Right { get; } = [];
 
         public void Deconstruct(out List<T1> left, out List<(T1, T2)> both, out List<T2> right)
         {

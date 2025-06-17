@@ -54,7 +54,7 @@ public class Token
 public class Token<T> : Token where T : struct
 {
     public Definition<T>? Definition { get; }
-    public TokenList<T> Section { get; } = new();
+    public TokenList<T> Section { get; } = [];
     public T ID { get; }
 
     public Token(Definition<T> definition, int line, int column, string? text = null)

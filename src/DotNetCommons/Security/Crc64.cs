@@ -10,7 +10,7 @@ namespace DotNetCommons.Security;
 public static class Crc64
 {
     private static readonly ulong[] Data =
-    {
+    [
         0x0000000000000000ul, 0x7ad870c830358979ul, 0xf5b0e190606b12f2ul, 0x8f689158505e9b8bul,
         0xc038e5739841b68ful, 0xbae095bba8743ff6ul, 0x358804e3f82aa47dul, 0x4f50742bc81f2d04ul,
         0xab28ecb46814fe75ul, 0xd1f09c7c5821770cul, 0x5e980d24087fec87ul, 0x24407dec384a65feul,
@@ -74,8 +74,8 @@ public static class Crc64
         0xcdcf48d84fe75459ul, 0xb71738107fd2dd20ul, 0x387fa9482f8c46abul, 0x42a7d9801fb9cfd2ul,
         0x0df7adabd7a6e2d6ul, 0x772fdd63e7936baful, 0xf8474c3bb7cdf024ul, 0x829f3cf387f8795dul,
         0x66e7a46c27f3aa2cul, 0x1c3fd4a417c62355ul, 0x935745fc4798b8deul, 0xe98f353477ad31a7ul,
-        0xa6df411fbfb21ca3ul, 0xdc0731d78f8795daul, 0x536fa08fdfd90e51ul, 0x29b7d047efec8728ul,
-    };
+        0xa6df411fbfb21ca3ul, 0xdc0731d78f8795daul, 0x536fa08fdfd90e51ul, 0x29b7d047efec8728ul
+    ];
 
     /// <summary>
     /// Calculate a CRC-64 value from a byte buffer, expressed as eight bytes.

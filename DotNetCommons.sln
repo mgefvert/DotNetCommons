@@ -25,6 +25,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.EF", "src\Dot
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.Services", "src\DotNetCommons.Services\DotNetCommons.Services.csproj", "{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{264F973B-6E97-4222-9139-EC1F9073EFFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fleet", "examples\Fleet\Fleet.csproj", "{2E82B72E-7DAC-45E1-A555-374DB450CC14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +71,10 @@ Global
 		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E82B72E-7DAC-45E1-A555-374DB450CC14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E82B72E-7DAC-45E1-A555-374DB450CC14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E82B72E-7DAC-45E1-A555-374DB450CC14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E82B72E-7DAC-45E1-A555-374DB450CC14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +89,7 @@ Global
 		{FBDAE42F-D900-4AB4-9E7E-B32B3A9C8CE2} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
 		{9BE7B199-0C1C-467A-9461-473AD3108345} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
 		{2FD2C877-3FB7-42F2-A6F7-BD642D9FC051} = {9F92A1C2-C521-4548-934C-A4F964654F8E}
+		{2E82B72E-7DAC-45E1-A555-374DB450CC14} = {264F973B-6E97-4222-9139-EC1F9073EFFB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ACF2AE89-03F6-4E0F-BB13-5576A5D994EF}

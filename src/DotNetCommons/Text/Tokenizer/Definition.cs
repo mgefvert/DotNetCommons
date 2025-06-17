@@ -41,9 +41,9 @@ public abstract class Definition<T> where T : struct
 /// </summary>
 public class Characters<T> : Definition<T> where T : struct
 {
-    public HashSet<TokenMode> Modes { get; } = new();
-    public HashSet<char> Include { get; } = new();
-    public HashSet<char> Exclude { get; } = new();
+    public HashSet<TokenMode> Modes { get; } = [];
+    public HashSet<char> Include { get; } = [];
+    public HashSet<char> Exclude { get; } = [];
 
     public Characters(T id, bool discard) : base(id, discard)
     {
@@ -184,7 +184,7 @@ public class Section<T> : Strings<T> where T : struct
 /// </summary>
 public class StringDefinitions
 {
-    public List<string> Strings { get; private set; } = new();
+    public List<string> Strings { get; private set; } = [];
     public bool EndOfLine;
 
     public StringDefinitions Add(params string[] strings)

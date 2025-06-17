@@ -117,7 +117,7 @@ public class TokenList<T> : List<Token<T>> where T : struct
         foreach (var token in this)
         {
             if (token.ID.Equals(splitValue))
-                result.Add(list = new TokenList<T>());
+                result.Add(list = []);
             else
                 list.Add(token);
         }

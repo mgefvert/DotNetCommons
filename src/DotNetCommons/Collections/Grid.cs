@@ -124,8 +124,8 @@ public class Grid<TRow, TCol, TData>
         }
     }
 
-    private readonly char[] _csvEscapeChars = { '"' };
-    private readonly char[] _markupEscapeChars = { '|' };
+    private readonly char[] _csvEscapeChars = ['"'];
+    private readonly char[] _markupEscapeChars = ['|'];
 
     /// <summary>
     /// The defined Columns in the grid. Are added to automatically as data is added, but can be
@@ -148,9 +148,9 @@ public class Grid<TRow, TCol, TData>
 
     public Grid()
     {
-        Data = new Dictionary<(TRow, TCol), TData?>();
-        Columns = new HashSet<TCol>();
-        Rows = new HashSet<TRow>();
+        Data    = new Dictionary<(TRow, TCol), TData?>();
+        Columns = [];
+        Rows    = [];
     }
 
     public Grid(IEqualityComparer<TRow> rowComparer, IEqualityComparer<TCol> columnComparer)

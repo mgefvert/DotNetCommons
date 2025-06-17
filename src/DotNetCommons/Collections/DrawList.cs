@@ -11,8 +11,8 @@ public class DrawList<T>
 {
     private readonly object _lock = new();
     private readonly Random _rnd = new();
-    private readonly List<T> _source = new();
-    private readonly List<T> _current = new();
+    private readonly List<T> _source = [];
+    private readonly List<T> _current = [];
 
     public bool Repeat { get; set; } = true;
 

@@ -14,7 +14,7 @@ public class MemoryBlock : IDisposable
     private ulong _length;
     private byte[]? _sha256;
     private int _initialSize;
-    private readonly List<byte[]> _blocks = new();
+    private readonly List<byte[]> _blocks = [];
     private readonly ReaderWriterLockSlim _lock = new();
 
     /// <summary>

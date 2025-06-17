@@ -23,7 +23,7 @@ public class LittleStateMachine<T> where T : notnull
     }
 
     private readonly Dictionary<T, StateRecord> _states = new();
-    private readonly List<(T, T)> _transitions = new();
+    private readonly List<(T, T)> _transitions = [];
 
     /// <summary>
     /// Current state.
@@ -112,7 +112,7 @@ public class LittleStateMachine<T> where T : notnull
     private List<T> GetStateHierarchy(T? state)
     {
         if (state == null)
-            return new List<T>();
+            return [];
 
         var sr = FindState(state);
         var result = new List<T>();

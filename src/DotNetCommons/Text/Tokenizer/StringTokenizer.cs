@@ -13,7 +13,7 @@ public class StringTokenizer<T> where T : struct
 
     private record TokenizeResult(TokenList<T> Tokens, string Text, string InsideText);
 
-    private List<Definition<T>> Definitions { get; } = new();
+    private List<Definition<T>> Definitions { get; } = [];
 
     private readonly List<Characters<T>>? _modes;
     private readonly List<char>? _escapeChars;

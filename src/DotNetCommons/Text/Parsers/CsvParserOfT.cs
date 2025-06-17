@@ -95,7 +95,7 @@ public delegate void PostProcessObjectDelegate<T>(object sender, PostProcessObje
 
 public class CsvParser<T> where T : class, new()
 {
-    protected readonly List<CsvFieldDefinition> Definitions = new();
+    protected readonly List<CsvFieldDefinition> Definitions = [];
     private bool _gotHeaders;
     public CsvParser Parser { get; } = new();
     public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
@@ -195,7 +195,7 @@ public class CsvParser<T> where T : class, new()
     {
         var rows = Parser.ParseRows(text);
         if (!rows.Any())
-            return new List<T>();
+            return [];
 
         int offset = 0;
         if (!_gotHeaders)

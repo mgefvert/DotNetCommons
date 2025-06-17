@@ -21,7 +21,7 @@ public class ConfigStringParser
         Equal
     }
 
-    private readonly List<Definition<Token>> _definitions = new();
+    private readonly List<Definition<Token>> _definitions = [];
 
     public ConfigStringParser(string separator = ";", bool allowSingleKeywords = false, bool allowSpacesInKeywords = false)
     {

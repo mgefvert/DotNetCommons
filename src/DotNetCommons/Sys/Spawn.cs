@@ -76,7 +76,7 @@ public class Spawn : IDisposable
     /// <summary>
     /// Output from the process as a list of strings.
     /// </summary>
-    public List<string> Output { get; } = new();
+    public List<string> Output { get; } = [];
 
     /// <summary>
     /// Output from the process as a single string.

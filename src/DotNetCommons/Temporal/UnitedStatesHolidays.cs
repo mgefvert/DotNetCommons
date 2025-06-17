@@ -22,8 +22,8 @@ public class UnitedStatesHolidays
 
     public UnitedStatesHolidays()
     {
-        _list = new Holiday[]
-        {
+        _list =
+        [
             new DateBasedHoliday("New Year's Day", HolidayType.Holiday, 1, 1),
             new NthDayHoliday("Martin Luther King's Birthday", HolidayType.Holiday, 1, 3, DayOfWeek.Monday),
             new NthDayHoliday("Washington's Birthday", HolidayType.Holiday, 2, 3, DayOfWeek.Monday),
@@ -35,7 +35,7 @@ public class UnitedStatesHolidays
             new DateBasedHoliday("Veteran's Day", HolidayType.Holiday, 11, 11),
             new NthDayHoliday("Thanksgiving", HolidayType.Holiday, 11, 4, DayOfWeek.Thursday),
             new DateBasedHoliday("Christmas Day", HolidayType.Holiday, 12, 25)
-        };
+        ];
 
         MlkBirthday.ObservedRule = FederalObservedRules;
         PresidentsDay.ObservedRule = FederalObservedRules;

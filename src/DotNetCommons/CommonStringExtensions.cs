@@ -138,7 +138,7 @@ public static partial class CommonStringExtensions
     /// <returns>The first line.</returns>
     public static string? FirstLine(this string? value)
     {
-        var n = (value ?? "").IndexOfAny(new[] { '\r', '\n' });
+        var n = (value ?? "").IndexOfAny(['\r', '\n']);
         return n == -1 ? value : (value ?? "")[..n].Trim();
     }
 

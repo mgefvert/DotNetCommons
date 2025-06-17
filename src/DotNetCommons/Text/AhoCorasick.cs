@@ -223,7 +223,7 @@ public class AhoCorasickTrie<T, TValue>
         /// <summary>
         /// Values for words that end at this node.
         /// </summary>
-        public List<TNodeValue> Values { get; } = new();
+        public List<TNodeValue> Values { get; } = [];
 
         /// <inherit/>
         public IEnumerator<Node<TNode, TNodeValue>> GetEnumerator()

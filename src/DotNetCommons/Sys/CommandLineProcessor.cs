@@ -49,7 +49,7 @@ internal class CommandLineProcessor
 
         if (arg.Contains('='))
         {
-            var items = arg.Split(new[] { '=' }, 2);
+            var items = arg.Split(['='], 2);
             arg = items[0];
             value = items[1].Trim('"');
         }
