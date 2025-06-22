@@ -115,6 +115,9 @@ public static class CommonCollectionExtensions
     /// </summary>
     public static T ExtractAt<T>(this IList<T> list, int position)
     {
+        if (position < 0 || position >= list.Count)
+            throw new ArgumentOutOfRangeException(nameof(position));
+
         var result = list[position];
         list.RemoveAt(position);
 
@@ -160,11 +163,39 @@ public static class CommonCollectionExtensions
     }
 
     /// <summary>
+    /// Extract the first item from a list that matches a given comparison, throwing an exception if there are no items.
+    /// </summary>
+    public static T ExtractFirst<T>(this IList<T> list, Func<T, bool> match)
+    {
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (match(list[i]))
+                return ExtractAt(list, i);
+        }
+
+        throw new InvalidOperationException("No matching elements in ExtractFirst.");
+    }
+
+    /// <summary>
     /// Extract the first item from a list, or return a default (null) value if there are no items.
     /// </summary>
     public static T? ExtractFirstOrDefault<T>(this IList<T> list, T? defaultValue = default)
     {
-        return list.Any() ? ExtractAt(list, 0) : defaultValue;
+        return list.Count > 0 ? ExtractAt(list, 0) : defaultValue;
+    }
+
+    /// <summary>
+    /// Extract the first item from a list, or return a default (null) value if there are no items.
+    /// </summary>
+    public static T? ExtractFirstOrDefault<T>(this IList<T> list, Func<T, bool> match, T? defaultValue = default)
+    {
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (match(list[i]))
+                return ExtractAt(list, i);
+        }
+
+        return defaultValue;
     }
 
     /// <summary>
@@ -176,11 +207,39 @@ public static class CommonCollectionExtensions
     }
 
     /// <summary>
+    /// Extract the first item from a list that matches a given comparison, throwing an exception if there are no items.
+    /// </summary>
+    public static T ExtractLast<T>(this IList<T> list, Func<T, bool> match)
+    {
+        for (var i = list.Count - 1; i >= 0; i--)
+        {
+            if (match(list[i]))
+                return ExtractAt(list, i);
+        }
+
+        throw new InvalidOperationException("No matching elements in ExtractLast.");
+    }
+
+    /// <summary>
     /// Extract the last item from a list, or return a default (null) value if there are no items.
     /// </summary>
     public static T? ExtractLastOrDefault<T>(this IList<T> list, T? defaultValue = default)
     {
         return list.Any() ? ExtractAt(list, list.Count - 1) : defaultValue;
+    }
+
+    /// <summary>
+    /// Extract the first item from a list, or return a default (null) value if there are no items.
+    /// </summary>
+    public static T? ExtractLastOrDefault<T>(this IList<T> list, Func<T, bool> match, T? defaultValue = default)
+    {
+        for (var i = list.Count - 1; i >= 0; i--)
+        {
+            if (match(list[i]))
+                return ExtractAt(list, i);
+        }
+
+        return defaultValue;
     }
 
     /// <summary>
