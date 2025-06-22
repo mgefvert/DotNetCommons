@@ -1,11 +1,4 @@
-﻿using DotNetCommons.Text;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 // ReSharper disable UnusedMember.Global
 
@@ -83,12 +76,17 @@ public class Spawn : IDisposable
     /// <summary>
     /// Output from the process as a list of strings.
     /// </summary>
-    public List<string> Output { get; } = new();
+    public List<string> Output { get; } = [];
 
     /// <summary>
     /// Output from the process as a single string.
     /// </summary>
     public string Text => string.Join(Environment.NewLine, Output);
+
+    /// <summary>
+    /// Environment variables overrides.
+    /// </summary>
+    public Dictionary<string, string> EnvironmentVariables = new();
 
     /// <summary>
     /// Create a Spawn object that encapsulates a given command and arguments.
@@ -210,9 +208,12 @@ public class Spawn : IDisposable
                 RedirectStandardOutput = RedirectOutput,
                 RedirectStandardInput = RedirectInput,
                 UseShellExecute = false,
-                WorkingDirectory = StartDirectory ?? Directory.GetCurrentDirectory()
+                WorkingDirectory = StartDirectory ?? Directory.GetCurrentDirectory(),
             }
         };
+
+        foreach (var item in EnvironmentVariables)
+            Process.StartInfo.Environment[item.Key] = item.Value;
 
         if (RedirectOutput)
         {

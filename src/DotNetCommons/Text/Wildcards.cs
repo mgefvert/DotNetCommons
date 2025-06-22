@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT

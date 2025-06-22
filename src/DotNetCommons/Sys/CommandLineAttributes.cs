@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-// Written by Mats Gefvert
+﻿// Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
@@ -20,23 +17,23 @@ public class CommandLineOptionAttribute : Attribute
 
     public CommandLineOptionAttribute(string longOption, string? description = null)
     {
-        ShortOptions = Array.Empty<string>();
-        LongOptions = new[] { longOption };
-        Description = description;
+        ShortOptions = [];
+        LongOptions  = [longOption];
+        Description  = description;
     }
 
     public CommandLineOptionAttribute(char shortOption, string? longOption = null, string? description = null)
     {
-        ShortOptions = new[] { shortOption.ToString() };
-        LongOptions = longOption != null ? new[] { longOption } : Array.Empty<string>();
-        Description = description;
+        ShortOptions = [shortOption.ToString()];
+        LongOptions  = longOption != null ? [longOption] : [];
+        Description  = description;
     }
 
     public CommandLineOptionAttribute(char[] shortOptions, string[]? longOption = null, string? description = null)
     {
         ShortOptions = shortOptions.Select(x => x.ToString()).ToArray();
-        LongOptions = longOption ?? Array.Empty<string>();
-        Description = description;
+        LongOptions  = longOption ?? [];
+        Description  = description;
     }
 }
 

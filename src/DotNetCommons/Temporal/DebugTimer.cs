@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Temporal;
+﻿namespace DotNetCommons.Temporal;
 
 public class DebugTimer
 {

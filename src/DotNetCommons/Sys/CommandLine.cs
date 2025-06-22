@@ -1,7 +1,4 @@
 ﻿using DotNetCommons.Text;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -94,13 +91,19 @@ public static class CommandLine
     /// </summary>
     public static T Parse<T>(params string[] args) where T : class, new()
     {
+        return (T)Parse(typeof(T), args);
+    }
+
+    /// <summary>
+    /// Parse specific command line arguments as a given object.
+    /// </summary>
+    public static object Parse(Type resultType, params string[] args)
+    {
         if (args.Length == 0 && DisplayHelpOnEmpty)
-            throw new CommandLineDisplayHelpException(typeof(T));
+            throw new CommandLineDisplayHelpException(resultType);
 
-        var processor = new CommandLineProcessor<T>(args.ToList(), GetDefinitionList(typeof(T)));
-
+        var processor = new CommandLineProcessor(resultType, args.ToList(), GetDefinitionList(resultType));
         processor.Process();
-
         return processor.Result;
     }
 

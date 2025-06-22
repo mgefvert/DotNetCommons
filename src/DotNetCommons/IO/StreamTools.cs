@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-// ReSharper disable UnusedMember.Global
+﻿// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.IO;
 

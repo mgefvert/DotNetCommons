@@ -1,8 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DotNetCommons.Test;
 
@@ -199,10 +196,69 @@ public class CommonCollectionExtensionsTest
     }
 
     [TestMethod]
+    public void TestIntersect_DifferentTypes()
+    {
+        // Left list
+        var dan1 = new KeyValuePair<string, string>("dan", "dan-password");
+        var joe1 = new KeyValuePair<string, string>("joe", "joe-password");
+        var lars1 = new KeyValuePair<string, string>("lars", "lars-password");
+
+        // Right list
+        var jessie2 = new KeyValuePair<string, int>("jessie", 42);
+        var joe2 = new KeyValuePair<string, int>("joe", 19);
+        var maggie2 = new KeyValuePair<string, int>("maggie", 34);
+        var zoe2 = new KeyValuePair<string, int>("zoe", 28);
+
+        var list1 = new[] { dan1, joe1, lars1 };
+        var list2 = new[] { jessie2, joe2, maggie2, zoe2 };
+
+        var intersect = list1.Intersect(list2, x => x.Key, x => x.Key);
+        CollectionAssert.AreEqual(new[] { dan1, lars1 }, intersect.Left);
+        CollectionAssert.AreEqual(new[] { (joe1, joe2) }, intersect.Both);
+        CollectionAssert.AreEqual(new[] { jessie2, maggie2, zoe2 }, intersect.Right);
+    }
+
+    [TestMethod]
     public void TestIncrementDecimal()
     {
         Assert.AreEqual(2.99M, _dictD.Increment("A", 1.99M));
         Assert.AreEqual(2.45M, _dictD.Increment("Z", 2.45M));
+    }
+
+    [TestMethod]
+    public void TestIsEmpty()
+    {
+        ((int[]?)null).IsEmpty().Should().BeTrue();
+        Array.Empty<int>().IsEmpty().Should().BeTrue();
+        new[] { 1 }.IsEmpty().Should().BeFalse();
+        new[] { 1, 2 }.IsEmpty().Should().BeFalse();
+    }
+    
+    [TestMethod]
+    public void TestIsOne()
+    {
+        ((int[]?)null).IsOne().Should().BeFalse();
+        Array.Empty<int>().IsOne().Should().BeFalse();
+        new[] { 1 }.IsOne().Should().BeTrue();
+        new[] { 1, 2 }.IsOne().Should().BeFalse();
+    }
+    
+    [TestMethod]
+    public void TestAtLeastOne()
+    {
+        ((int[]?)null).IsAtLeastOne().Should().BeFalse();
+        Array.Empty<int>().IsAtLeastOne().Should().BeFalse();
+        new[] { 1 }.IsAtLeastOne().Should().BeTrue();
+        new[] { 1, 2 }.IsAtLeastOne().Should().BeTrue();
+    }
+    
+    [TestMethod]
+    public void TestIsMany()
+    {
+        ((int[]?)null).IsMany().Should().BeFalse();
+        Array.Empty<int>().IsMany().Should().BeFalse();
+        new[] { 1 }.IsMany().Should().BeFalse();
+        new[] { 1, 2 }.IsMany().Should().BeTrue();
     }
 
     [TestMethod]

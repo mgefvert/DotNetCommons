@@ -1,9 +1,6 @@
 ﻿using DotNetCommons.Text.Parsers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 

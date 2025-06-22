@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -9,7 +6,7 @@ using System.Linq;
 
 namespace DotNetCommons.Sys;
 
-internal class CommandLineProcessor<T> where T : class, new()
+internal class CommandLineProcessor
 {
     private enum OptionType
     {
@@ -18,17 +15,19 @@ internal class CommandLineProcessor<T> where T : class, new()
         Long
     }
 
-    public List<string> Arguments;
-    public List<CommandLineDefinition> Definitions;
-    public T Result = new();
+    public List<string> Arguments { get; }
+    public List<CommandLineDefinition> Definitions { get; }
+    public object Result { get; }
+
     private int _position;
 
-    public CommandLineProcessor(List<string> args, List<CommandLineDefinition> definitions)
+    public CommandLineProcessor(Type resultType, List<string> args, List<CommandLineDefinition> definitions)
     {
-        Arguments = args;
+        Arguments   = args;
         Definitions = definitions;
+        Result      = Activator.CreateInstance(resultType) 
+                      ?? throw new CommandLineException($"Unable to create instance of type {resultType}");
     }
-
 
     public void Process()
     {
@@ -50,7 +49,7 @@ internal class CommandLineProcessor<T> where T : class, new()
 
         if (arg.Contains('='))
         {
-            var items = arg.Split(new[] { '=' }, 2);
+            var items = arg.Split(['='], 2);
             arg = items[0];
             value = items[1].Trim('"');
         }

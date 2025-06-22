@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
+﻿using System.Drawing.Imaging;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -211,11 +206,16 @@ public class ExifImage : IDisposable
             return;
         }
 
+        // Disable warning for use of FormatterServices... yes, I know what I'm doing
+        #pragma warning disable SYSLIB0050
+        
         var prop = exists
             ? Image.GetPropertyItem(id)
             : (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+        
+        #pragma warning restore SYSLIB0050
 
-        prop.Id = id;
+        prop!.Id = id;
         prop.Type = 1;
         prop.Value = data;
         prop.Len = data.Length;

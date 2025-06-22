@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 // Written by Mats Gefvert
@@ -63,17 +59,17 @@ public static class Passwords
 
     private static readonly RandomNumberGenerator Rng = RandomNumberGenerator.Create();
 
-    private const string AlphaLowercase = "abcdefghijklmnopqrstuvwxyz";
-    private const string AlphaUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private const string HexLowercase = "0123456789abcdef";
-    private const string HexUppercase = "0123456789ABCDEF";
-    private const string Friendly = "abcdefghijkmnopqrstwxyzABCDEFGHJKLMNPQRSTWXYZ23456789";
-    private const string Digits = "0123456789";
-    private const string Punctuation = ",.;:?!@#$*-_+=";
+    public const string AlphaLowercase = "abcdefghijklmnopqrstuvwxyz";
+    public const string AlphaUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public const string HexLowercase = "0123456789abcdef";
+    public const string HexUppercase = "0123456789ABCDEF";
+    public const string Friendly = "abcdefghijkmnopqrstwxyzABCDEFGHJKLMNPQRSTWXYZ23456789";
+    public const string Digits = "0123456789";
+    public const string Punctuation = ",.;:?!@#$*-_+=";
 
-    private const string AlphaMixedCase = AlphaLowercase + AlphaUppercase;
-    private const string FullAlphabet = AlphaLowercase + AlphaUppercase + Digits;
-    private const string AnyCharacter = AlphaLowercase + AlphaUppercase + Digits + Punctuation;
+    public const string AlphaMixedCase = AlphaLowercase + AlphaUppercase;
+    public const string FullAlphabet = AlphaLowercase + AlphaUppercase + Digits;
+    public const string AnyCharacter = AlphaLowercase + AlphaUppercase + Digits + Punctuation;
 
     /// <summary>
     /// Set the complexity required for the key derivation.
@@ -88,7 +84,7 @@ public static class Passwords
     /// </summary>
     private static string ComputeHash(string plaintext, byte[] salt, int complexity)
     {
-        using var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity);
+        using var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity, HashAlgorithmName.SHA1);
         using var mem = new MemoryStream();
         using var writer = new BinaryWriter(mem);
 

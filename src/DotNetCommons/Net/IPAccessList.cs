@@ -1,7 +1,4 @@
-﻿using DotNetCommons.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -18,12 +15,12 @@ public class IPAccessList
     /// <summary>
     /// List of addresses approved for access.
     /// </summary>
-    public List<IPAddress> Addresses { get; } = new();
+    public List<IPAddress> Addresses { get; } = [];
 
     /// <summary>
     /// List of networks approved for access.
     /// </summary>
-    public List<IPNetwork> Ranges { get; } = new();
+    public List<IPNetwork> Ranges { get; } = [];
 
     /// <summary>
     /// Parse a comma-separated string of IP addresses and networks.
@@ -85,7 +82,7 @@ public class IPAccessList
             return;
         }
 
-        if (IPNetwork.TryParse(address, out var range) && range != null)
+        if (IPNetwork.TryParse(address, out var range))
         {
             Add(range);
             return;

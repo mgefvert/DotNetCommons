@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 // ReSharper disable UnusedMember.Global
 
@@ -15,7 +13,7 @@ public class StringTokenizer<T> where T : struct
 
     private record TokenizeResult(TokenList<T> Tokens, string Text, string InsideText);
 
-    private List<Definition<T>> Definitions { get; } = new();
+    private List<Definition<T>> Definitions { get; } = [];
 
     private readonly List<Characters<T>>? _modes;
     private readonly List<char>? _escapeChars;
@@ -33,10 +31,13 @@ public class StringTokenizer<T> where T : struct
     public StringTokenizer(params Definition<T>[] definitions)
     {
         Definitions.AddRange(definitions);
-
+        
+        // remove incorrect warning for incompatible types
+        #pragma warning disable CA2021   
+        
         // Build a list of end of line characters
         _endOfLine = new StringDefinitions();
-        foreach (var definition in definitions.OfType<EndOfLine<T>>())
+        foreach (var definition in Definitions.OfType<EndOfLine<T>>())
             _endOfLine.Add(definition.Texts.Strings.ToArray());
 
         // Build a list of escape characters
@@ -45,7 +46,7 @@ public class StringTokenizer<T> where T : struct
             .Select(x => x.EscapeChar)
             .ToList();
 
-        // Build a list of charater modes
+        // Build a list of character modes
         _modes = Definitions
             .OfType<Characters<T>>()
             .ToList();
@@ -57,6 +58,8 @@ public class StringTokenizer<T> where T : struct
             .SelectMany(def => def.Texts.Strings.Select(s => new MatchResult(s, def)))
             .OrderByDescending(x => x.MatchText.Length)
             .ToLookup(x => x.MatchText[0]);
+        
+        #pragma warning restore CA2021
     }
 
     /// <summary>
@@ -153,7 +156,7 @@ public class StringTokenizer<T> where T : struct
             }
             else
                 throw new StringTokenizerException(
-                    $"Unexpected token '{_source[_position]}' at line {_line}, column {_column}");
+                    $"Unexpected token '{_source[_position]}' near '{_source.Mid(_position, 30)}' at line {_line}, column {_column}");
 
             end = _position;
         }

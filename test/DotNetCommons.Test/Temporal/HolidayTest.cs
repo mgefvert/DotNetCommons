@@ -1,5 +1,4 @@
-﻿using System;
-using DotNetCommons.Temporal;
+﻿using DotNetCommons.Temporal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Temporal;

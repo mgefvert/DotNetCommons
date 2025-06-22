@@ -1,6 +1,4 @@
-﻿using System;
-
-// ReSharper disable UnusedMember.Global
+﻿// ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons.Sys;
 
@@ -28,7 +26,6 @@ public class SetConsoleColor : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         Console.ForegroundColor = _fg;
         Console.BackgroundColor = _bg;
     }

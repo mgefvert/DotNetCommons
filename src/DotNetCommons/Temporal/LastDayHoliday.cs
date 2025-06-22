@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Temporal;
+﻿namespace DotNetCommons.Temporal;
 
 /// <summary>
 /// Class that encapsulates the last day of the month calculations (e.g. last Thursday of October).

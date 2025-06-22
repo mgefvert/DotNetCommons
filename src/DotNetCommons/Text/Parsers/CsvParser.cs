@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using DotNetCommons.Text.Tokenizer;
+﻿using DotNetCommons.Text.Tokenizer;
 
 // ReSharper disable UnusedMember.Global
 
@@ -79,7 +77,7 @@ public class CsvParser
         foreach (var tokenField in tokenFields)
         {
             tokenField.Trim(CsvToken.Whitespace);
-            result.Add(tokenField.ToString(true).Trim());
+            result.Add(string.Join("", tokenField.Select(x => x.InsideText)).Trim());
         }
 
         return result;

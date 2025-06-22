@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-// Written by Mats Gefvert
+﻿// Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
@@ -16,21 +12,28 @@ public enum WalkTreeMode
 
 public static class CommonCollectionExtensions
 {
-    public class Intersection<T>
+    public class Intersection<T1, T2>
     {
         /// <summary>
         /// Records that were found in the left list.
         /// </summary>
-        public List<T> Left { get; } = new();
+        public List<T1> Left { get; } = [];
         /// <summary>
         /// Records that were found to be identical in both lists (a tuple is used to contain
         /// a reference to both items, from left and right, in case there are internal differences).
         /// </summary>
-        public List<(T, T)> Both { get; } = new();
+        public List<(T1, T2)> Both { get; } = [];
         /// <summary>
         /// Records that were found in the right list.
         /// </summary>
-        public List<T> Right { get; } = new();
+        public List<T2> Right { get; } = [];
+
+        public void Deconstruct(out List<T1> left, out List<(T1, T2)> both, out List<T2> right)
+        {
+            left = Left;
+            both = Both;
+            right = Right;
+        }
     }
 
     private static int MinMax(int value, int min, int max)
@@ -295,9 +298,9 @@ public static class CommonCollectionExtensions
     /// <param name="list1">The first list (left)</param>
     /// <param name="list2">The second list (right)</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2)
+    public static Intersection<T, T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2)
     {
-        return Intersect(list1, list2, null, x => x);
+        return Intersect(list1, list2, null, x => x, x => x);
     }
 
     /// <summary>
@@ -310,9 +313,24 @@ public static class CommonCollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="selector">A selector for the key to compare the objects by</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T, TKey>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Func<T, TKey> selector)
+    public static Intersection<T, T> Intersect<T, TKey>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Func<T, TKey> selector)
     {
-        return Intersect(list1, list2, null, selector);
+        return Intersect(list1, list2, null, selector, selector);
+    }
+
+    /// <summary>
+    /// Compare two lists against each other and return an Intersection result from the comparison,
+    /// listing the objects found in only list1, only list2, or both lists.
+    /// </summary>
+    /// <param name="list1">The first list (left)</param>
+    /// <param name="list2">The second list (right)</param>
+    /// <param name="keySelector1">A selector for the key to compare the left objects by</param>
+    /// <param name="keySelector2">A selector for the key to compare the right objects by</param>
+    /// <returns>An Intersection object with the results of the comparison</returns>
+    public static Intersection<T1, T2> Intersect<T1, T2, TKey>(this IReadOnlyCollection<T1> list1, IReadOnlyCollection<T2> list2,
+        Func<T1, TKey> keySelector1, Func<T2, TKey> keySelector2)
+    {
+        return Intersect(list1, list2, null, keySelector1, keySelector2);
     }
 
     /// <summary>
@@ -324,9 +342,9 @@ public static class CommonCollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="comparer">A specific comparer to use for comparing the objects</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, IComparer<T> comparer)
+    public static Intersection<T, T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, IComparer<T> comparer)
     {
-        return Intersect(list1, list2, comparer.Compare, x => x);
+        return Intersect(list1, list2, comparer.Compare, x => x, x => x);
     }
 
     /// <summary>
@@ -338,28 +356,28 @@ public static class CommonCollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="comparison">A comparison method for comparing the objects</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<T> comparison)
+    public static Intersection<T, T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<T> comparison)
     {
-        return Intersect(list1, list2, comparison, x => x);
+        return Intersect(list1, list2, comparison, x => x, x => x);
     }
 
     /// <summary>
     /// Compare two lists against each other and return an Intersection result from the comparison,
     /// listing the objects found in only list1, only list2, or both lists, using a selector function.
     /// </summary>
-    /// <typeparam name="T">Type of list</typeparam>
-    /// <typeparam name="TKey">Key selector type</typeparam>
     /// <param name="list1">The first list (left)</param>
     /// <param name="list2">The second list (right)</param>
     /// <param name="comparison">A comparison method for comparing the objects</param>
-    /// <param name="selector">A selector for the key to compare the objects by</param>
+    /// <param name="keySelector1">A selector for the key to compare the left objects by</param>
+    /// <param name="keySelector2">A selector for the key to compare the right objects by</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T> Intersect<T, TKey>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<TKey>? comparison, Func<T, TKey> selector)
+    public static Intersection<T1, T2> Intersect<T1, T2, TKey>(this IReadOnlyCollection<T1> list1, IReadOnlyCollection<T2> list2,
+        Comparison<TKey>? comparison, Func<T1, TKey> keySelector1, Func<T2, TKey> keySelector2)
     {
-        bool DoCompare(T item1, T item2)
+        bool DoCompare(T1 item1, T2 item2)
         {
-            var value1 = selector(item1);
-            var value2 = selector(item2);
+            var value1 = keySelector1(item1);
+            var value2 = keySelector2(item2);
 
             if (comparison != null)
                 return comparison(value1, value2) == 0;
@@ -371,7 +389,7 @@ public static class CommonCollectionExtensions
             return Comparer<TKey>.Default.Compare(value1, value2) == 0;
         }
 
-        var result = new Intersection<T>();
+        var result = new Intersection<T1, T2>();
 
         var empty1 = list1.Count == 0;
         var empty2 = list2.Count == 0;
@@ -391,7 +409,7 @@ public static class CommonCollectionExtensions
             return result;
         }
 
-        var search2 = new List<T>(list2);
+        var search2 = new List<T2>(list2);
 
         // Divide array1 into Left and Both
         foreach (var item1 in list1)
@@ -413,6 +431,26 @@ public static class CommonCollectionExtensions
 
         return result;
     }
+
+    /// <summary>
+    /// Determines whether a collection is null or contains no elements.
+    /// </summary>
+    public static bool IsEmpty<T>(this ICollection<T>? collection) => collection == null || collection.Count == 0;
+
+    /// <summary>
+    /// Determines whether a collection contains exactly one element.
+    /// </summary>
+    public static bool IsOne<T>(this ICollection<T>? collection) => collection is { Count: 1 };
+
+    /// <summary>
+    /// Determines whether a collection contains at least one element.
+    /// </summary>
+    public static bool IsAtLeastOne<T>(this ICollection<T>? collection) => collection is { Count: >= 1 };
+
+    /// <summary>
+    /// Determines whether the collection contains more than one element.
+    /// </summary>
+    public static bool IsMany<T>(this ICollection<T>? collection) => collection is { Count: > 1 };
 
     /// <summary>
     /// Javascript-like String.Join.
@@ -497,6 +535,16 @@ public static class CommonCollectionExtensions
     }
 
     /// <summary>
+    /// Exclude all null items
+    /// </summary>
+    public static IEnumerable<T> NotNulls<T>(this IEnumerable<T?> items) where T : class
+    {
+        foreach (var item in items)
+            if (item != null)
+                yield return item;
+    }
+
+    /// <summary>
     /// Repeat a collection a number of times
     /// </summary>
     public static IEnumerable<T> Repeat<T>(this ICollection<T> collection, int times = 2)
@@ -518,6 +566,93 @@ public static class CommonCollectionExtensions
         return true;
     }
 
+    /// <summary>
+    /// Toss items into different lists depending on a condition. Everything satisfying the condition(s) will go into
+    /// their respective list, everything not matching will go into a remaining list.
+    /// </summary>
+    /// <param name="objects">Objects to consider</param>
+    /// <param name="condition1">Condition for items going into list 1</param>
+    /// <returns>A list of tossed items as well as a remainder</returns>
+    public static (List<T>, List<T>) Toss<T>(this IEnumerable<T> objects, Func<T, bool> condition1)
+    {
+        var result1 = new List<T>();
+        var remaining = new List<T>();
+        foreach (var item in objects)
+        {
+            if (condition1(item))
+                result1.Add(item);
+            else
+                remaining.Add(item);
+        }
+
+        return (result1, remaining);
+    }
+
+    /// <summary>
+    /// Toss items into different lists depending on a condition. Everything satisfying the condition(s) will go into
+    /// their respective list, everything not matching will go into a remaining list.
+    /// </summary>
+    /// <param name="objects">Objects to consider</param>
+    /// <param name="condition1">Condition for items going into list 1</param>
+    /// <param name="condition2">Condition for items going into list 2</param>
+    /// <returns>A list of tossed items as well as a remainder</returns>
+    public static (List<T>, List<T>, List<T>) Toss<T>(this IEnumerable<T> objects, Func<T, bool> condition1,
+        Func<T, bool> condition2)
+    {
+        var result1 = new List<T>();
+        var result2 = new List<T>();
+        var remaining = new List<T>();
+        foreach (var item in objects)
+        {
+            if (condition1(item))
+                result1.Add(item);
+            else if (condition2(item))
+                result2.Add(item);
+            else
+                remaining.Add(item);
+        }
+
+        return (result1, result2, remaining);
+    }
+
+    /// <summary>
+    /// Toss items into different lists depending on a condition. Everything satisfying the condition(s) will go into
+    /// their respective list, everything not matching will go into a remaining list.
+    /// </summary>
+    /// <param name="objects">Objects to consider</param>
+    /// <param name="condition1">Condition for items going into list 1</param>
+    /// <param name="condition2">Condition for items going into list 2</param>
+    /// <param name="condition3">Condition for items going into list 3</param>
+    /// <returns>A list of tossed items as well as a remainder</returns>
+    public static (List<T>, List<T>, List<T>, List<T>) Toss<T>(this IEnumerable<T> objects, Func<T, bool> condition1,
+        Func<T, bool> condition2, Func<T, bool> condition3)
+    {
+        var result1 = new List<T>();
+        var result2 = new List<T>();
+        var result3 = new List<T>();
+        var remaining = new List<T>();
+        foreach (var item in objects)
+        {
+            if (condition1(item))
+                result1.Add(item);
+            else if (condition2(item))
+                result2.Add(item);
+            else if (condition2(item))
+                result3.Add(item);
+            else
+                remaining.Add(item);
+        }
+
+        return (result1, result2, result3, remaining);
+    }
+
+    /// <summary>
+    /// Walk a tree, returning all the nodes either depth-first or shallow-first.
+    /// </summary>
+    /// <param name="nodes">Node tree to operate on</param>
+    /// <param name="childNodes">Selector for retrieving the list of child nodes for a given node</param>
+    /// <param name="mode">Mode of operation, depth-first or shallow-first</param>
+    /// <returns>An IEnumerable of nodes</returns>
     public static IEnumerable<T> WalkTree<T>(this ICollection<T> nodes, Func<T, ICollection<T>> childNodes, WalkTreeMode mode)
     {
         return mode switch
@@ -544,8 +679,8 @@ public static class CommonCollectionExtensions
             yield return node;
 
         foreach (var subNodes in nodes.Select(childNodes))
-            foreach (var subNode in WalkTreeShallowFirst(subNodes, childNodes))
-                yield return subNode;
+        foreach (var subNode in WalkTreeShallowFirst(subNodes, childNodes))
+            yield return subNode;
     }
 
     /// <summary>

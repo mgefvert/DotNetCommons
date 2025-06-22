@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace DotNetCommons.Web;
+﻿namespace DotNetCommons.Web;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class SiteMapAttribute : Attribute
 {
-    public float Priority { get; }
+    public decimal Priority { get; }
 
-    public SiteMapAttribute(float priority = 0.8f)
+    public SiteMapAttribute(decimal priority)
     {
         Priority = priority;
     }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using DotNetCommons.Collections;
+﻿using DotNetCommons.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Collections;

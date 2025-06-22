@@ -1,12 +1,11 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using DotNetCommons.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Net;
 
 [TestClass]
-public class IPAccessListTest
+public class IpAccessListTest
 {
     [TestMethod]
     public void TestParse()
@@ -62,7 +61,7 @@ public class IPAccessListTest
     [TestMethod]
     public void TestGlobal()
     {
-        var al = IPAccessList.Parse("255.255.255.255/0");
+        var al = IPAccessList.Parse("0.0.0.0/0");
         Assert.IsTrue(al.Contains(IPAddress.Parse("74.65.2.190")));
     }
 }

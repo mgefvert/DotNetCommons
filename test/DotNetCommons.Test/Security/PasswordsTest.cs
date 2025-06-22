@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using DotNetCommons.Security;
+﻿using DotNetCommons.Security;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Security;

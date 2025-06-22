@@ -1,8 +1,4 @@
-﻿using DotNetCommons.Temporal;
-using DotNetCommons.Text;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections;
 using System.Net;
 using System.Reflection;
 using System.Text;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Linq;
-using System.Threading;
-using System.Windows.Forms;
-using Timer = System.Windows.Forms.Timer;
+﻿using Timer = System.Windows.Forms.Timer;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -12,21 +7,22 @@ namespace DotNetCommons.WinForms;
 
 public class AlphaForm : Form
 {
+    private readonly Timer _timer;
+    protected int PreferredScreen { get; set; }
+
     public int Alpha { get; set; }
     public Bitmap CurrentBitmap { get; set; }
     public int TargetAlpha { get; set; }
-    private readonly Timer _timer;
-    protected int PreferredScreen { get; set; }
     public int OffsetX { get; set; }
     public int OffsetY { get; set; }
-
+    public AnchorStyles AnchorOffset { get; set; } = AnchorStyles.Left | AnchorStyles.Top;
+    
     public AlphaForm() : this(false)
     {
     }
 
     public AlphaForm(bool showInTaskBar)
     {
-        TopMost = true;
         ShowIcon = showInTaskBar;
         ShowInTaskbar = showInTaskBar;
         FormBorderStyle = FormBorderStyle.None;
@@ -42,7 +38,7 @@ public class AlphaForm : Form
         {
             var cp = base.CreateParams;
             if (!DesignMode)
-                cp.ExStyle |= WinApi.WS_EX_LAYERED | WinApi.WS_EX_TRANSPARENT;
+                cp.ExStyle |= WinApi.WS_EX_LAYERED;// | WinApi.WS_EX_TRANSPARENT;
             return cp;
         }
     }
@@ -90,6 +86,14 @@ public class AlphaForm : Form
         UpdateAlpha();
     }
 
+    protected void InvokeOnMainThread(Action action)
+    {
+        if (Thread.CurrentThread.IsThreadPoolThread || Thread.CurrentThread.IsBackground)
+            Invoke(action);
+        else
+            action();
+    }
+    
     public void UpdateAlpha()
     {
         var blend = new WinApi.BLENDFUNCTION
@@ -101,10 +105,7 @@ public class AlphaForm : Form
         };
 
         var zero = IntPtr.Zero;
-        if (Thread.CurrentThread.IsThreadPoolThread || Thread.CurrentThread.IsBackground)
-            Invoke(delegate { WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA); });
-        else
-            WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA);
+        InvokeOnMainThread(() => WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA));
     }
 
     public bool UpdateImage()
@@ -116,9 +117,20 @@ public class AlphaForm : Form
 
         Width = CurrentBitmap.Width;
         Height = CurrentBitmap.Height;
-        Left = area.Right - Width + OffsetX;
-        Top = area.Bottom - Height + OffsetY;
 
+        int left = 0;
+        int top = 0;
+        if (AnchorOffset.HasFlag(AnchorStyles.Left))
+            left = area.Left;
+        else if (AnchorOffset.HasFlag(AnchorStyles.Right))
+            left = area.Right - Width;
+        if (AnchorOffset.HasFlag(AnchorStyles.Top))
+            top = area.Top;
+        else if (AnchorOffset.HasFlag(AnchorStyles.Right))
+            top = area.Bottom - Height;
+        Left = left + OffsetX;
+        Top = top + OffsetY;
+        
         var screenDc = WinApi.GetDC(IntPtr.Zero);
         var memDc = WinApi.CreateCompatibleDC(screenDc);
 
@@ -140,7 +152,8 @@ public class AlphaForm : Form
             AlphaFormat = WinApi.AC_SRC_ALPHA
         };
 
-        var result = WinApi.UpdateLayeredWindow(Handle, screenDc, ref topPos, ref size, memDc, ref pointSource, 0, ref blend, WinApi.ULW_ALPHA);
+        var result = false;
+        InvokeOnMainThread(() => result = WinApi.UpdateLayeredWindow(Handle, screenDc, ref topPos, ref size, memDc, ref pointSource, 0, ref blend, WinApi.ULW_ALPHA));
 
         // Clean-up
         WinApi.ReleaseDC(IntPtr.Zero, screenDc);

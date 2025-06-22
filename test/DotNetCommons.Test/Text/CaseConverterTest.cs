@@ -1,5 +1,4 @@
-﻿using DotNetCommons.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommons.Test.Text;
 

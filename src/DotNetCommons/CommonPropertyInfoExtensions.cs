@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Reflection;
 
 // Written by Mats Gefvert
@@ -11,6 +9,13 @@ namespace DotNetCommons;
 
 public static class CommonObjectExtensions
 {
+    /// <summary>
+    /// Determines whether the specified property of an object has its default value,
+    /// based on the property's type.
+    /// </summary>
+    /// <param name="propertyInfo">The PropertyInfo instance representing the property to check.</param>
+    /// <param name="obj">The object containing the property to evaluate.</param>
+    /// <returns>True if the property's current value matches the default value for its type; otherwise, false.</returns>
     public static bool HasDefaultValue(this PropertyInfo propertyInfo, object obj)
     {
         var defaultValue = propertyInfo.PropertyType.IsValueType
@@ -30,12 +35,16 @@ public static class CommonObjectExtensions
     }
 
     /// <summary>
-    /// Set the value of a property to a specific value, handling conversions from a number
-    /// of recognized formats in the process.
+    /// Sets the value of a property on the specified object, converting the value to match the property's type
+    /// if necessary, using the given culture for type conversion.
     /// </summary>
+    /// <param name="property">The PropertyInfo instance representing the property to set.</param>
+    /// <param name="obj">The target object on which to set the property value.</param>
+    /// <param name="value">The new value to assign to the property, which may be converted to the appropriate type.</param>
+    /// <param name="culture">The CultureInfo instance used for type conversion if needed.</param>
     public static void SetPropertyValue(this PropertyInfo property, object obj, object? value, CultureInfo culture)
     {
-        static bool ValueIsNull(object? v) => v == null || v is string s && string.IsNullOrEmpty(s);
+        bool ValueIsNull(object? v) => v == null || v is string s && string.IsNullOrEmpty(s);
 
         var propertyType = property.PropertyType;
 

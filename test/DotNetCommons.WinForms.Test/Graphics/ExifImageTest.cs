@@ -1,6 +1,5 @@
 ﻿using DotNetCommons.WinForms.Graphics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 using System.Reflection;
 
 namespace DotNetCommons.WinForms.Test.Graphics;

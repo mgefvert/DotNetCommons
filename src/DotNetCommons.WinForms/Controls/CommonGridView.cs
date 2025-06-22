@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-
-namespace DotNetCommons.WinForms.Controls;
+﻿namespace DotNetCommons.WinForms.Controls;
 
 public class CommonGridView : DataGridView
 {

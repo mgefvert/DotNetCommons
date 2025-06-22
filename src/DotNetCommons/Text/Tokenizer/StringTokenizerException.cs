@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetCommons.Text.Tokenizer;
+﻿namespace DotNetCommons.Text.Tokenizer;
 
 public class StringTokenizerException : Exception
 {

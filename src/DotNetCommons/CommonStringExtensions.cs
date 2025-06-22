@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 // Written by Mats Gefvert
@@ -9,6 +7,16 @@ using System.Text;
 // ReSharper disable UnusedMember.Global
 
 namespace DotNetCommons;
+
+[Flags]
+public enum Spacing
+{
+    Trim = 1,
+    ReplaceTabs = 2,
+    ReplaceCrLfs = 4,
+    ReplaceDoubleSpaces = 8,
+    ReplaceAll = 15
+}
 
 public static partial class CommonStringExtensions
 {
@@ -75,6 +83,13 @@ public static partial class CommonStringExtensions
         return result;
     }
 
+    /// <summary>
+    /// Splits a string into multiple segments based on a specified separator and quote character, extracting each part sequentially.
+    /// </summary>
+    /// <param name="value">The input string to split. Can be null or empty.</param>
+    /// <param name="separator">The character used as the delimiter between segments. Defaults to a space (' ').</param>
+    /// <param name="quote">The character used to denote quoted sections, which may include the separator within them. Defaults to a double quote ('"').</param>
+    /// <returns>An enumerable collection of strings containing the extracted segments. Empty if the input string is null or empty.</returns>
     public static IEnumerable<string> ChompAll(this string? value, char separator = ' ', char quote = '"')
     {
         while (!string.IsNullOrEmpty(value))
@@ -123,13 +138,23 @@ public static partial class CommonStringExtensions
     /// <returns>The first line.</returns>
     public static string? FirstLine(this string? value)
     {
-        var n = (value ?? "").IndexOfAny(new[] { '\r', '\n' });
+        var n = (value ?? "").IndexOfAny(['\r', '\n']);
         return n == -1 ? value : (value ?? "")[..n].Trim();
     }
 
-    public static bool IsEmpty(this string? value) => string.IsNullOrEmpty(value);
+    /// <summary>
+    /// Determines whether the specified string is empty or null.
+    /// </summary>
+    /// <param name="value">The string to check for null or emptiness.</param>
+    /// <returns>True if the string is null or empty; otherwise, false.</returns>
+    public static bool IsEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
 
-    public static bool IsSet(this string? value) => !string.IsNullOrEmpty(value);
+    /// <summary>
+    /// Determines whether the specified string is set to a value different from null or empty.
+    /// </summary>
+    /// <param name="value">The string to evaluate.</param>
+    /// <returns>Returns true if the string is not null or empty; otherwise, false.</returns>
+    public static bool IsSet([NotNullWhen(true)] this string? value) => !string.IsNullOrEmpty(value);
 
     /// <summary>
     /// Take the left n characters from a string, possibly returning less than
@@ -151,12 +176,14 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
-    /// Get count characters from the left, adding an ellipsis (...) symbol if there's
-    /// more text beyond that.
+    /// Truncates the input string to a specified number of characters from the left and appends an ellipsis if the string exceeds the given length.
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="count"></param>
-    /// <returns></returns>
+    /// <param name="value">The input string to truncate. Can be null.</param>
+    /// <param name="count">The maximum number of characters to retain from the start of the string.</param>
+    /// <returns>
+    /// A string truncated to the specified length with an appended ellipsis if required.
+    /// Returns an empty string if the input is null or empty.
+    /// </returns>
     public static string LeftEllipsis(this string? value, int count)
     {
         var result = Left(value, count);
@@ -175,7 +202,11 @@ public static partial class CommonStringExtensions
     /// <returns>A new, masked string</returns>
     public static string MaskLeft(this string value, int length, char mask)
     {
-        return value.Left(-length) + new string(mask, length);
+        if (length < 1)
+            throw new ArgumentOutOfRangeException(nameof(length));
+
+        var effectiveLength = Math.Min(value.Length, length);
+        return new string(mask, effectiveLength) + value.Right(-effectiveLength);
     }
 
     /// <summary>
@@ -187,7 +218,11 @@ public static partial class CommonStringExtensions
     /// <returns>A new, masked string</returns>
     public static string MaskRight(this string value, int length, char mask)
     {
-        return value.Right(-length) + new string(mask, length);
+        if (length < 1)
+            throw new ArgumentOutOfRangeException(nameof(length));
+
+        var effectiveLength = Math.Min(value.Length, length);
+        return value.Left(-effectiveLength) + new string(mask, effectiveLength);
     }
 
     /// <summary>
@@ -231,6 +266,33 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
+    /// Process whitespace in string according to rules. Can trim start/end of the string, replace
+    /// tabs and CRLFs with spaces, and remove duplicate spaces.
+    /// </summary>
+    public static string NormalizeSpacing(this string? s, Spacing spacing = Spacing.ReplaceAll)
+    {
+        s ??= "";
+
+        if ((spacing & Spacing.ReplaceTabs) != 0)
+            s = s.Replace("\t", " ");
+
+        if ((spacing & Spacing.ReplaceCrLfs) != 0)
+            s = s
+                .Replace("\r\n", " ")
+                .Replace("\r", " ")
+                .Replace("\n", " ");
+
+        if ((spacing & Spacing.ReplaceDoubleSpaces) != 0)
+            while (s.Contains("  "))
+                s = s.Replace("  ", " ");
+
+        if ((spacing & Spacing.Trim) != 0)
+            s = s.Trim();
+
+        return s;
+    }
+
+    /// <summary>
     /// Returns null if the string IsNullOrEmpty.
     /// </summary>
     /// <param name="value">String to test.</param>
@@ -241,12 +303,13 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
-    /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
-    /// the common "true"/"false" case.
+    /// Parse a string to a boolean. Handles truthy/falsy numbers, strings like "true/false", "yes/no", "t/f" and "y/n".
+    /// If the input string is empty or cannot be parsed, it returns null.
     /// </summary>
     public static bool? ParseBoolean(this string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        value = value?.Trim();
+        if (string.IsNullOrEmpty(value))
             return null;
 
         if (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
@@ -271,10 +334,10 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
-    /// Parse a string to a boolean. Handles empty strings (=false), numbers, or
-    /// the common "true"/"false" case.
+    /// Parse a string to a boolean. Handles truthy/falsy numbers, strings like "true/false", "yes/no", "t/f" and "y/n".
+    /// If the input string is empty or cannot be parsed, it returns a default value.
     /// </summary>
-    public static bool ParseBoolean(this string value, bool defaultValue)
+    public static bool ParseBoolean(this string? value, bool defaultValue)
     {
         return ParseBoolean(value) ?? defaultValue;
     }
@@ -383,11 +446,22 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
+    /// Return the string with the first letter in lowercase.
+    /// </summary>
+    public static string? StartLowerCase(this string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        return value.Length == 1
+            ? value.ToLower()
+            : char.ToLower(value[0]) + value.Substring(1, value.Length - 1);
+    }
+
+    /// <summary>
     /// Return the string with the first letter in uppercase.
     /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public static string? StartUppercase(this string? value)
+    public static string? StartUpperCase(this string? value)
     {
         if (string.IsNullOrEmpty(value))
             return value;

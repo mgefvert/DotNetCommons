@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>default</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AsyncEnumerator" Version="4.0.2" />
+    <PackageReference Include="FluentAssertions" Version="8.3.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.52.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj" />
+  </ItemGroup>
+
+</Project>

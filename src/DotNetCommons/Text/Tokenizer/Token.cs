@@ -54,7 +54,7 @@ public class Token
 public class Token<T> : Token where T : struct
 {
     public Definition<T>? Definition { get; }
-    public TokenList<T> Section { get; } = new();
+    public TokenList<T> Section { get; } = [];
     public T ID { get; }
 
     public Token(Definition<T> definition, int line, int column, string? text = null)
@@ -64,8 +64,10 @@ public class Token<T> : Token where T : struct
         ID = definition.ID;
     }
 
-    public override string ToString()
+    public override string ToString() => ToString(false);
+
+    public string ToString(bool insideText)
     {
-        return $"[{ID}:{Text}]";
+        return $"[{ID}:{(insideText ? InsideText : Text)}{(Section.Any() ? " " + Section : "")}]";
     }
 }

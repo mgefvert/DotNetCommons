@@ -1,10 +1,7 @@
 ﻿using DotNetCommons.Sys;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 // ReSharper disable UnusedMember.Global
 
@@ -68,7 +65,7 @@ public class SpawnTest
             ? new Spawn("pwd").WithStartDirectory("/tmp").Run()
             : new Spawn("cmd /c cd").WithStartDirectory("c:\\windows").Run();
 
-        result.Text.Should().Be(IsLinux ? "/tmp" : "c:\\windows");
+        result.Text.ToLower().Should().Be(IsLinux ? "/tmp" : "c:\\windows");
     }
 
     [TestMethod]
