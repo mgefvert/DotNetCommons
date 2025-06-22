@@ -128,11 +128,23 @@ public class CommonCollectionExtensionsTest
     }
 
     [TestMethod]
+    public void TestExtractFirst_WithPredicate()
+    {
+        Assert.AreEqual("AB", _list.ExtractFirst(x => x.Length > 1));
+    }
+
+    [TestMethod]
     public void TestExtractFirstOrDefault()
     {
         Assert.AreEqual("A", _list.ExtractFirstOrDefault());
         _list.Clear();
         Assert.IsNull(_list.ExtractFirstOrDefault());
+    }
+
+    [TestMethod]
+    public void TestExtractFirstOrDefault_WithPredicate()
+    {
+        Assert.AreEqual("AB", _list.ExtractFirstOrDefault(x => x.Length > 1));
     }
 
     [TestMethod]
@@ -142,11 +154,23 @@ public class CommonCollectionExtensionsTest
     }
 
     [TestMethod]
+    public void TestExtractLast_WithPredicate()
+    {
+        Assert.AreEqual("AB", _list.ExtractLast(x => x.Length > 1));
+    }
+
+    [TestMethod]
     public void TestExtractLastOrDefault()
     {
         Assert.AreEqual("D", _list.ExtractLastOrDefault());
         _list.Clear();
         Assert.IsNull(_list.ExtractLastOrDefault());
+    }
+
+    [TestMethod]
+    public void TestExtractLastOrDefault_WithPredicate()
+    {
+        Assert.AreEqual("AB", _list.ExtractLastOrDefault(x => x.Length > 1));
     }
 
     [TestMethod]
