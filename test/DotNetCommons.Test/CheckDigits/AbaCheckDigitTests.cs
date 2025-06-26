@@ -4,14 +4,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DotNetCommons.Test.CheckDigits
 {
     [TestClass]
-    public class AbaCheckDigitsTests
+    public class AbaCheckDigitTests
     {
         private CheckDigit _checkDigit = null!;
 
         [TestInitialize]
         public void Setup()
         {
-            _checkDigit = new AbaCheckDigits();
+            _checkDigit = new AbaCheckDigit();
         }
 
         [TestMethod]

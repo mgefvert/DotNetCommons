@@ -4,6 +4,15 @@ namespace DotNetCommons;
 
 public static class CommonStructExtensions
 {
+    public static bool Between<T>(this T value, T lower, T upper, bool inclusiveUpper = false)
+        where T : struct, IComparable<T>
+    {
+        var lowerCheck = value.CompareTo(lower) >= 0;
+        var upperCheck = inclusiveUpper ? value.CompareTo(upper) <= 0 : value.CompareTo(upper) < 0;
+
+        return lowerCheck && upperCheck;
+    }
+
     /// <summary>
     /// Limit a value inside a guard range.
     /// </summary>

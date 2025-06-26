@@ -44,7 +44,7 @@ public class PatchTests
             Secret    = "changed"
         };
 
-        var result = _patch.Update(existing, incoming);
+        var result = _patch.UpdateObject(existing, incoming);
 
         result.Should().BeTrue();
         existing.Name.Should().Be("Bob");
@@ -58,7 +58,7 @@ public class PatchTests
         var existing = new TestDto { Id = 2, Name = "Charlie" };
         var incoming = new TestDto { Id = 2, Name = null };
 
-        var result = _patch.Update(existing, incoming);
+        var result = _patch.UpdateObject(existing, incoming);
 
         result.Should().BeTrue();
         existing.Name.Should().BeNull();

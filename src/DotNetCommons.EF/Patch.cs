@@ -68,7 +68,7 @@ public class Patch
     /// <param name="existing">The existing object to be updated.</param>
     /// <param name="load">The source object containing the updated values.</param>
     /// <returns>Returns <c>true</c> if any changes were made to the existing object, otherwise <c>false</c>.</returns>
-    public bool Update<T>(T existing, T load)
+    public bool UpdateObject<T>(T existing, T load)
         where T : class
     {
         ArgumentNullException.ThrowIfNull(existing);
@@ -114,9 +114,9 @@ public class Patch
     /// <returns>The number of changes made, including created, updated, and removed objects.</returns>
     public int Update<TItem, TKey>(PatchMode mode, Func<TItem, TKey> keySelector, List<TItem> existing, List<TItem> load,
         Action<TItem>? onCreated = null, Action<TItem>? onChanged = null)
-        where TItem : class, new()
+        where TItem : class, new() where TKey : notnull
     {
-        var diff    = existing.Intersect(load, keySelector);
+        var diff    = existing.IntersectCollection(load, keySelector);
         var changes = 0;
 
         // Add new objects: For every object in load but not in `existing`, create a new object, update the Updateable properties on it,
@@ -126,7 +126,7 @@ public class Patch
             foreach (var loadItem in diff.Right)
             {
                 var newItem = new TItem();
-                Update(newItem, loadItem);
+                UpdateObject(newItem, loadItem);
                 onCreated?.Invoke(newItem);
                 existing.Add(newItem);
                 changes++;
@@ -144,7 +144,7 @@ public class Patch
         // Update all existing objects
         foreach (var (existingItem, loadItem) in diff.Both)
         {
-            if (Update(existingItem, loadItem))
+            if (UpdateObject(existingItem, loadItem))
             {
                 onChanged?.Invoke(existingItem);
                 changes++;

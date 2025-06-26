@@ -124,6 +124,26 @@ public static partial class CommonStringExtensions
     }
 
     /// <summary>
+    /// Converts a string from LF line-feeds to CRLF. Is tolerant of the existing format as long as it's either
+    /// LF or CRLF.
+    /// </summary>
+    public static string? ConvertToCrLf(this string? value)
+    {
+        return value?
+            .Replace("\r", "")
+            .Replace("\n", "\r\n");
+    }
+
+    /// <summary>
+    /// Converts a string from CRLF line-feeds to LF. Is tolerant of the existing format as long as it's either
+    /// LF or CRLF.
+    /// </summary>
+    public static string? ConvertToLf(this string? value)
+    {
+        return value?.Replace("\r\n", "\n");
+    }
+
+    /// <summary>
     /// Compare text according to the current culture, case insensitive.
     /// </summary>
     public static bool EqualsInsensitive(this string? value, string? compare)
@@ -186,11 +206,13 @@ public static partial class CommonStringExtensions
     /// </returns>
     public static string LeftEllipsis(this string? value, int count)
     {
-        var result = Left(value, count);
-        if (value != null && value.Length > count)
-            result += "…";
+        if (value.IsEmpty() || count == 0)
+            return "";
 
-        return result;
+        if (value.Length <= count)
+            return value;
+
+        return value.Left(count - 1) + "…";
     }
 
     /// <summary>

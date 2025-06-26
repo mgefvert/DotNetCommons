@@ -197,7 +197,7 @@ public class CommonCollectionExtensionsTest
         var list1 = new[] { 1, 2, 3, 4, 5 };
         var list2 = new[] { 4, 5, 6, 7 };
 
-        var intersect = list1.Intersect(list2);
+        var intersect = list1.IntersectCollection(list2);
         CollectionAssert.AreEqual(new[] { 1, 2, 3 }, intersect.Left);
         CollectionAssert.AreEqual(new[] { (4, 4), (5, 5) }, intersect.Both);
         CollectionAssert.AreEqual(new[] { 6, 7 }, intersect.Right);
@@ -205,7 +205,7 @@ public class CommonCollectionExtensionsTest
         list1 = new[] { 1, 2, 3, 4, 5 };
         list2 = new[] { 4, 5 };
 
-        intersect = list1.Intersect(list2);
+        intersect = list1.IntersectCollection(list2);
         CollectionAssert.AreEqual(new[] { 1, 2, 3 }, intersect.Left);
         CollectionAssert.AreEqual(new[] { (4, 4), (5, 5) }, intersect.Both);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Right);
@@ -213,10 +213,77 @@ public class CommonCollectionExtensionsTest
         list1 = Array.Empty<int>();
         list2 = new[] { 4, 5 };
 
-        intersect = list1.Intersect(list2);
+        intersect = list1.IntersectCollection(list2);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Left);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Both);
         CollectionAssert.AreEqual(new[] { 4, 5 }, intersect.Right);
+    }
+
+    [TestMethod]
+    public void TestIntersect_EmptyLeft()
+    {
+        var list1 = Array.Empty<int>();
+        var list2 = new[] { 4, 5, 6, 7 };
+
+        var intersect = list1.IntersectCollection(list2);
+        CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Left);
+        CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Both);
+        CollectionAssert.AreEqual(new[] { 4, 5, 6, 7 }, intersect.Right);
+    }
+
+    [TestMethod]
+    public void TestIntersect_EmptyRight()
+    {
+        var list1 = new[] { 1, 2, 3, 4, 5 };
+        var list2 = Array.Empty<int>();
+
+        var intersect = list1.IntersectCollection(list2);
+        CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5 }, intersect.Left);
+        CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Both);
+        CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Right);
+    }
+
+    [TestMethod]
+    public void TestIntersect_MassiveSet()
+    {
+        var list1 = Enumerable.Range(1, 20000).Select(x => 2*x).RandomOrder().ToList();
+        var list2 = Enumerable.Range(1, 20000).Select(x => 3*x).RandomOrder().ToList();
+
+        var t0      = DateTime.UtcNow;
+        var result  = list1.IntersectCollection(list2);
+        var elapsed = (int)(DateTime.UtcNow - t0).TotalMilliseconds;
+        Console.WriteLine($"Total time = {elapsed} ms");
+
+        if (elapsed > 100)
+            Assert.Fail($"Elapsed time = {elapsed} ms; should be < 100 ms");
+
+        foreach (var (n1, n2) in result.Both)
+            Assert.AreEqual(n1, n2);
+
+        var left  = new HashSet<int>(result.Left);
+        var right = new HashSet<int>(result.Right);
+        var both  = new HashSet<int>(result.Both.Select(x => x.Item1));
+
+        foreach (var n in left)
+        {
+            Assert.IsTrue(n % 2 == 0);
+            Assert.IsFalse(right.Contains(n));
+            Assert.IsFalse(both.Contains(n));
+        }
+
+        foreach (var n in right)
+        {
+            Assert.IsTrue(n % 3 == 0);
+            Assert.IsFalse(left.Contains(n));
+            Assert.IsFalse(both.Contains(n));
+        }
+
+        foreach (var n in both)
+        {
+            Assert.IsTrue(n % 2 == 0 && n % 3 == 0);
+            Assert.IsFalse(right.Contains(n));
+            Assert.IsFalse(left.Contains(n));
+        }
     }
 
     [TestMethod]
@@ -236,7 +303,7 @@ public class CommonCollectionExtensionsTest
         var list1 = new[] { dan1, joe1, lars1 };
         var list2 = new[] { jessie2, joe2, maggie2, zoe2 };
 
-        var intersect = list1.Intersect(list2, x => x.Key, x => x.Key);
+        var intersect = list1.IntersectCollection(list2, x => x.Key, x => x.Key);
         CollectionAssert.AreEqual(new[] { dan1, lars1 }, intersect.Left);
         CollectionAssert.AreEqual(new[] { (joe1, joe2) }, intersect.Both);
         CollectionAssert.AreEqual(new[] { jessie2, maggie2, zoe2 }, intersect.Right);

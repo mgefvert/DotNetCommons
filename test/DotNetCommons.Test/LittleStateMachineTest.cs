@@ -51,6 +51,8 @@ public class LittleStateMachineTest
         _lsm.MoveTo(States.RunningHigh);
         _lsm.MoveTo(States.Stopped);
 
+        Console.WriteLine(string.Join("\r\n", _log));
+
         Assert.AreEqual(8, _log.Count);
         Assert.AreEqual("at:Starting", _log[0]);
         Assert.AreEqual("at:Running", _log[1]);

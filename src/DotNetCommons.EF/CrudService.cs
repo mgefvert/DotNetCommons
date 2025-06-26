@@ -247,7 +247,7 @@ public abstract class CrudService<TDataKey, TDataObject, TDataContext, TListQuer
         var existing = await Get(items.Select(GetObjectKey).ToArray(), cancellationToken);
 
         // Intersect with the list of given items
-        var updates = existing.Intersect(items, GetObjectKey, GetObjectKey);
+        var updates = existing.IntersectCollection(items, GetObjectKey, GetObjectKey);
 
         // For every item found in both lists, update the existing one, then save
         foreach (var update in updates.Both)

@@ -298,9 +298,10 @@ public static class CommonCollectionExtensions
     /// <param name="list1">The first list (left)</param>
     /// <param name="list2">The second list (right)</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T, T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2)
+    public static Intersection<T, T> IntersectCollection<T>(this IEnumerable<T> list1, IEnumerable<T> list2)
+        where T : notnull
     {
-        return Intersect(list1, list2, null, x => x, x => x);
+        return IntersectCollection(list1, list2, Comparer<T>.Default, x => x, x => x);
     }
 
     /// <summary>
@@ -313,9 +314,10 @@ public static class CommonCollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="selector">A selector for the key to compare the objects by</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T, T> Intersect<T, TKey>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Func<T, TKey> selector)
+    public static Intersection<T, T> IntersectCollection<T, TKey>(this IEnumerable<T> list1, IEnumerable<T> list2, Func<T, TKey> selector)
+        where TKey : notnull
     {
-        return Intersect(list1, list2, null, selector, selector);
+        return IntersectCollection(list1, list2, Comparer<TKey>.Default, selector, selector);
     }
 
     /// <summary>
@@ -327,10 +329,11 @@ public static class CommonCollectionExtensions
     /// <param name="keySelector1">A selector for the key to compare the left objects by</param>
     /// <param name="keySelector2">A selector for the key to compare the right objects by</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T1, T2> Intersect<T1, T2, TKey>(this IReadOnlyCollection<T1> list1, IReadOnlyCollection<T2> list2,
+    public static Intersection<T1, T2> IntersectCollection<T1, T2, TKey>(this IEnumerable<T1> list1, IEnumerable<T2> list2,
         Func<T1, TKey> keySelector1, Func<T2, TKey> keySelector2)
+        where TKey : notnull
     {
-        return Intersect(list1, list2, null, keySelector1, keySelector2);
+        return IntersectCollection(list1, list2, Comparer<TKey>.Default, keySelector1, keySelector2);
     }
 
     /// <summary>
@@ -342,23 +345,10 @@ public static class CommonCollectionExtensions
     /// <param name="list2">The second list (right)</param>
     /// <param name="comparer">A specific comparer to use for comparing the objects</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T, T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, IComparer<T> comparer)
+    public static Intersection<T, T> IntersectCollection<T>(this IEnumerable<T> list1, IEnumerable<T> list2, IComparer<T> comparer)
+        where T : notnull
     {
-        return Intersect(list1, list2, comparer.Compare, x => x, x => x);
-    }
-
-    /// <summary>
-    /// Compare two lists against each other and return an Intersection result from the comparison,
-    /// listing the objects found in only list1, only list2, or both lists.
-    /// </summary>
-    /// <typeparam name="T">Type of list</typeparam>
-    /// <param name="list1">The first list (left)</param>
-    /// <param name="list2">The second list (right)</param>
-    /// <param name="comparison">A comparison method for comparing the objects</param>
-    /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T, T> Intersect<T>(this IReadOnlyCollection<T> list1, IReadOnlyCollection<T> list2, Comparison<T> comparison)
-    {
-        return Intersect(list1, list2, comparison, x => x, x => x);
+        return IntersectCollection(list1, list2, comparer, x => x, x => x);
     }
 
     /// <summary>
@@ -367,54 +357,54 @@ public static class CommonCollectionExtensions
     /// </summary>
     /// <param name="list1">The first list (left)</param>
     /// <param name="list2">The second list (right)</param>
-    /// <param name="comparison">A comparison method for comparing the objects</param>
+    /// <param name="comparer">A comparison method for comparing the objects</param>
     /// <param name="keySelector1">A selector for the key to compare the left objects by</param>
     /// <param name="keySelector2">A selector for the key to compare the right objects by</param>
     /// <returns>An Intersection object with the results of the comparison</returns>
-    public static Intersection<T1, T2> Intersect<T1, T2, TKey>(this IReadOnlyCollection<T1> list1, IReadOnlyCollection<T2> list2,
-        Comparison<TKey>? comparison, Func<T1, TKey> keySelector1, Func<T2, TKey> keySelector2)
+    public static Intersection<T1, T2> IntersectCollection<T1, T2, TKey>(this IEnumerable<T1> list1, IEnumerable<T2> list2,
+        IComparer<TKey> comparer, Func<T1, TKey> keySelector1, Func<T2, TKey> keySelector2)
+        where TKey : notnull
     {
-        bool DoCompare(T1 item1, T2 item2)
+        int InternalBinarySearch(List<T2> list, TKey value)
         {
-            var value1 = keySelector1(item1);
-            var value2 = keySelector2(item2);
+            var lo = 0;
+            var hi = list.Count - 1;
+            while (lo <= hi)
+            {
+                var i     = lo + ((hi - lo) >> 1);
+                var order = comparer.Compare(keySelector2(list[i]), value);
 
-            if (comparison != null)
-                return comparison(value1, value2) == 0;
-            if (value1 is IComparable<TKey> comparable)
-                return comparable.CompareTo(value2) == 0;
-            if (value1 is IEquatable<TKey> equatable)
-                return equatable.Equals(value2);
+                switch (order)
+                {
+                    case 0:
+                        return i;
+                    case < 0:
+                        lo = i + 1;
+                        break;
+                    default:
+                        hi = i - 1;
+                        break;
+                }
+            }
 
-            return Comparer<TKey>.Default.Compare(value1, value2) == 0;
+            return -1;
         }
 
         var result = new Intersection<T1, T2>();
 
-        var empty1 = list1.Count == 0;
-        var empty2 = list2.Count == 0;
-
-        if (empty1 && empty2)
-            return result;
-
-        if (empty1)
-        {
-            result.Right.AddRange(list2);
-            return result;
-        }
-
-        if (empty2)
+        var search2 = list2.OrderBy(keySelector2, comparer).ToList();
+        if (search2.Count == 0)
         {
             result.Left.AddRange(list1);
             return result;
         }
 
-        var search2 = new List<T2>(list2);
-
         // Divide array1 into Left and Both
         foreach (var item1 in list1)
         {
-            var n = search2.FindIndex(x => DoCompare(item1, x));
+            var key1 = keySelector1(item1);
+
+            var n = InternalBinarySearch(search2, key1);
             if (n == -1)
             {
                 result.Left.Add(item1);
@@ -542,6 +532,16 @@ public static class CommonCollectionExtensions
         foreach (var item in items)
             if (item != null)
                 yield return item;
+    }
+
+    /// <summary>
+    /// Return all the items in a random order.
+    /// </summary>
+    public static IEnumerable<T?> RandomOrder<T>(this IEnumerable<T?> items)
+    {
+        var list = items.ToList();
+        while (list.Count > 0)
+            yield return list.ExtractAt(Random.Shared.Next(list.Count));
     }
 
     /// <summary>

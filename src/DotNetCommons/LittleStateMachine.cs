@@ -149,17 +149,22 @@ public class LittleStateMachine<T> where T : notnull
         var leave = GetStateHierarchy(Current);
         var arrive = GetStateHierarchy(state);
 
-        var diff = leave.Intersect(arrive);
+        var both = leave.Intersect(arrive).ToList();
+        foreach (var s in both)
+        {
+            leave.Remove(s);
+            arrive.Remove(s);
+        }
 
         // Call leave actions in ascending order
-        foreach (var item in diff.Left)
+        foreach (var item in leave)
             _states[item].Leave?.Invoke(item);
 
         LastTransition = DateTime.Now;
         Current = state;
 
         // Call arrive actions in descending order
-        foreach (var item in diff.Right.AsEnumerable().Reverse())
+        foreach (var item in arrive.AsEnumerable().Reverse())
             _states[item].Arrive?.Invoke(item);
     }
 

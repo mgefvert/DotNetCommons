@@ -28,7 +28,15 @@ public static class CommonFileInfoExtensions
     }
 
     /// <summary>
-    /// Create a new file on disk from a DirectoryInfo with a given filename and contents.
+    /// Create a new DirectoryInfo for a given subdirectory in the directory.
+    /// </summary>
+    public static DirectoryInfo ForDirectory(this DirectoryInfo directory, string directoryName)
+    {
+        return new DirectoryInfo(Path.Combine(directory.FullName, directoryName));
+    }
+
+    /// <summary>
+    /// Create a new FileInfo for a given file in the directory.
     /// </summary>
     public static FileInfo ForFile(this DirectoryInfo directory, string fileName)
     {

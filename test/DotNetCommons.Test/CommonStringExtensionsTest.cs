@@ -66,6 +66,28 @@ public class CommonStringExtensionsTest
     }
 
     [TestMethod]
+    public void TestConvertToCrLf()
+    {
+        ((string?)null).ConvertToCrLf().Should().BeNull();
+        "".ConvertToCrLf().Should().Be("");
+        "\n".ConvertToCrLf().Should().Be("\r\n");
+        "\n\n".ConvertToCrLf().Should().Be("\r\n\r\n");
+        "\r\n\r\n".ConvertToCrLf().Should().Be("\r\n\r\n");
+        "This is\na mix\r\nof different\nformats.\r\n".ConvertToCrLf().Should().Be("This is\r\na mix\r\nof different\r\nformats.\r\n");
+    }
+
+    [TestMethod]
+    public void TestConvertToLf()
+    {
+        ((string?)null).ConvertToLf().Should().BeNull();
+        "".ConvertToLf().Should().Be("");
+        "\n".ConvertToLf().Should().Be("\n");
+        "\n\n".ConvertToLf().Should().Be("\n\n");
+        "\r\n\r\n".ConvertToLf().Should().Be("\n\n");
+        "This is\na mix\r\nof different\nformats.\r\n".ConvertToLf().Should().Be("This is\na mix\nof different\nformats.\n");
+    }
+
+    [TestMethod]
     public void TestEqualsInsensitive()
     {
         Assert.IsTrue(((string?)null).EqualsInsensitive(null));
@@ -111,6 +133,21 @@ public class CommonStringExtensionsTest
         Assert.AreEqual("AB", "ABCD".Left(2));
         Assert.AreEqual("ABCD", "ABCD".Left(4));
         Assert.AreEqual("ABCD", "ABCD".Left(10));
+    }
+
+    [TestMethod]
+    public void TestLeftEllipsis()
+    {
+        Assert.AreEqual("", "".LeftEllipsis(5));
+        Assert.AreEqual("", ((string?)null).LeftEllipsis(5));
+
+        Assert.AreEqual("", "ABCD".LeftEllipsis(0));
+        Assert.AreEqual("…", "ABCD".LeftEllipsis(1));
+        Assert.AreEqual("A…", "ABCD".LeftEllipsis(2));
+        Assert.AreEqual("AB…", "ABCD".LeftEllipsis(3));
+        Assert.AreEqual("ABCD", "ABCD".LeftEllipsis(4));
+        Assert.AreEqual("ABCD", "ABCD".LeftEllipsis(5));
+        Assert.AreEqual("ABCD", "ABCD".LeftEllipsis(10));
     }
 
     [TestMethod]
@@ -202,7 +239,7 @@ public class CommonStringExtensionsTest
         Assert.IsTrue("yes".ParseBoolean());
         Assert.IsTrue("Y".ParseBoolean());
         Assert.IsTrue("y".ParseBoolean());
-        
+
         Assert.IsFalse("0".ParseBoolean());
         Assert.IsFalse("FALSE".ParseBoolean());
         Assert.IsFalse("False".ParseBoolean());
