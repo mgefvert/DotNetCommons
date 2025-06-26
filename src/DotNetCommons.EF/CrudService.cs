@@ -71,7 +71,7 @@ public abstract class CrudService<TDataKey, TDataObject, TDataContext, TListQuer
     where TListQuery : class
 {
     // ReSharper disable once StaticMemberInGenericType
-    protected static readonly (PropertyInfo, UpdateableAttribute)[] PropertyMap;
+    protected static readonly (PropertyInfo, PatchAttribute)[] PropertyMap;
 
     /// <summary>
     /// Gets the database context used for database operations.
@@ -88,7 +88,7 @@ public abstract class CrudService<TDataKey, TDataObject, TDataContext, TListQuer
     {
         PropertyMap = typeof(TDataObject).GetProperties()
             .Where(p => p is { CanRead: true, CanWrite: true })
-            .Select(p => (Prop: p, Attr: p.GetCustomAttribute<UpdateableAttribute>()!))
+            .Select(p => (Prop: p, Attr: p.GetCustomAttribute<PatchAttribute>()!))
             .Where(p => p.Attr != null!)
             .ToArray();
     }
@@ -102,7 +102,7 @@ public abstract class CrudService<TDataKey, TDataObject, TDataContext, TListQuer
     /// Assigns values from the source object to the existing object. This allows an end user to update properties on an object from API
     /// methods. Properties that should not be touched are typically object keys, relational keys, system attributes (CreatedAt, UpdatedAt,
     /// CreatedBy...), password hashes and similar. The default method searches for properties marked with the
-    /// <see cref="UpdateableAttribute"/> attribute and allows operations only on those.
+    /// <see cref="PatchAttribute"/> attribute and allows operations only on those.
     /// </summary>
     /// <param name="existing">The existing object to which values will be assigned.</param>
     /// <param name="source">The source object from which values will be copied.</param>

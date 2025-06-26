@@ -33,18 +33,28 @@ public enum PatchMode
 
 public class Patch
 {
-    private class UpdateableProperty(PropertyInfo propertyInfo, UpdateableAttribute attribute)
+    /// <summary>
+    /// Gets or sets the threshold for allowable removals in the patch operation as a fraction (0 to 1).
+    /// If the ratio of removed items exceeds this threshold, an <see cref="InvalidOperationException"/> is thrown.
+    /// </summary>
+    /// <value>
+    /// A <see cref="double"/> value representing the maximum allowable ratio of removals during the patch.
+    /// The default value is 0.75 (75%).
+    /// </value>
+    public double RemoveThreshold { get; set; } = 0.75;
+
+    private class UpdateableProperty(PropertyInfo propertyInfo, PatchAttribute attribute)
     {
         public PropertyInfo PropertyInfo { get; } = propertyInfo;
-        public UpdateableAttribute Attribute { get; } = attribute;
+        public PatchAttribute Attribute { get; } = attribute;
     }
 
     private static readonly ConcurrentDictionary<Type, UpdateableProperty[]> Properties = new();
 
     /// <summary>
-    /// Retrieves and caches a collection of properties for a given type that are marked with the <see cref="UpdateableAttribute"/>.
+    /// Retrieves and caches a collection of properties for a given type that are marked with the <see cref="PatchAttribute"/>.
     /// </summary>
-    /// <param name="type">The type for which to index and retrieve the properties with the <see cref="UpdateableAttribute"/>.</param>
+    /// <param name="type">The type for which to index and retrieve the properties with the <see cref="PatchAttribute"/>.</param>
     /// <returns>An array of <c>UpdateableProperty</c> objects representing the indexed properties of the type.</returns>
     private UpdateableProperty[] IndexAttributes(Type type)
     {
@@ -53,7 +63,7 @@ public class Patch
 
         return Properties[type] = (
             from prop in type.GetProperties()
-            let attr = prop.GetCustomAttribute<UpdateableAttribute>()
+            let attr = prop.GetCustomAttribute<PatchAttribute>()
             where attr != null
             select new UpdateableProperty(prop, attr)
         ).ToArray();
@@ -61,7 +71,7 @@ public class Patch
 
     /// <summary>
     /// Updates an object by transferring the values from a source object to an existing object.
-    /// Only properties marked with the <see cref="UpdateableAttribute"/> are updated. Handles null
+    /// Only properties marked with the <see cref="PatchAttribute"/> are updated. Handles null
     /// values based on the <c>NullRemovesValue</c> property of the attribute.
     /// </summary>
     /// <typeparam name="T">The type of the objects being updated, which must be a class.</typeparam>
@@ -100,7 +110,7 @@ public class Patch
 
     /// <summary>
     /// Updates an existing object or collection of objects with values from another source. Only the properties tagged with
-    /// <see cref="UpdateableAttribute"/> will be touched. Provides mechanisms to handle object creation, update, and removal.
+    /// <see cref="PatchAttribute"/> will be touched. Provides mechanisms to handle object creation, update, and removal.
     /// </summary>
     /// <typeparam name="TItem">The type of the objects being updated, which must be a class and have a parameterless constructor.</typeparam>
     /// <typeparam name="TKey">The type of the object key or id.</typeparam>
@@ -114,10 +124,24 @@ public class Patch
     /// <returns>The number of changes made, including created, updated, and removed objects.</returns>
     public int Update<TItem, TKey>(PatchMode mode, Func<TItem, TKey> keySelector, List<TItem> existing, List<TItem> load,
         Action<TItem>? onCreated = null, Action<TItem>? onChanged = null)
-        where TItem : class, new() where TKey : notnull
+        where TItem : class, new()
+        where TKey : notnull
     {
         var diff    = existing.IntersectCollection(load, keySelector);
         var changes = 0;
+
+        // Remove old objects: Iterate through the list of existing objects and remove all no longer in the load list.
+        // We use a HashSet and iterate once through to avoid an O(m*n) situation.
+        if (mode.HasFlag(PatchMode.AllowRemovals))
+        {
+            var removals = diff.Left.ToHashSet();
+
+            var ratio = (double)removals.Count / existing.Count;
+            if (ratio > RemoveThreshold)
+                throw new InvalidOperationException($"Patch tried to remove {ratio:P} of objects which exceeds the removal threshold ({RemoveThreshold:P}).");
+
+            changes += existing.RemoveAll(x => removals.Contains(x));
+        }
 
         // Add new objects: For every object in load but not in `existing`, create a new object, update the Updateable properties on it,
         // optionally call onCreated and then persist it both to `existing` and the result list.
@@ -131,14 +155,6 @@ public class Patch
                 existing.Add(newItem);
                 changes++;
             }
-        }
-
-        // Remove old objects: Iterate through the list of existing objects and remove all no longer in the load list.
-        // We use a HashSet and iterate once through to avoid an O(m*n) situation.
-        if (mode.HasFlag(PatchMode.AllowRemovals))
-        {
-            var removals = diff.Left.ToHashSet();
-            changes += existing.RemoveAll(x => removals.Contains(x));
         }
 
         // Update all existing objects
