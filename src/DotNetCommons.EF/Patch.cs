@@ -39,9 +39,9 @@ public class Patch
     /// </summary>
     /// <value>
     /// A <see cref="double"/> value representing the maximum allowable ratio of removals during the patch.
-    /// The default value is 0.75 (75%).
+    /// The default value is 0.95 (95%).
     /// </value>
-    public double RemoveThreshold { get; set; } = 0.75;
+    public double RemoveThreshold { get; set; } = 0.95;
 
     private class UpdateableProperty(PropertyInfo propertyInfo, PatchAttribute attribute)
     {
@@ -137,7 +137,7 @@ public class Patch
             var removals = diff.Left.ToHashSet();
 
             var ratio = (double)removals.Count / existing.Count;
-            if (ratio > RemoveThreshold)
+            if (existing.Count > 1 && ratio > RemoveThreshold)
                 throw new InvalidOperationException($"Patch tried to remove {ratio:P} of objects which exceeds the removal threshold ({RemoveThreshold:P}).");
 
             changes += existing.RemoveAll(x => removals.Contains(x));

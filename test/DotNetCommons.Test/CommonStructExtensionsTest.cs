@@ -83,12 +83,24 @@ public class CommonStructExtensionsTest
     }
 
     [TestMethod]
-    public void BitCount()
+    public void ParityEven_Works()
     {
-        Assert.AreEqual(1, 1u.BitCount());
-        Assert.AreEqual(1, 2u.BitCount());
-        Assert.AreEqual(2, 3u.BitCount());
-        Assert.AreEqual(7, 4711u.BitCount());
-        Assert.AreEqual(16, 0xFFFFu.BitCount());
+        Assert.IsTrue(0u.IsParityEven());
+        Assert.IsFalse(1u.IsParityEven());
+        Assert.IsFalse(2u.IsParityEven());
+        Assert.IsTrue(3u.IsParityEven());
+        Assert.IsFalse(4711u.IsParityEven());
+        Assert.IsTrue(0xFFFFu.IsParityEven());
+    }
+
+    [TestMethod]
+    public void ParityOdd_Works()
+    {
+        Assert.IsFalse(0u.IsParityOdd());
+        Assert.IsTrue(1u.IsParityOdd());
+        Assert.IsTrue(2u.IsParityOdd());
+        Assert.IsFalse(3u.IsParityOdd());
+        Assert.IsTrue(4711u.IsParityOdd());
+        Assert.IsFalse(0xFFFFu.IsParityOdd());
     }
 }

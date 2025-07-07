@@ -15,11 +15,11 @@ public class PatchTests
 
     public class TestDto
     {
-        [Updateable] public int Id { get; set; }
+        [Patch] public int Id { get; set; }
 
-        [Updateable(NullRemovesValue = true)] public string? Name { get; set; }
+        [Patch(true)] public string? Name { get; set; }
 
-        [Updateable] public DateTime Timestamp { get; set; }
+        [Patch] public DateTime Timestamp { get; set; }
 
         // Not marked as updateable
         public string? Secret { get; set; }

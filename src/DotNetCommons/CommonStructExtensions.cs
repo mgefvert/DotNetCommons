@@ -1,9 +1,21 @@
 ﻿// ReSharper disable UnusedMember.Global
 
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
 namespace DotNetCommons;
 
 public static class CommonStructExtensions
 {
+    /// <summary>
+    /// Determines whether a value lies between two specified boundaries.
+    /// </summary>
+    /// <param name="value">The value to evaluate.</param>
+    /// <param name="lower">The lower boundary of the range.</param>
+    /// <param name="upper">The upper boundary of the range.</param>
+    /// <param name="inclusiveUpper">Indicates whether the upper boundary is inclusive. Default is false.</param>
+    /// <typeparam name="T">The type of the value, which must be a value type implementing IComparable.</typeparam>
+    /// <returns>True if the value is between the specified range; otherwise, false.</returns>
     public static bool Between<T>(this T value, T lower, T upper, bool inclusiveUpper = false)
         where T : struct, IComparable<T>
     {
@@ -27,12 +39,34 @@ public static class CommonStructExtensions
     }
 
     /// <summary>
-    /// Determine the number of set bits in a value.
+    /// Determines whether the number of set bits in a value is odd or even.
     /// </summary>
-    public static int BitCount(this uint value)
-    {
-        value -= (value >> 1) & 0x55555555;
-        value = (value & 0x33333333) + ((value >> 2) & 0x33333333);
-        return (int)(((value + (value >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
-    }
+    /// <param name="value">The unsigned integer value to evaluate.</param>
+    /// <returns>true if the number of set bits in the value is even; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsParityEven(this uint value) => (BitOperations.PopCount(value) & 1) == 0;
+
+    /// <summary>
+    /// Determines whether the number of set bits in a value is odd or even.
+    /// </summary>
+    /// <param name="value">The unsigned integer value to evaluate.</param>
+    /// <returns>true if the number of set bits in the value is odd; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsParityOdd(this uint value) => (BitOperations.PopCount(value) & 1) != 0;
+
+    /// <summary>
+    /// Determines whether the number of set bits in a value is odd or even.
+    /// </summary>
+    /// <param name="value">The unsigned long value to evaluate.</param>
+    /// <returns>true if the number of set bits in the value is odd; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsParityEven(this ulong value) => (BitOperations.PopCount(value) & 1) == 0;
+
+    /// <summary>
+    /// Determines whether the number of set bits in a value is odd or even.
+    /// </summary>
+    /// <param name="value">The unsigned long value to evaluate.</param>
+    /// <returns>true if the number of set bits in the value is even; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsParityOdd(this ulong value) => (BitOperations.PopCount(value) & 1) != 0;
 }
