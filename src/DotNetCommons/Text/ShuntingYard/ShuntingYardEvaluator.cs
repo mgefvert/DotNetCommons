@@ -3,12 +3,23 @@ using System.Globalization;
 
 namespace DotNetCommons.Text.ShuntingYard;
 
+/// <summary>
+/// Represents an evaluator based on the Shunting-Yard algorithm for parsing and evaluating mathematical expressions.
+/// Provides methods to tokenize expressions, convert them to postfix notation, and evaluate the resulting expressions.
+/// </summary>
 public class ShuntingYardEvaluator
 {
     private readonly StringTokenizer<ShuntingYardToken> _tokenizer = new(Definitions);
     private static readonly object DefaultLock = new();
     private static ShuntingYardEvaluator? _default;
 
+    public delegate double Function(double arg);
+
+    /// <summary>
+    /// Provides a default, singleton instance of the <see cref="ShuntingYardEvaluator"/> class.
+    /// This instance is lazily instantiated and thread-safe, ensuring a single global instance
+    /// of the evaluator that can be reused for parsing and evaluating mathematical expressions.
+    /// </summary>
     public static ShuntingYardEvaluator Default
     {
         get
@@ -32,11 +43,44 @@ public class ShuntingYardEvaluator
         ["^"] = (3, true)
     };
 
-    private static readonly Dictionary<string, double> Constants = new()
+    private static readonly Dictionary<string, double> DefaultConstants = new()
     {
         ["pi"] = Math.PI,
         ["e"] = Math.E
     };
+
+    private static readonly Dictionary<string, Function> DefaultFunctions = new()
+    {
+        // Roots and exponents, logarithms
+        ["sqrt"] = Math.Sqrt,
+        ["exp"]  = Math.Exp,
+        ["log"]  = Math.Log10,
+        ["ln"]   = Math.Log,
+
+        // Rounding and utility
+        ["abs"]   = Math.Abs,
+        ["ceil"]  = Math.Ceiling,
+        ["floor"] = Math.Floor,
+        ["round"] = Math.Round,
+        ["trunc"] = Math.Truncate,
+
+        // Trigonometric functions
+        ["sin"]   = Math.Sin,
+        ["asin"]  = Math.Asin,
+        ["sinh"]  = Math.Sinh,
+        ["asinh"] = Math.Asinh,
+        ["cos"]   = Math.Cos,
+        ["acos"]  = Math.Acos,
+        ["cosh"]  = Math.Cosh,
+        ["acosh"] = Math.Acosh,
+        ["tan"]   = Math.Tan,
+        ["tanh"]  = Math.Tanh,
+        ["atan"]  = Math.Atan,
+        ["atanh"] = Math.Atanh,
+    };
+
+    private readonly Dictionary<string, double> _constants;
+    private readonly Dictionary<string, Function> _functions;
 
     private static readonly Definition<ShuntingYardToken>[] Definitions =
     [
@@ -53,6 +97,51 @@ public class ShuntingYardEvaluator
         new Strings<ShuntingYardToken>(ShuntingYardToken.Comma, ",", false)
     ];
 
+    /// <summary>
+    /// Represents an evaluator based on the Shunting-Yard algorithm to evaluate mathematical expressions.
+    /// Provides functionality to tokenize, convert to postfix notation, and evaluate expressions.
+    /// </summary>
+    public ShuntingYardEvaluator()
+    {
+        _constants = DefaultConstants.ToDictionary(x => x.Key, x => x.Value);
+        _functions = DefaultFunctions.ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    /// <summary>
+    /// Adds a constant with the specified name and value to the evaluator.
+    /// </summary>
+    /// <param name="name">The name of the constant to add.</param>
+    /// <param name="value">The value of the constant to add.</param>
+    public void AddConstant(string name, double value)
+    {
+        if (this == Default)
+            throw new InvalidOperationException("Cannot add constants to the default instance of the evaluator");
+
+        _constants[name] = value;
+    }
+
+    /// <summary>
+    /// Adds a custom function with the specified name and implementation to the evaluator.
+    /// </summary>
+    /// <param name="name">The name of the function to add.</param>
+    /// <param name="function">The delegate representing the function's implementation that takes a single argument and
+    /// returns a double.</param>
+    public void AddFunction(string name, Function function)
+    {
+        if (this == Default)
+            throw new InvalidOperationException("Cannot add functions to the default instance of the evaluator");
+
+        _functions[name] = function;
+    }
+
+    /// <summary>
+    /// Tokenizes a mathematical expression into a list of categorized tokens based on the Shunting-Yard algorithm.
+    /// Validates and processes numerical tokens, identifiers, constants, and functions during tokenization.
+    /// </summary>
+    /// <param name="source">The input string containing the mathematical expression to tokenize.</param>
+    /// <returns>A <see cref="TokenList{ShuntingYardToken}"/> containing the categorized tokens of the input expression.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when an invalid number, unknown identifier, or unknown constant is
+    /// encountered during tokenization.</exception>
     public TokenList<ShuntingYardToken> Tokenize(string source)
     {
         var result = _tokenizer.Tokenize(source);
@@ -66,17 +155,38 @@ public class ShuntingYardEvaluator
                 throw new InvalidOperationException($"Invalid number '{token.Text}' at {token.Line}:{token.Column}");
         }
 
+        // Process identifiers (constants and functions)
+        foreach (var token in result.Where(x => x.ID == ShuntingYardToken.Identifier))
+        {
+            var name = token.Text?.ToLowerInvariant();
+
+            // Check if it's a constant
+            if (_constants.TryGetValue(name!, out var value))
+            {
+                token.ID = ShuntingYardToken.Number;
+                token.Tag = value;
+            }
+            // Check if it's a function
+            else if (_functions.TryGetValue(name!, out var function))
+            {
+                token.ID = ShuntingYardToken.Function;
+                token.Tag = function;
+            }
+            else
+                throw new InvalidOperationException($"Unknown constant '{token.Text}' at {token.Line}:{token.Column}");
+        }
+
         // Process identifiers (constants)
         foreach (var token in result.Where(x => x.ID == ShuntingYardToken.Identifier))
         {
             var constantName = token.Text?.ToLowerInvariant();
-            if (Constants.TryGetValue(constantName!, out var value))
+            if (DefaultConstants.TryGetValue(constantName!, out var value))
             {
                 token.ID = ShuntingYardToken.Number;
                 token.Tag = value;
             }
             else
-                throw new InvalidOperationException($"Unknown constant '{token.Text}' at {token.Line}:{token.Column}");
+                throw new InvalidOperationException($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
         }
 
         // Rewrite token stream to handle special cases
@@ -109,6 +219,13 @@ public class ShuntingYardEvaluator
         return result;
     }
 
+    /// <summary>
+    /// Converts a given list of tokens into postfix (Reverse Polish) notation using the Shunting-Yard algorithm.
+    /// </summary>
+    /// <param name="tokens">The list of tokens representing the mathematical expression in infix notation.</param>
+    /// <returns>A token list representing the mathematical expression in postfix notation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when mismatched parentheses or unexpected tokens are encountered
+    /// in the input.</exception>
     public TokenList<ShuntingYardToken> ToPostfix(TokenList<ShuntingYardToken> tokens)
     {
         var output = new TokenList<ShuntingYardToken>();
@@ -120,6 +237,10 @@ public class ShuntingYardEvaluator
             {
                 case ShuntingYardToken.Number:
                     output.Add(token);
+                    break;
+
+                case ShuntingYardToken.Function:
+                    stack.Push(token);
                     break;
 
                 case ShuntingYardToken.Operator:
@@ -151,6 +272,10 @@ public class ShuntingYardEvaluator
                         throw new InvalidOperationException("Mismatched parentheses");
 
                     stack.Pop(); // discard the left paren
+
+                    // If the token at the top of the stack is a function token, pop it onto the output queue
+                    if (stack.Count > 0 && stack.Peek().ID == ShuntingYardToken.Function)
+                        output.Add(stack.Pop());
                     break;
 
                 default:
@@ -172,6 +297,15 @@ public class ShuntingYardEvaluator
         return output;
     }
 
+    /// <summary>
+    /// Evaluates a mathematical expression represented in postfix notation and calculates its result.
+    /// </summary>
+    /// <param name="postfix">The postfix notation tokens representing the mathematical expression to evaluate.</param>
+    /// <returns>The result of the evaluated mathematical expression as a double.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the expression is invalid, contains insufficient or unexpected operands,
+    /// or an unknown operator is encountered during evaluation.
+    /// </exception>
     public double Evaluate(TokenList<ShuntingYardToken> postfix)
     {
         var stack = new Stack<double>();
@@ -182,6 +316,15 @@ public class ShuntingYardEvaluator
             {
                 case ShuntingYardToken.Number:
                     stack.Push((double)token.Tag);
+                    break;
+
+                case ShuntingYardToken.Function:
+                    if (stack.Count < 1)
+                        throw new InvalidOperationException($"Not enough operands for function at {token.Line}:{token.Column}");
+
+                    var arg = stack.Pop();
+                    var func = (Function)token.Tag;
+                    stack.Push(func(arg));
                     break;
 
                 case ShuntingYardToken.Operator:
@@ -213,11 +356,16 @@ public class ShuntingYardEvaluator
         return stack.Pop();
     }
 
-    public static double Evaluate(string text)
+    /// <summary>
+    /// Evaluates a mathematical expression represented as a string by tokenizing, converting to postfix notation, and calculating
+    /// the result.
+    /// </summary>
+    /// <param name="text">The mathematical expression in string format to be evaluated.</param>
+    /// <returns>The result of the evaluated mathematical expression as a double.</returns>
+    public double Evaluate(string text)
     {
-        var evaluator = Default;
-        var tokens = evaluator.Tokenize(text);
-        tokens = evaluator.ToPostfix(tokens);
-        return evaluator.Evaluate(tokens);
+        var tokens = Tokenize(text);
+        tokens = ToPostfix(tokens);
+        return Evaluate(tokens);
     }
 }
