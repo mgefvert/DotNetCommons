@@ -28,6 +28,11 @@ public class Token
     public int Column { get; }
 
     /// <summary>
+    /// Generic tag that can hold any object.
+    /// </summary>
+    public object Tag { get; set; }
+
+    /// <summary>
     /// Default Empty token.
     /// </summary>
     public static Token Empty => _empty ??= new(0, 0);
@@ -51,11 +56,11 @@ public class Token
     }
 }
 
-public class Token<T> : Token where T : struct
+public class Token<T> : Token where T : struct, Enum
 {
     public Definition<T>? Definition { get; }
     public TokenList<T> Section { get; } = [];
-    public T ID { get; }
+    public T ID { get; set; }
 
     public Token(Definition<T> definition, int line, int column, string? text = null)
         : base(line, column, text)

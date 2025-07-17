@@ -5,7 +5,7 @@ namespace DotNetCommons.Text.Tokenizer;
 /// <summary>
 /// Contains a list of captured tokens.
 /// </summary>
-public class TokenList<T> : List<Token<T>> where T : struct
+public class TokenList<T> : List<Token<T>> where T : struct, Enum
 {
     public TokenList()
     {
@@ -57,6 +57,29 @@ public class TokenList<T> : List<Token<T>> where T : struct
     {
         while (Count > 0 && !Peek(stop))
             yield return this.ExtractFirst();
+    }
+
+    /// <summary>
+    /// Evaluate to see if a given token in the list is of a specific type.
+    /// </summary>
+    /// <param name="position">Position in the list; can be out of bounds.</param>
+    /// <param name="token">Expected token type</param>
+    /// <returns>True if it's a match; false otherwise, or if the position is out of bounds.</returns>
+    public bool IsToken(int position, T token)
+    {
+        return position >= 0 && position < Count && this[position].ID.Equals(token);
+    }
+
+    /// <summary>
+    /// Evaluate to see if a given token in the list is of a specific type and equals the given text.
+    /// </summary>
+    /// <param name="position">Position in the list; can be out of bounds.</param>
+    /// <param name="token">Expected token type</param>
+    /// <param name="text">Expected token text</param>
+    /// <returns>True if it's a match; false otherwise, or if the position is out of bounds.</returns>
+    public bool IsToken(int position, T token, string text)
+    {
+        return position >= 0 && position < Count && this[position].ID.Equals(token) && this[position].Text == text;
     }
 
     /// <summary>

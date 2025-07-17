@@ -7,7 +7,7 @@ namespace DotNetCommons.Text.Tokenizer;
 /// <summary>
 /// Class that divides a source string up into tokens.
 /// </summary>
-public class StringTokenizer<T> where T : struct
+public class StringTokenizer<T> where T : struct, Enum
 {
     private record MatchResult(string MatchText, Definition<T> Definition);
 
