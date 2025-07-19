@@ -99,9 +99,9 @@ public class StringTokenizer<T> where T : struct, Enum
 
             // Find matching definition
             var stringMatch = MatchStrings();
-            var modeMatch = MatchModes();
+            var modeMatch = MatchModes(current?.Definition);
 
-            // If we have a string match, and we're *not* in a modeMatch that just happpened to match
+            // If we have a string match, and we're *not* in a modeMatch that just happened to match
             // the previous mode we were in, match the string token. This is to make sure that once we've
             // started parsing a text mode stream, we don't want to be interrupted until it actually ends.
             // Otherwise, a string "map" would match in the middle of the text "testmap".
@@ -246,10 +246,16 @@ public class StringTokenizer<T> where T : struct, Enum
         return null;
     }
 
-    private Definition<T>? MatchModes()
+    private Definition<T>? MatchModes(Definition<T>? current)
     {
-        // Try to match against character classes
-        return _modes!.FirstOrDefault(mode => mode.IsMode(_source[_position]));
+        // Find all character classes that might apply
+        var candidates = _modes!.Where(m => m.IsMode(_source[_position])).ToList();
+
+        // Is the current mode among the candidates?
+        if (current != null && candidates.Contains(current))
+            return current;
+
+        return candidates.FirstOrDefault();
     }
 
     private (string? Text, int End)? MatchEndText(StringDefinitions? endTexts, bool forceEOL)

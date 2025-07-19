@@ -7,63 +7,71 @@ namespace DotNetCommons.Test.Text.ShuntingYard;
 [TestClass]
 public class ShuntingYardEvaluatorTests
 {
-    private ShuntingYardEvaluator Evaluator => ShuntingYardEvaluator.Default;
+    private ShuntingYardEvaluator _eval = null!;
+    private const double RandomNumber = 0.4;
+
+    [TestInitialize]
+    public void SetUp()
+    {
+        _eval = new ShuntingYardEvaluator();
+        _eval.AddFunction("rnd", () => RandomNumber); // Define rnd() to be a testable number
+    }
 
     [TestMethod]
     public void Test_SimpleAddition()
     {
-        Evaluator.Evaluate("1 + 2").Should().Be(3.0);
+        _eval.Evaluate("1 + 2").Should().Be(3.0);
     }
 
     [TestMethod]
     public void Test_OperatorPrecedence()
     {
-        Evaluator.Evaluate("2 + 3 * 4").Should().Be(14.0);
+        _eval.Evaluate("2 + 3 * 4").Should().Be(14.0);
     }
 
     [TestMethod]
     public void Test_ParenthesesOverridePrecedence()
     {
-        Evaluator.Evaluate("(2 + 3) * 4").Should().Be(20.0);
+        _eval.Evaluate("(2 + 3) * 4").Should().Be(20.0);
     }
 
     [TestMethod]
     public void Test_NegativeNumberAtStart()
     {
-        Evaluator.Evaluate("-4 + 6").Should().Be(2.0);
+        _eval.Evaluate("-4 + 6").Should().Be(2.0);
     }
 
     [TestMethod]
     public void Test_NegativeNumberAfterOperator()
     {
-        Evaluator.Evaluate("3 * -2").Should().Be(-6.0);
+        _eval.Evaluate("3 * -2").Should().Be(-6.0);
     }
 
     [TestMethod]
     public void Test_Division()
     {
-        Evaluator.Evaluate("8 / 2").Should().Be(4.0);
+        _eval.Evaluate("8 / 2").Should().Be(4.0);
     }
 
     [TestMethod]
     public void Test_Exponentiation()
     {
-        Evaluator.Evaluate("2 ^ 3").Should().Be(8.0);
-        Evaluator.Evaluate("2 ^ 3 ^ 2").Should().Be(512.0);  // 2 ^ (3 ^ 2)
-        Evaluator.Evaluate("(2 ^ 3) ^ 2").Should().Be(64.0); // (2 ^ 3) ^ 2 = 8 ^ 2
+        _eval.Evaluate("2 ^ 3").Should().Be(8.0);
+        _eval.Evaluate("2 ^ 3 ^ 2").Should().Be(512.0);  // 2 ^ (3 ^ 2)
+        _eval.Evaluate("(2 ^ 3) ^ 2").Should().Be(64.0); // (2 ^ 3) ^ 2 = 8 ^ 2
     }
 
     [TestMethod]
     public void Test_ComplexExpression()
     {
-        Evaluator.Evaluate("3 + 4 * 2 / (1 - 5)").Should().Be(1.0);
+        _eval.Evaluate("3 + 4 * 2 / (1 - 5)").Should().Be(1.0);
     }
 
     [TestMethod]
     public void Test_UnaryPlusIsIgnored()
     {
-        Evaluator.Evaluate("+5").Should().Be(5.0);
-        Evaluator.Evaluate("+3 + +2").Should().Be(5.0);
+        _eval.Evaluate("+5").Should().Be(5.0);
+        _eval.Evaluate("+3 + +2").Should().Be(5.0);
     }
 
     [TestMethod]
@@ -71,7 +79,7 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("12.3.4 + 5");
+            _eval.Evaluate("12.3.4 + 5");
         });
     }
 
@@ -80,12 +88,12 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("(2 + 3");
+            _eval.Evaluate("(2 + 3");
         });
 
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("2 + 3)");
+            _eval.Evaluate("2 + 3)");
         });
     }
 
@@ -94,7 +102,7 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("1 +");
+            _eval.Evaluate("1 +");
         });
     }
 
@@ -103,31 +111,31 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("");
+            _eval.Evaluate("");
         });
     }
 
     [TestMethod]
     public void Test_Constants()
     {
-        Evaluator.Evaluate("pi").Should().Be(Math.PI);
-        Evaluator.Evaluate("e").Should().Be(Math.E);
+        _eval.Evaluate("pi").Should().Be(Math.PI);
+        _eval.Evaluate("e").Should().Be(Math.E);
     }
 
     [TestMethod]
     public void Test_ConstantsInExpressions()
     {
-        Evaluator.Evaluate("2 * pi").Should().Be(2 * Math.PI);
-        Evaluator.Evaluate("e ^ 2").Should().Be(Math.Pow(Math.E, 2));
-        Evaluator.Evaluate("pi + e").Should().Be(Math.PI + Math.E);
+        _eval.Evaluate("2 * pi").Should().Be(2 * Math.PI);
+        _eval.Evaluate("e ^ 2").Should().Be(Math.Pow(Math.E, 2));
+        _eval.Evaluate("pi + e").Should().Be(Math.PI + Math.E);
     }
 
     [TestMethod]
     public void Test_ConstantsCaseInsensitive()
     {
-        Evaluator.Evaluate("PI").Should().Be(Math.PI);
-        Evaluator.Evaluate("E").Should().Be(Math.E);
-        Evaluator.Evaluate("Pi").Should().Be(Math.PI);
+        _eval.Evaluate("PI").Should().Be(Math.PI);
+        _eval.Evaluate("E").Should().Be(Math.E);
+        _eval.Evaluate("Pi").Should().Be(Math.PI);
     }
 
     [TestMethod]
@@ -135,44 +143,44 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("unknown + 5");
+            _eval.Evaluate("unknown + 5");
         });
     }
 
     [TestMethod]
     public void Test_Functions()
     {
-        Evaluator.Evaluate("sqrt(4)").Should().Be(2.0);
-        Evaluator.Evaluate("abs(-5)").Should().Be(5.0);
-        Evaluator.Evaluate("sin(0)").Should().Be(0.0);
-        Evaluator.Evaluate("cos(0)").Should().Be(1.0);
-        Evaluator.Evaluate("tan(0)").Should().Be(0.0);
-        Evaluator.Evaluate("log(100)").Should().Be(2.0);
-        Evaluator.Evaluate("ln(e)").Should().Be(1.0);
+        _eval.Evaluate("sqrt(4)").Should().Be(2.0);
+        _eval.Evaluate("abs(-5)").Should().Be(5.0);
+        _eval.Evaluate("sin(0)").Should().Be(0.0);
+        _eval.Evaluate("cos(0)").Should().Be(1.0);
+        _eval.Evaluate("tan(0)").Should().Be(0.0);
+        _eval.Evaluate("log(100)").Should().Be(2.0);
+        _eval.Evaluate("ln(e)").Should().Be(1.0);
     }
 
     [TestMethod]
     public void Test_FunctionsInExpressions()
     {
-        Evaluator.Evaluate("2 * sqrt(9)").Should().Be(6.0);
-        Evaluator.Evaluate("sqrt(9) + abs(-3)").Should().Be(6.0);
-        Evaluator.Evaluate("sin(pi/2)").Should().BeApproximately(1.0, 0.0000001);
-        Evaluator.Evaluate("3 + sqrt(4 * 9)").Should().Be(9.0);
+        _eval.Evaluate("2 * sqrt(9)").Should().Be(6.0);
+        _eval.Evaluate("sqrt(9) + abs(-3)").Should().Be(6.0);
+        _eval.Evaluate("sin(pi/2)").Should().BeApproximately(1.0, 0.0000001);
+        _eval.Evaluate("3 + sqrt(4 * 9)").Should().Be(9.0);
     }
 
     [TestMethod]
     public void Test_FunctionsCaseInsensitive()
     {
-        Evaluator.Evaluate("SQRT(4)").Should().Be(2.0);
-        Evaluator.Evaluate("Sqrt(4)").Should().Be(2.0);
-        Evaluator.Evaluate("ABS(-3)").Should().Be(3.0);
+        _eval.Evaluate("SQRT(4)").Should().Be(2.0);
+        _eval.Evaluate("Sqrt(4)").Should().Be(2.0);
+        _eval.Evaluate("ABS(-3)").Should().Be(3.0);
     }
 
     [TestMethod]
     public void Test_NestedFunctions()
     {
-        Evaluator.Evaluate("sqrt(abs(-16))").Should().Be(4.0);
-        Evaluator.Evaluate("abs(sin(pi))").Should().BeApproximately(0.0, 0.0000001);
+        _eval.Evaluate("sqrt(abs(-16))").Should().Be(4.0);
+        _eval.Evaluate("abs(sin(pi))").Should().BeApproximately(0.0, 0.0000001);
     }
 
     [TestMethod]
@@ -180,7 +188,7 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("sqrt()");
+            _eval.Evaluate("sqrt()");
         });
     }
 
@@ -189,7 +197,7 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            Evaluator.Evaluate("unknown(5)");
+            _eval.Evaluate("unknown(5)");
         });
     }
 
@@ -309,5 +317,66 @@ public class ShuntingYardEvaluatorTests
 
         // E = mc²
         evaluator.Evaluate("10 * square(c)").Should().Be(10 * 299792458.0 * 299792458.0);
+    }
+
+    [TestMethod]
+    public void Test_ZeroArityFunctions()
+    {
+        // Test built-in zero-arity functions
+        // Note: We can't precisely test rnd() since it returns a random value,
+        // but we can check that it returns a value in the expected range
+        for (var i = 0; i < 100; i++)
+        {
+            var result = ShuntingYardEvaluator.Default.Evaluate("rnd()");
+            result.Should().BeGreaterThanOrEqualTo(0.0);
+            result.Should().BeLessThan(1.0);
+        }
+    }
+
+    [TestMethod]
+    public void Test_ZeroArityFunctionsInExpressions()
+    {
+        // Test using zero-arity functions in expressions
+        _eval.Evaluate("2 * rnd()").Should().Be(2 * RandomNumber);
+
+        // Test zero-arity functions with regular functions
+        _eval.Evaluate("sin(rnd())").Should().BeApproximately(Math.Sin(RandomNumber), 0.0000001);
+    }
+
+    [TestMethod]
+    public void Test_CustomZeroArityFunctions()
+    {
+        var evaluator = new ShuntingYardEvaluator();
+
+        // Add custom zero-arity functions
+        evaluator.AddFunction("random10", () => 10.0);
+        evaluator.AddFunction("answer", () => 42.0);
+        evaluator.AddFunction("zero", () => 0.0);
+
+        // Test custom zero-arity functions
+        evaluator.Evaluate("random10()").Should().Be(10.0);
+        evaluator.Evaluate("answer()").Should().Be(42.0);
+        evaluator.Evaluate("zero()").Should().Be(0.0);
+
+        // Test in expressions
+        evaluator.Evaluate("2 * answer()").Should().Be(84.0);
+        evaluator.Evaluate("random10() + 5").Should().Be(15.0);
+        evaluator.Evaluate("sqrt(random10())").Should().BeApproximately(Math.Sqrt(10.0), 0.0000001);
+    }
+
+    [TestMethod]
+    public void Test_ZeroArityFunctionsCaseInsensitive()
+    {
+        // Zero-arity functions should be case insensitive
+        _eval.Evaluate("RND()").Should().Be(RandomNumber);
+    }
+
+    [TestMethod]
+    public void Test_CannotModifyDefaultEvaluatorZeroArityFunctions()
+    {
+        Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            ShuntingYardEvaluator.Default.AddFunction("answer", () => 42.0);
+        });
     }
 }

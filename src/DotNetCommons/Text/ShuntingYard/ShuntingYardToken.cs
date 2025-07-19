@@ -7,7 +7,8 @@ public enum ShuntingYardToken
     LeftParen,
     RightParen,
     Identifier,
-    Function,
+    Function0,
+    Function1,
     Comma,
     Whitespace
 }

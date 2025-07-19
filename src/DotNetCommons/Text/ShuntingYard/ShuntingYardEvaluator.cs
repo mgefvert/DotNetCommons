@@ -13,7 +13,8 @@ public class ShuntingYardEvaluator
     private static readonly object DefaultLock = new();
     private static ShuntingYardEvaluator? _default;
 
-    public delegate double Function(double arg);
+    public delegate double Function0();
+    public delegate double Function1(double arg);
 
     /// <summary>
     /// Provides a default, singleton instance of the <see cref="ShuntingYardEvaluator"/> class.
@@ -49,7 +50,7 @@ public class ShuntingYardEvaluator
         ["e"] = Math.E
     };
 
-    private static readonly Dictionary<string, Function> DefaultFunctions = new()
+    private static readonly Dictionary<string, Function1> DefaultFunctions1 = new()
     {
         // Roots and exponents, logarithms
         ["sqrt"] = Math.Sqrt,
@@ -79,8 +80,15 @@ public class ShuntingYardEvaluator
         ["atanh"] = Math.Atanh,
     };
 
+    private static readonly Dictionary<string, Function0> DefaultFunctions0 = new()
+    {
+        // Random number generation
+        ["rnd"] = () => new Random().NextDouble(),
+    };
+
     private readonly Dictionary<string, double> _constants;
-    private readonly Dictionary<string, Function> _functions;
+    private readonly Dictionary<string, Function0> _functions0;
+    private readonly Dictionary<string, Function1> _functions1;
 
     private static readonly Definition<ShuntingYardToken>[] Definitions =
     [
@@ -104,7 +112,8 @@ public class ShuntingYardEvaluator
     public ShuntingYardEvaluator()
     {
         _constants = DefaultConstants.ToDictionary(x => x.Key, x => x.Value);
-        _functions = DefaultFunctions.ToDictionary(x => x.Key, x => x.Value);
+        _functions0 = DefaultFunctions0.ToDictionary(x => x.Key, x => x.Value);
+        _functions1 = DefaultFunctions1.ToDictionary(x => x.Key, x => x.Value);
     }
 
     /// <summary>
@@ -121,17 +130,32 @@ public class ShuntingYardEvaluator
     }
 
     /// <summary>
+    /// Adds a custom zero-arity function with the specified name and implementation to the evaluator.
+    /// These functions take no arguments and return a double value.
+    /// </summary>
+    /// <param name="name">The name of the function to add.</param>
+    /// <param name="function">The delegate representing the function's implementation that takes no arguments and
+    /// returns a double.</param>
+    public void AddFunction(string name, Function0 function)
+    {
+        if (this == Default)
+            throw new InvalidOperationException("Cannot add functions to the default instance of the evaluator");
+
+        _functions0[name] = function;
+    }
+
+    /// <summary>
     /// Adds a custom function with the specified name and implementation to the evaluator.
     /// </summary>
     /// <param name="name">The name of the function to add.</param>
     /// <param name="function">The delegate representing the function's implementation that takes a single argument and
     /// returns a double.</param>
-    public void AddFunction(string name, Function function)
+    public void AddFunction(string name, Function1 function)
     {
         if (this == Default)
             throw new InvalidOperationException("Cannot add functions to the default instance of the evaluator");
 
-        _functions[name] = function;
+        _functions1[name] = function;
     }
 
     /// <summary>
@@ -166,14 +190,20 @@ public class ShuntingYardEvaluator
                 token.ID = ShuntingYardToken.Number;
                 token.Tag = value;
             }
-            // Check if it's a function
-            else if (_functions.TryGetValue(name!, out var function))
+            // Check if it's a function with one argument
+            else if (_functions1.TryGetValue(name!, out var function))
             {
-                token.ID = ShuntingYardToken.Function;
+                token.ID = ShuntingYardToken.Function1;
                 token.Tag = function;
             }
+            // Check if it's a zero-arity function
+            else if (_functions0.TryGetValue(name!, out var functionZero))
+            {
+                token.ID = ShuntingYardToken.Function0;
+                token.Tag = functionZero;
+            }
             else
-                throw new InvalidOperationException($"Unknown constant '{token.Text}' at {token.Line}:{token.Column}");
+                throw new InvalidOperationException($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
         }
 
         // Process identifiers (constants)
@@ -239,7 +269,13 @@ public class ShuntingYardEvaluator
                     output.Add(token);
                     break;
 
-                case ShuntingYardToken.Function:
+                case ShuntingYardToken.Function0:
+                    // For zero-arity functions, we can add them directly to the output
+                    // because they don't need to wait for arguments
+                    output.Add(token);
+                    break;
+
+                case ShuntingYardToken.Function1:
                     stack.Push(token);
                     break;
 
@@ -274,7 +310,7 @@ public class ShuntingYardEvaluator
                     stack.Pop(); // discard the left paren
 
                     // If the token at the top of the stack is a function token, pop it onto the output queue
-                    if (stack.Count > 0 && stack.Peek().ID == ShuntingYardToken.Function)
+                    if (stack.Count > 0 && stack.Peek().ID == ShuntingYardToken.Function1)
                         output.Add(stack.Pop());
                     break;
 
@@ -318,12 +354,17 @@ public class ShuntingYardEvaluator
                     stack.Push((double)token.Tag);
                     break;
 
-                case ShuntingYardToken.Function:
+                case ShuntingYardToken.Function0:
+                    var funcZero = (Function0)token.Tag;
+                    stack.Push(funcZero());
+                    break;
+
+                case ShuntingYardToken.Function1:
                     if (stack.Count < 1)
                         throw new InvalidOperationException($"Not enough operands for function at {token.Line}:{token.Column}");
 
                     var arg = stack.Pop();
-                    var func = (Function)token.Tag;
+                    var func = (Function1)token.Tag;
                     stack.Push(func(arg));
                     break;
 
