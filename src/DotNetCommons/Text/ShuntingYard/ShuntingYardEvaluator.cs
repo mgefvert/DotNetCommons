@@ -13,9 +13,6 @@ public class ShuntingYardEvaluator
     private static readonly object DefaultLock = new();
     private static ShuntingYardEvaluator? _default;
 
-    public delegate double Function0();
-    public delegate double Function1(double arg);
-
     /// <summary>
     /// Provides a default, singleton instance of the <see cref="ShuntingYardEvaluator"/> class.
     /// This instance is lazily instantiated and thread-safe, ensuring a single global instance
@@ -47,48 +44,48 @@ public class ShuntingYardEvaluator
     private static readonly Dictionary<string, double> DefaultConstants = new()
     {
         ["pi"] = Math.PI,
-        ["e"] = Math.E
+        ["e"]  = Math.E
     };
 
-    private static readonly Dictionary<string, Function1> DefaultFunctions1 = new()
-    {
+    private static readonly FunctionDefinition[] DefaultFunctions =
+    [
         // Roots and exponents, logarithms
-        ["sqrt"] = Math.Sqrt,
-        ["exp"]  = Math.Exp,
-        ["log"]  = Math.Log10,
-        ["ln"]   = Math.Log,
+        new("sqrt", 1, args => Math.Sqrt(args[0])),
+        new("exp", 1, args => Math.Exp(args[0])),
+        new("log", 1, args => Math.Log10(args[0])),
+        new("ln", 1, args => Math.Log(args[0])),
 
         // Rounding and utility
-        ["abs"]   = Math.Abs,
-        ["ceil"]  = Math.Ceiling,
-        ["floor"] = Math.Floor,
-        ["round"] = Math.Round,
-        ["trunc"] = Math.Truncate,
+        new("abs", 1, args => Math.Abs(args[0])),
+        new("ceil", 1, args => Math.Ceiling(args[0])),
+        new("floor", 1, args => Math.Floor(args[0])),
+        new("round", 1, args => Math.Round(args[0])),
+        new("trunc", 1, args => Math.Truncate(args[0])),
 
         // Trigonometric functions
-        ["sin"]   = Math.Sin,
-        ["asin"]  = Math.Asin,
-        ["sinh"]  = Math.Sinh,
-        ["asinh"] = Math.Asinh,
-        ["cos"]   = Math.Cos,
-        ["acos"]  = Math.Acos,
-        ["cosh"]  = Math.Cosh,
-        ["acosh"] = Math.Acosh,
-        ["tan"]   = Math.Tan,
-        ["tanh"]  = Math.Tanh,
-        ["atan"]  = Math.Atan,
-        ["atanh"] = Math.Atanh,
-    };
+        new("sin", 1, args => Math.Sin(args[0])),
+        new("asin", 1, args => Math.Asin(args[0])),
+        new("sinh", 1, args => Math.Sinh(args[0])),
+        new("asinh", 1, args => Math.Asinh(args[0])),
+        new("cos", 1, args => Math.Cos(args[0])),
+        new("acos", 1, args => Math.Acos(args[0])),
+        new("cosh", 1, args => Math.Cosh(args[0])),
+        new("acosh", 1, args => Math.Acosh(args[0])),
+        new("tan", 1, args => Math.Tan(args[0])),
+        new("tanh", 1, args => Math.Tanh(args[0])),
+        new("atan", 1, args => Math.Atan(args[0])),
+        new("atanh", 1, args => Math.Atanh(args[0])),
 
-    private static readonly Dictionary<string, Function0> DefaultFunctions0 = new()
-    {
+        // Min/Max functions
+        new("max", 2, args => Math.Max(args[0], args[1])),
+        new("min", 2, args => Math.Min(args[0], args[1])),
+
         // Random number generation
-        ["rnd"] = () => new Random().NextDouble(),
-    };
+        new("rnd", 0, _ => new Random().NextDouble()),
+    ];
 
     private readonly Dictionary<string, double> _constants;
-    private readonly Dictionary<string, Function0> _functions0;
-    private readonly Dictionary<string, Function1> _functions1;
+    private readonly Dictionary<string, FunctionDefinition> _functions;
 
     private static readonly Definition<ShuntingYardToken>[] Definitions =
     [
@@ -112,8 +109,7 @@ public class ShuntingYardEvaluator
     public ShuntingYardEvaluator()
     {
         _constants = DefaultConstants.ToDictionary(x => x.Key, x => x.Value);
-        _functions0 = DefaultFunctions0.ToDictionary(x => x.Key, x => x.Value);
-        _functions1 = DefaultFunctions1.ToDictionary(x => x.Key, x => x.Value);
+        _functions = DefaultFunctions.ToDictionary(x => x.Name);
     }
 
     /// <summary>
@@ -133,29 +129,13 @@ public class ShuntingYardEvaluator
     /// Adds a custom zero-arity function with the specified name and implementation to the evaluator.
     /// These functions take no arguments and return a double value.
     /// </summary>
-    /// <param name="name">The name of the function to add.</param>
-    /// <param name="function">The delegate representing the function's implementation that takes no arguments and
-    /// returns a double.</param>
-    public void AddFunction(string name, Function0 function)
+    /// <param name="function">The function definition to add.</param>
+    public void AddFunction(FunctionDefinition function)
     {
         if (this == Default)
             throw new InvalidOperationException("Cannot add functions to the default instance of the evaluator");
 
-        _functions0[name] = function;
-    }
-
-    /// <summary>
-    /// Adds a custom function with the specified name and implementation to the evaluator.
-    /// </summary>
-    /// <param name="name">The name of the function to add.</param>
-    /// <param name="function">The delegate representing the function's implementation that takes a single argument and
-    /// returns a double.</param>
-    public void AddFunction(string name, Function1 function)
-    {
-        if (this == Default)
-            throw new InvalidOperationException("Cannot add functions to the default instance of the evaluator");
-
-        _functions1[name] = function;
+        _functions[function.Name] = function;
     }
 
     /// <summary>
@@ -187,20 +167,14 @@ public class ShuntingYardEvaluator
             // Check if it's a constant
             if (_constants.TryGetValue(name!, out var value))
             {
-                token.ID = ShuntingYardToken.Number;
+                token.ID  = ShuntingYardToken.Number;
                 token.Tag = value;
             }
-            // Check if it's a function with one argument
-            else if (_functions1.TryGetValue(name!, out var function))
+            // Check if it's a function
+            else if (_functions.TryGetValue(name!, out var function))
             {
-                token.ID = ShuntingYardToken.Function1;
+                token.ID  = ShuntingYardToken.Function;
                 token.Tag = function;
-            }
-            // Check if it's a zero-arity function
-            else if (_functions0.TryGetValue(name!, out var functionZero))
-            {
-                token.ID = ShuntingYardToken.Function0;
-                token.Tag = functionZero;
             }
             else
                 throw new InvalidOperationException($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
@@ -212,15 +186,15 @@ public class ShuntingYardEvaluator
             var constantName = token.Text?.ToLowerInvariant();
             if (DefaultConstants.TryGetValue(constantName!, out var value))
             {
-                token.ID = ShuntingYardToken.Number;
+                token.ID  = ShuntingYardToken.Number;
                 token.Tag = value;
             }
             else
                 throw new InvalidOperationException($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
         }
 
-        // Rewrite token stream to handle special cases
-        for (var i = 0; i < result.Count; )
+        // Rewrite the token stream to handle special cases
+        for (var i = 0; i < result.Count;)
         {
             if (result.IsToken(i, ShuntingYardToken.Operator, "-") && result.IsToken(i + 1, ShuntingYardToken.Number))
             {
@@ -243,6 +217,13 @@ public class ShuntingYardEvaluator
                 }
             }
 
+            // Verify that any function must always be followed by a LeftParen
+            if (result.IsToken(i, ShuntingYardToken.Function) && !result.IsToken(i + 1, ShuntingYardToken.LeftParen))
+            {
+                var name = ((FunctionDefinition)result[i].Tag).Name;
+                throw new InvalidOperationException($"Function '{name}' must be followed by '()' at {result[i].Line}:{result[i].Column}");
+            }
+
             i++;
         }
 
@@ -258,8 +239,9 @@ public class ShuntingYardEvaluator
     /// in the input.</exception>
     public TokenList<ShuntingYardToken> ToPostfix(TokenList<ShuntingYardToken> tokens)
     {
-        var output = new TokenList<ShuntingYardToken>();
-        var stack  = new Stack<Token<ShuntingYardToken>>();
+        var output        = new TokenList<ShuntingYardToken>();
+        var stack         = new Stack<Token<ShuntingYardToken>>();
+        var argumentCount = new Stack<int>(); // Track number of arguments for functions
 
         foreach (var token in tokens)
         {
@@ -269,14 +251,9 @@ public class ShuntingYardEvaluator
                     output.Add(token);
                     break;
 
-                case ShuntingYardToken.Function0:
-                    // For zero-arity functions, we can add them directly to the output
-                    // because they don't need to wait for arguments
-                    output.Add(token);
-                    break;
-
-                case ShuntingYardToken.Function1:
+                case ShuntingYardToken.Function:
                     stack.Push(token);
+                    argumentCount.Push(0); // Initialize argument counter for this function
                     break;
 
                 case ShuntingYardToken.Operator:
@@ -300,6 +277,17 @@ public class ShuntingYardEvaluator
                     stack.Push(token);
                     break;
 
+                case ShuntingYardToken.Comma:
+                    while (stack.Count > 0 && stack.Peek().ID != ShuntingYardToken.LeftParen)
+                        output.Add(stack.Pop());
+
+                    if (stack.Count == 0)
+                        throw new InvalidOperationException("Mismatched parentheses");
+
+                    if (argumentCount.Count > 0)
+                        argumentCount.Push(argumentCount.Pop() + 1);
+                    break;
+
                 case ShuntingYardToken.RightParen:
                     while (stack.Count > 0 && stack.Peek().ID != ShuntingYardToken.LeftParen)
                         output.Add(stack.Pop());
@@ -310,10 +298,20 @@ public class ShuntingYardEvaluator
                     stack.Pop(); // discard the left paren
 
                     // If the token at the top of the stack is a function token, pop it onto the output queue
-                    if (stack.Count > 0 && stack.Peek().ID == ShuntingYardToken.Function1)
-                        output.Add(stack.Pop());
-                    break;
+                    if (stack.Count > 0 && stack.Peek().ID == ShuntingYardToken.Function)
+                    {
+                        var func    = stack.Pop();
+                        var funcDef = (FunctionDefinition)func.Tag;
+                        var args    = funcDef.Arity == 0 ? 0 : argumentCount.Pop() + 1; // Only add 1 for non-zero arity functions
 
+                        if (args != funcDef.Arity)
+                            throw new InvalidOperationException(
+                                $"Function {funcDef.Name} expects {funcDef.Arity} arguments but got {args}");
+
+                        output.Add(func);
+                    }
+
+                    break;
                 default:
                     throw new InvalidOperationException($"Unexpected token '{token.ID}' at {token.Line}:{token.Column}");
             }
@@ -354,18 +352,16 @@ public class ShuntingYardEvaluator
                     stack.Push((double)token.Tag);
                     break;
 
-                case ShuntingYardToken.Function0:
-                    var funcZero = (Function0)token.Tag;
-                    stack.Push(funcZero());
-                    break;
-
-                case ShuntingYardToken.Function1:
-                    if (stack.Count < 1)
+                case ShuntingYardToken.Function:
+                    var funcDef = (FunctionDefinition)token.Tag;
+                    if (stack.Count < funcDef.Arity)
                         throw new InvalidOperationException($"Not enough operands for function at {token.Line}:{token.Column}");
 
-                    var arg = stack.Pop();
-                    var func = (Function1)token.Tag;
-                    stack.Push(func(arg));
+                    var args = new double[funcDef.Arity];
+                    for (int i = funcDef.Arity - 1; i >= 0; i--)
+                        args[i] = stack.Pop();
+
+                    stack.Push(funcDef.FunctionCallback(args));
                     break;
 
                 case ShuntingYardToken.Operator:

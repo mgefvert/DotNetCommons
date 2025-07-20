@@ -14,7 +14,7 @@ public class ShuntingYardEvaluatorTests
     public void SetUp()
     {
         _eval = new ShuntingYardEvaluator();
-        _eval.AddFunction("rnd", () => RandomNumber); // Define rnd() to be a testable number
+        _eval.AddFunction(new FunctionDefinition("rnd", 0, _ => RandomNumber)); // Define rnd() to be a testable number
     }
 
     [TestMethod]
@@ -252,10 +252,10 @@ public class ShuntingYardEvaluatorTests
         var evaluator = new ShuntingYardEvaluator();
 
         // Add custom functions
-        evaluator.AddFunction("square", x => x * x);
-        evaluator.AddFunction("cube", x => x * x * x);
-        evaluator.AddFunction("double", x => x * 2);
-        evaluator.AddFunction("half", x => x / 2);
+        evaluator.AddFunction(new FunctionDefinition("square", 1, x => x[0] * x[0]));
+        evaluator.AddFunction(new FunctionDefinition("cube",   1, x => x[0] * x[0] * x[0]));
+        evaluator.AddFunction(new FunctionDefinition("double", 1, x => x[0] * 2));
+        evaluator.AddFunction(new FunctionDefinition("half",   1, x => x[0] / 2));
 
         // Test the custom functions
         evaluator.Evaluate("square(4)").Should().Be(16.0);
@@ -277,8 +277,8 @@ public class ShuntingYardEvaluatorTests
     {
         var evaluator = new ShuntingYardEvaluator();
 
-        evaluator.AddFunction("square", x => x * x);
-        evaluator.AddFunction("increment", x => x + 1);
+        evaluator.AddFunction(new FunctionDefinition("square",    1, x => x[0] * x[0]));
+        evaluator.AddFunction(new FunctionDefinition("increment", 1, x => x[0] + 1));
 
         evaluator.Evaluate("square(3) + 2").Should().Be(11.0);
         evaluator.Evaluate("square(sqrt(16))").Should().Be(16.0);
@@ -291,8 +291,8 @@ public class ShuntingYardEvaluatorTests
     {
         var evaluator = new ShuntingYardEvaluator();
 
-        // Override built-in function
-        evaluator.AddFunction("sqrt", x => x); // Identity function instead of square root
+        // Override the built-in function
+        evaluator.AddFunction(new FunctionDefinition("sqrt", 1, x => x[0])); // Identity function instead of square root
 
         evaluator.Evaluate("sqrt(16)").Should().Be(16.0); // Not 4.0
         evaluator.Evaluate("SQRT(16)").Should().Be(16.0);
@@ -303,7 +303,7 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            ShuntingYardEvaluator.Default.AddFunction("square", x => x * x);
+            ShuntingYardEvaluator.Default.AddFunction(new FunctionDefinition("square", 1, x => x[0] * x[0]));
         });
     }
 
@@ -313,7 +313,7 @@ public class ShuntingYardEvaluatorTests
         var evaluator = new ShuntingYardEvaluator();
 
         evaluator.AddConstant("c", 299792458); // Speed of light in m/s
-        evaluator.AddFunction("square", x => x * x);
+        evaluator.AddFunction(new FunctionDefinition("square", 1, x => x[0] * x[0]));
 
         // E = mc²
         evaluator.Evaluate("10 * square(c)").Should().Be(10 * 299792458.0 * 299792458.0);
@@ -349,9 +349,9 @@ public class ShuntingYardEvaluatorTests
         var evaluator = new ShuntingYardEvaluator();
 
         // Add custom zero-arity functions
-        evaluator.AddFunction("random10", () => 10.0);
-        evaluator.AddFunction("answer", () => 42.0);
-        evaluator.AddFunction("zero", () => 0.0);
+        evaluator.AddFunction(new FunctionDefinition("random10", 0, _ => 10.0));
+        evaluator.AddFunction(new FunctionDefinition("answer",   0, _ => 42.0));
+        evaluator.AddFunction(new FunctionDefinition("zero",     0, _ => 0.0));
 
         // Test custom zero-arity functions
         evaluator.Evaluate("random10()").Should().Be(10.0);
@@ -362,6 +362,31 @@ public class ShuntingYardEvaluatorTests
         evaluator.Evaluate("2 * answer()").Should().Be(84.0);
         evaluator.Evaluate("random10() + 5").Should().Be(15.0);
         evaluator.Evaluate("sqrt(random10())").Should().BeApproximately(Math.Sqrt(10.0), 0.0000001);
+    }
+
+    [TestMethod]
+    public void Test_TwoArityFunctions()
+    {
+        _eval.Evaluate("min(3, 5)").Should().Be(3.0);
+        _eval.Evaluate("max(3, 5)").Should().Be(5.0);
+        _eval.Evaluate("min(-2, 2)").Should().Be(-2.0);
+        _eval.Evaluate("max(-2, 2)").Should().Be(2.0);
+    }
+
+    [TestMethod]
+    public void Test_TwoArityFunctionsInExpressions()
+    {
+        _eval.Evaluate("2 * min(3, 5)").Should().Be(6.0);
+        _eval.Evaluate("max(2 * 3, 5)").Should().Be(6.0);
+        _eval.Evaluate("min(sqrt(16), abs(-5))").Should().Be(4.0);
+        _eval.Evaluate("max(pi, e)").Should().Be(Math.PI);
+    }
+
+    [TestMethod]
+    public void Test_TwoArityFunctionsCaseInsensitive()
+    {
+        _eval.Evaluate("MIN(3, 5)").Should().Be(3.0);
+        _eval.Evaluate("Max(3, 5)").Should().Be(5.0);
     }
 
     [TestMethod]
@@ -376,7 +401,21 @@ public class ShuntingYardEvaluatorTests
     {
         Assert.ThrowsException<InvalidOperationException>(() =>
         {
-            ShuntingYardEvaluator.Default.AddFunction("answer", () => 42.0);
+            ShuntingYardEvaluator.Default.AddFunction(new FunctionDefinition("answer", 0, _ => 42.0));
+        });
+    }
+    
+    [TestMethod]
+    public void Test_FunctionMustBeFollowedByLeftParen()
+    {
+        Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            _eval.Evaluate("sin 30");
+        });
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            _eval.Evaluate("rnd + 5");
         });
     }
 }
