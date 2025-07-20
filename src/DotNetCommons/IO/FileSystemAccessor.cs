@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using DotNetCommons.Security;
 
 namespace DotNetCommons.IO;
 
@@ -101,6 +102,15 @@ public class FileSystemAccessor : IFileAccessor
     public DateTime GetFileTime(string fileName)
     {
         return File.GetLastWriteTime(fileName);
+    }
+
+    /// <inheritdoc/>
+    public IFileItem GetTempDirectory(string baseName)
+    {
+        baseName = WhiteWash.FileName(baseName);
+        var fullName = Path.Combine(Path.GetTempPath(), $"{baseName}_{Guid.NewGuid():N}");
+
+        return GetDirectory(fullName, true) ?? throw new IOException($"Cannot create temporary directory: {fullName}");
     }
 
     /// <inheritdoc/>

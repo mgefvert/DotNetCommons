@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using DotNetCommons.Security;
 using DotNetCommons.Temporal;
 using DotNetCommons.Text;
 
@@ -416,6 +417,15 @@ public class InMemoryFileAccessor : IFileAccessor
     {
         var file = FindFile(fileName) ?? throw FileNotFound(fileName);
         return file.Time;
+    }
+
+    /// <inheritdoc/>
+    public IFileItem GetTempDirectory(string baseName)
+    {
+        baseName = WhiteWash.FileName(baseName);
+        var fullName = $"/tmp/{baseName}_{Guid.NewGuid():N}";
+
+        return GetDirectory(fullName, true) ?? throw new IOException($"Cannot create temporary directory: {fullName}");
     }
 
     /// <inheritdoc/>

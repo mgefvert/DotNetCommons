@@ -84,6 +84,14 @@ public interface IFileAccessor
     DateTime GetFileTime(string fileName);
 
     /// <summary>
+    /// Create a new subdirectory in the TEMP folder using a base name and a unique specifier. The full name of the directory
+    /// is not deterministic and can vary based on provider.
+    /// </summary>
+    /// <param name="baseName">The base name that will start the directory name.</param>
+    /// <returns>A reference to a newly created, unique directory.</returns>
+    IFileItem GetTempDirectory(string baseName);
+
+    /// <summary>
     /// List files and directories in the current directory, or optionally another directory.
     /// </summary>
     IEnumerable<IFileItem> ListFiles(string? directory = null);
