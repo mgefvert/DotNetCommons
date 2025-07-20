@@ -34,11 +34,21 @@ public class ShuntingYardEvaluator
 
     private static readonly Dictionary<string, (int precedence, bool rightAssociative)> Operators = new()
     {
-        ["+"] = (1, false),
-        ["-"] = (1, false),
-        ["*"] = (2, false),
-        ["/"] = (2, false),
-        ["^"] = (3, true)
+        ["||"] = (0, false),
+        ["&&"] = (1, false),
+        ["=="] = (2, false),
+        ["!="] = (2, false),
+        ["<>"] = (2, false),
+        ["<"]  = (3, false),
+        ["<="] = (3, false),
+        [">"]  = (3, false),
+        [">="] = (3, false),
+        ["+"]  = (4, false),
+        ["-"]  = (4, false),
+        ["*"]  = (5, false),
+        ["/"]  = (5, false),
+        ["^"]  = (6, true),
+        ["!"]  = (7, true)
     };
 
     private static readonly Dictionary<string, double> DefaultConstants = new()
@@ -97,6 +107,16 @@ public class ShuntingYardEvaluator
         new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "/", false),
         new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "*", false),
         new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "^", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "&&", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "||", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "<", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "<=", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, ">", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, ">=", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "==", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "!=", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "<>", false),
+        new Strings<ShuntingYardToken>(ShuntingYardToken.Operator, "!", false),
         new Strings<ShuntingYardToken>(ShuntingYardToken.LeftParen, "(", false),
         new Strings<ShuntingYardToken>(ShuntingYardToken.RightParen, ")", false),
         new Strings<ShuntingYardToken>(ShuntingYardToken.Comma, ",", false)
@@ -365,21 +385,40 @@ public class ShuntingYardEvaluator
                     break;
 
                 case ShuntingYardToken.Operator:
-                    if (stack.Count < 2)
-                        throw new InvalidOperationException($"Not enough operands at {token.Line}:{token.Column}");
-
-                    var b = stack.Pop();
-                    var a = stack.Pop();
-
-                    stack.Push(token.Text switch
+                    if (token.Text == "!")
                     {
-                        "+" => a + b,
-                        "-" => a - b,
-                        "*" => a * b,
-                        "/" => a / b,
-                        "^" => Math.Pow(a, b),
-                        _   => throw new InvalidOperationException($"Unknown operator '{token.Text}' at {token.Line}:{token.Column}")
-                    });
+                        if (stack.Count < 1)
+                            throw new InvalidOperationException($"Not enough operands at {token.Line}:{token.Column}");
+                        var a = stack.Pop();
+                        stack.Push(IsTruthy(a) ? 0.0 : 1.0);
+                    }
+                    else
+                    {
+                        if (stack.Count < 2)
+                            throw new InvalidOperationException($"Not enough operands at {token.Line}:{token.Column}");
+
+                        var b = stack.Pop();
+                        var a = stack.Pop();
+
+                        stack.Push(token.Text switch
+                        {
+                            "+"  => a + b,
+                            "-"  => a - b,
+                            "*"  => a * b,
+                            "/"  => a / b,
+                            "^"  => Math.Pow(a, b),
+                            "&&" => IsTruthy(a) && IsTruthy(b) ? 1.0 : 0.0,
+                            "||" => IsTruthy(a) || IsTruthy(b) ? 1.0 : 0.0,
+                            "<"  => a < b ? 1.0 : 0.0,
+                            "<=" => a <= b ? 1.0 : 0.0,
+                            ">"  => a > b ? 1.0 : 0.0,
+                            ">=" => a >= b ? 1.0 : 0.0,
+                            "==" => Math.Abs(a - b) < 1e-10 ? 1.0 : 0.0,
+                            "!=" => Math.Abs(a - b) >= 1e-10 ? 1.0 : 0.0,
+                            "<>" => Math.Abs(a - b) >= 1e-10 ? 1.0 : 0.0,
+                            _    => throw new InvalidOperationException($"Unknown operator '{token.Text}' at {token.Line}:{token.Column}")
+                        });
+                    }
                     break;
 
                 default:
@@ -392,6 +431,8 @@ public class ShuntingYardEvaluator
 
         return stack.Pop();
     }
+
+    private static bool IsTruthy(double value) => Math.Abs(value) > 1e-10;
 
     /// <summary>
     /// Evaluates a mathematical expression represented as a string by tokenizing, converting to postfix notation, and calculating

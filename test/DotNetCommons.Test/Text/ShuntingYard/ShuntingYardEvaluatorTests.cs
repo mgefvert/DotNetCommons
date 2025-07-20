@@ -77,42 +77,27 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_InvalidNumberThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("12.3.4 + 5");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("12.3.4 + 5"); });
     }
 
     [TestMethod]
     public void Test_MismatchedParenthesesThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("(2 + 3");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("(2 + 3"); });
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("2 + 3)");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("2 + 3)"); });
     }
 
     [TestMethod]
     public void Test_NotEnoughOperandsThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("1 +");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("1 +"); });
     }
 
     [TestMethod]
     public void Test_EmptyExpressionThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate(""); });
     }
 
     [TestMethod]
@@ -141,10 +126,7 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_UnknownConstantThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("unknown + 5");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("unknown + 5"); });
     }
 
     [TestMethod]
@@ -186,19 +168,13 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_FunctionWithMissingArgumentThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("sqrt()");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("sqrt()"); });
     }
 
     [TestMethod]
     public void Test_UnknownFunctionThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("unknown(5)");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("unknown(5)"); });
     }
 
     [TestMethod]
@@ -240,10 +216,7 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_CannotModifyDefaultEvaluatorConstants()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            ShuntingYardEvaluator.Default.AddConstant("tau", Math.PI * 2);
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { ShuntingYardEvaluator.Default.AddConstant("tau", Math.PI * 2); });
     }
 
     [TestMethod]
@@ -253,9 +226,9 @@ public class ShuntingYardEvaluatorTests
 
         // Add custom functions
         evaluator.AddFunction(new FunctionDefinition("square", 1, x => x[0] * x[0]));
-        evaluator.AddFunction(new FunctionDefinition("cube",   1, x => x[0] * x[0] * x[0]));
+        evaluator.AddFunction(new FunctionDefinition("cube", 1, x => x[0] * x[0] * x[0]));
         evaluator.AddFunction(new FunctionDefinition("double", 1, x => x[0] * 2));
-        evaluator.AddFunction(new FunctionDefinition("half",   1, x => x[0] / 2));
+        evaluator.AddFunction(new FunctionDefinition("half", 1, x => x[0] / 2));
 
         // Test the custom functions
         evaluator.Evaluate("square(4)").Should().Be(16.0);
@@ -277,7 +250,7 @@ public class ShuntingYardEvaluatorTests
     {
         var evaluator = new ShuntingYardEvaluator();
 
-        evaluator.AddFunction(new FunctionDefinition("square",    1, x => x[0] * x[0]));
+        evaluator.AddFunction(new FunctionDefinition("square", 1, x => x[0] * x[0]));
         evaluator.AddFunction(new FunctionDefinition("increment", 1, x => x[0] + 1));
 
         evaluator.Evaluate("square(3) + 2").Should().Be(11.0);
@@ -350,8 +323,8 @@ public class ShuntingYardEvaluatorTests
 
         // Add custom zero-arity functions
         evaluator.AddFunction(new FunctionDefinition("random10", 0, _ => 10.0));
-        evaluator.AddFunction(new FunctionDefinition("answer",   0, _ => 42.0));
-        evaluator.AddFunction(new FunctionDefinition("zero",     0, _ => 0.0));
+        evaluator.AddFunction(new FunctionDefinition("answer", 0, _ => 42.0));
+        evaluator.AddFunction(new FunctionDefinition("zero", 0, _ => 0.0));
 
         // Test custom zero-arity functions
         evaluator.Evaluate("random10()").Should().Be(10.0);
@@ -404,18 +377,147 @@ public class ShuntingYardEvaluatorTests
             ShuntingYardEvaluator.Default.AddFunction(new FunctionDefinition("answer", 0, _ => 42.0));
         });
     }
-    
+
     [TestMethod]
     public void Test_FunctionMustBeFollowedByLeftParen()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("sin 30");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("sin 30"); });
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
-        {
-            _eval.Evaluate("rnd + 5");
-        });
+        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("rnd + 5"); });
+    }
+
+    [TestMethod]
+    public void Test_BooleanAnd()
+    {
+        _eval.Evaluate("1 && 1").Should().Be(1.0);
+        _eval.Evaluate("1 && 0").Should().Be(0.0);
+        _eval.Evaluate("0 && 1").Should().Be(0.0);
+        _eval.Evaluate("0 && 0").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_BooleanOr()
+    {
+        _eval.Evaluate("1 || 1").Should().Be(1.0);
+        _eval.Evaluate("1 || 0").Should().Be(1.0);
+        _eval.Evaluate("0 || 1").Should().Be(1.0);
+        _eval.Evaluate("0 || 0").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_BooleanOperatorPrecedence()
+    {
+        _eval.Evaluate("1 && 0 || 1").Should().Be(1.0);
+        _eval.Evaluate("1 || 0 && 1").Should().Be(1.0);
+        _eval.Evaluate("0 && 1 || 0").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_BooleanWithComparisons()
+    {
+        _eval.Evaluate("(2 > 1) && (3 < 4)").Should().Be(1.0);
+        _eval.Evaluate("(2 < 1) || (3 > 2)").Should().Be(1.0);
+        _eval.Evaluate("(2 > 3) && (4 < 3)").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_LessThanOperator()
+    {
+        _eval.Evaluate("2 < 3").Should().Be(1.0);
+        _eval.Evaluate("3 < 2").Should().Be(0.0);
+        _eval.Evaluate("2 < 2").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_LessThanOrEqualOperator()
+    {
+        _eval.Evaluate("2 <= 3").Should().Be(1.0);
+        _eval.Evaluate("3 <= 2").Should().Be(0.0);
+        _eval.Evaluate("2 <= 2").Should().Be(1.0);
+    }
+
+    [TestMethod]
+    public void Test_GreaterThanOperator()
+    {
+        _eval.Evaluate("3 > 2").Should().Be(1.0);
+        _eval.Evaluate("2 > 3").Should().Be(0.0);
+        _eval.Evaluate("2 > 2").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_GreaterThanOrEqualOperator()
+    {
+        _eval.Evaluate("3 >= 2").Should().Be(1.0);
+        _eval.Evaluate("2 >= 3").Should().Be(0.0);
+        _eval.Evaluate("2 >= 2").Should().Be(1.0);
+    }
+
+    [TestMethod]
+    public void Test_EqualityOperator()
+    {
+        _eval.Evaluate("2 == 2").Should().Be(1.0);
+        _eval.Evaluate("2 == 3").Should().Be(0.0);
+        _eval.Evaluate("3 == 2").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_InequalityOperatorNotEqual()
+    {
+        _eval.Evaluate("2 != 2").Should().Be(0.0);
+        _eval.Evaluate("2 != 3").Should().Be(1.0);
+        _eval.Evaluate("3 != 2").Should().Be(1.0);
+    }
+
+    [TestMethod]
+    public void Test_InequalityOperatorLessGreater()
+    {
+        _eval.Evaluate("2 <> 2").Should().Be(0.0);
+        _eval.Evaluate("2 <> 3").Should().Be(1.0);
+        _eval.Evaluate("3 <> 2").Should().Be(1.0);
+    }
+    
+    [TestMethod]
+    public void Test_NotOperator()
+    {
+        _eval.Evaluate("!1").Should().Be(0.0);
+        _eval.Evaluate("!0").Should().Be(1.0);
+        _eval.Evaluate("!!1").Should().Be(1.0);
+        _eval.Evaluate("!!0").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_NotWithComplexExpressions()
+    {
+        _eval.Evaluate("!(2 + 3 - 5)").Should().Be(1.0);
+        _eval.Evaluate("!(2 * 3 - 6)").Should().Be(1.0);
+        _eval.Evaluate("!(sqrt(16) - 4)").Should().Be(1.0);
+        _eval.Evaluate("!(-2 + 2)").Should().Be(1.0);
+    }
+
+    [TestMethod]
+    public void Test_NotWithComparisons()
+    {
+        _eval.Evaluate("!(2 > 1)").Should().Be(0.0);
+        _eval.Evaluate("!(2 < 1)").Should().Be(1.0);
+        _eval.Evaluate("!(2 == 2)").Should().Be(0.0);
+        _eval.Evaluate("!(2 != 2)").Should().Be(1.0);
+    }
+
+    [TestMethod]
+    public void Test_NotWithLogicalOperators()
+    {
+        _eval.Evaluate("!1 && !0").Should().Be(0.0);
+        _eval.Evaluate("!1 || !0").Should().Be(1.0);
+        _eval.Evaluate("!(1 && 0)").Should().Be(1.0);
+        _eval.Evaluate("!(1 || 0)").Should().Be(0.0);
+    }
+
+    [TestMethod]
+    public void Test_NotWithParentheses()
+    {
+        _eval.Evaluate("!(!(1))").Should().Be(1.0);
+        _eval.Evaluate("!((2 > 1) && (3 < 4))").Should().Be(0.0);
+        _eval.Evaluate("!(2 > 1 && !(3 < 2))").Should().Be(0.0);
+        _eval.Evaluate("!((2 < 1) || !(3 > 2))").Should().Be(1.0);
     }
 }
