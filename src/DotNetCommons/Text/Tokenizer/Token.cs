@@ -10,12 +10,12 @@ public class Token
     /// <summary>
     /// Text captured by this token. Includes quotes and surrounding text.
     /// </summary>
-    public string? Text { get; private set; }
+    public string? Text { get; set; }
 
     /// <summary>
     /// Text captured by this token. Excludes surrounding quotes and similar.
     /// </summary>
-    public string? InsideText { get; private set; }
+    public string? InsideText { get; set; }
 
     /// <summary>
     /// Line number where this text was captured.
