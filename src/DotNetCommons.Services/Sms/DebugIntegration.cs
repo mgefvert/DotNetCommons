@@ -29,9 +29,13 @@ public class DebugIntegration : ISmsIntegration
 
     private SmsMessageResult SendMessage(SmsMessage message)
     {
+        string? ProcessNumber(string? number, string? defaultNumber) =>
+            WhiteWash.PhoneNumberToItuNumber(number ?? defaultNumber, _configuration.SmsConfiguration.DefaultCountryCode);
+
         var result = new SmsMessageResult(message);
 
-        message.From = WhiteWash.PhoneNumberToItuNumber(message.From, _configuration.SmsConfiguration.DefaultCountryCode);
+        message.From      = ProcessNumber(message.From, _configuration.SmsConfiguration.SenderNumber);
+        message.Recipient = _configuration.SmsConfiguration.RecipientOverride ?? ProcessNumber(message.Recipient, null);
         if (message.From.IsEmpty() || message.Recipient.IsEmpty() || message.Content.IsEmpty())
         {
             result.Result = Result.MissingProperties;

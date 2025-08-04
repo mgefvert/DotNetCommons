@@ -37,12 +37,27 @@ public class DebugIntegration : IEmailIntegration
             return result;
         }
 
-        if (message.To.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)) ||
-            message.CC.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)) ||
-            message.Bcc.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)))
+        if (_configuration.EmailConfiguration.RecipientOverride.IsSet())
         {
-            result.Result = Result.RecipientDomainNotAllowed;
-            return result;
+            var to = message.To.FirstOrDefault()
+                     ?? message.CC.FirstOrDefault()
+                     ?? message.Bcc.FirstOrDefault();
+
+            message.To.Clear();
+            message.CC.Clear();
+            message.Bcc.Clear();
+            message.To.Add(new MailAddress(_configuration.EmailConfiguration.RecipientOverride));
+            message.Subject =  $"{to}: {message.Subject}";
+        }
+        else
+        {
+            if (message.To.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)) ||
+                message.CC.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)) ||
+                message.Bcc.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)))
+            {
+                result.Result = Result.RecipientDomainNotAllowed;
+                return result;
+            }
         }
 
         result.Completed = DateTime.UtcNow;

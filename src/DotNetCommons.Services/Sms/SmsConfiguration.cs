@@ -47,7 +47,9 @@ public class SmsConfiguration
     public bool IsAllowedNumber(string? phoneNumber)
     {
         var ituNumber = WhiteWash.PhoneNumberToItuNumber(phoneNumber, DefaultCountryCode);
-        if (ituNumber.IsEmpty())
+
+        // The minimum length for ITU E.164 is 8 digits plus the +
+        if (ituNumber.IsEmpty() || ituNumber.Length < 9)
             return false;
 
         return AllowedNumbers.Count == 0 || AllowedNumbers.Any(ituNumber.StartsWith);

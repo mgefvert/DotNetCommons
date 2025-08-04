@@ -38,6 +38,11 @@ public class EmailConfiguration
     /// Determines if a given domain is within the list of allowed domains.
     public bool IsAllowedDomain(string domain)
     {
+        var parts = (domain ?? "").Split('@');
+        if (parts.Length is 0 or > 2)
+            return false;
+
+        domain = parts.Last();
         if (string.IsNullOrWhiteSpace(domain))
             return false;
 
