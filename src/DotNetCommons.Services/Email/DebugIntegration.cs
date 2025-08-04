@@ -3,6 +3,11 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Email;
 
+/// <summary>
+/// The DebugIntegration class provides a mechanism to simulate email sending
+/// for development and debugging purposes. It implements the IEmailIntegration
+/// interface and captures sent emails in memory without actually dispatching them.
+/// </summary>
 public class DebugIntegration : IEmailIntegration
 {
     private readonly IntegrationConfiguration _configuration;

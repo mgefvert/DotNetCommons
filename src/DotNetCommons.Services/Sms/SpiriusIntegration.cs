@@ -3,23 +3,43 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Sms;
 
+/// <summary>
+/// Represents the Spirius integration for sending SMS messages. Implements the <see cref="ISmsIntegration"/> interface to provide
+/// functionality for sending messages via the Spirius SMS gateway.
+/// </summary>
 public class SpiriusIntegration : ISmsIntegration
 {
     private readonly HttpClient _httpClient;
     private readonly IntegrationConfiguration _configuration;
     private readonly SmsConfiguration _smsConfig;
 
+    /// Gets or sets the base URL of the Spirius SMS gateway API used for sending messages.
     public Uri ApiUrl { get; set; } = new Uri("https://get.spiricom.spirius.com:55001/cgi-bin/sendsms");
+
+    /// Represents a constant test phone number used for configuring or testing SMS functionalities within the Spirius SMS integration.
+    /// This will never be processed by the gateway and will never result in billing charges.
     public const string TestNumber = "+46123456789";
+
+    /// National numbers, max length = 15 characters
+    public const string FromTypeNational = "N";
+
+    /// International numbers, max length = 15 characters
+    public const string FromTypeInternational = "I";
+
+    /// Short codes, max length = 6 characters
+    public const string FromTypeShort = "S";
+
+    /// Alphanumeric data, max length = 11 characters
+    public const string FromTypeAlphanumeric = "A";
 
     public SpiriusIntegration(IOptions<IntegrationConfiguration> configuration, HttpClient httpClient)
     {
         _configuration = configuration.Value;
-        _configuration.Require(c => c.SmsConfiguration.DefaultCountryCode, this);
-        _configuration.Require(c => c.SmsConfiguration.Username, this);
-        _configuration.Require(c => c.SmsConfiguration.Password, this);
-        _configuration.Require(c => c.SmsConfiguration.SenderNumber, this);
-        _configuration.Require(c => c.SmsConfiguration.SenderType, this);
+        _configuration.Require(c => c.SmsConfiguration.DefaultCountryCode, "SmsConfiguration.DefaultCountryCode");
+        _configuration.Require(c => c.SmsConfiguration.Username, "SmsConfiguration.Username");
+        _configuration.Require(c => c.SmsConfiguration.Password, "SmsConfiguration.Password");
+        _configuration.Require(c => c.SmsConfiguration.SenderNumber, "SmsConfiguration.SenderNumber");
+        _configuration.Require(c => c.SmsConfiguration.SenderType, "SmsConfiguration.SenderType");
 
         _httpClient = httpClient;
         _smsConfig  = _configuration.SmsConfiguration;

@@ -4,6 +4,11 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Email;
 
+/// <summary>
+/// Provides an email integration implementation using an SMTP client, enabling the dispatching
+/// of email messages via SMTP servers. This class supports configuration of SMTP server details,
+/// credentials, and optional TLS encryption.
+/// </summary>
 public class SmtpClientIntegration : IEmailIntegration, IDisposable
 {
     private readonly IntegrationConfiguration _configuration;
@@ -12,7 +17,7 @@ public class SmtpClientIntegration : IEmailIntegration, IDisposable
     public SmtpClientIntegration(IOptions<IntegrationConfiguration> configuration)
     {
         _configuration = configuration.Value;
-        _configuration.Require(c => c.EmailConfiguration.Smtp?.Host, this);
+        _configuration.Require(c => c.EmailConfiguration.Smtp?.Host, "EmailConfiguration.Smtp.Host");
 
         var smtpConfig = configuration.Value.EmailConfiguration.Smtp!;
 
