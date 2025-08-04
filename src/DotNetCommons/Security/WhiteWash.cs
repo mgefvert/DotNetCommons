@@ -40,4 +40,28 @@ public static class WhiteWash
 
         return result;
     }
+
+    /// <summary>
+    /// Converts a phone number to ITU standard by retaining only digits and valid symbols.
+    /// Adds the default country code if a local number is detected.
+    /// </summary>
+    /// <param name="number">The phone number to be converted.</param>
+    /// <param name="defaultCountryCode">The default country code to prepend when the number starts with a local prefix.</param>
+    /// <returns>The ITU-standardized phone number, or null if the input is invalid or empty.</returns>
+    public static string? PhoneNumberToItuNumber(string? number, string? defaultCountryCode)
+    {
+        if (string.IsNullOrWhiteSpace(number))
+            return null;
+
+        number = new string(number.Where(c => c == '+' || char.IsDigit(c)).ToArray());
+
+        if (number.StartsWith("00"))
+            number = "+" + number.Mid(2);
+        else if (number.StartsWith("0") && defaultCountryCode.IsSet())
+            number = defaultCountryCode + number.Mid(1);
+        else if (!number.StartsWith("+"))
+            number = "+" + number;
+
+        return number.Length > 1 ? number : null;
+    }
 }
