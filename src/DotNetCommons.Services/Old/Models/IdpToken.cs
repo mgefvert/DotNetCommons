@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DotNetCommons.Services.Models;
+namespace DotNetCommons.Services.Old.Models;
 
 [Table("services_idp_tokens")]
 public class IdpToken

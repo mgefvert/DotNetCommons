@@ -1,7 +1,7 @@
-﻿using DotNetCommons.Services.Models;
+﻿using DotNetCommons.Services.Old.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DotNetCommons.Services;
+namespace DotNetCommons.Services.Old;
 
 public class ServiceContext : DbContext
 {

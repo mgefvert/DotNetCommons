@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DotNetCommons.Services.Models;
+namespace DotNetCommons.Services.Old.Models;
 
 public class Queue
 {
