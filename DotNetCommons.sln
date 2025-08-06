@@ -9,15 +9,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9F92A1C2-C52
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3B5E0F1C-3195-454F-9270-0FF1525418EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons.Test", "test\DotNetCommons.Test\DotNetCommons.Test.csproj", "{2C9C8956-5E96-4F6B-940A-E78CE55A7183}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommonTests", "test\DotNetCommonTests\DotNetCommonTests.csproj", "{2C9C8956-5E96-4F6B-940A-E78CE55A7183}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons.WinForms.Test", "test\DotNetCommons.WinForms.Test\DotNetCommons.WinForms.Test.csproj", "{61032A0F-FFC3-41B1-958B-605E5FDB6980}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommonTests.WinForms", "test\DotNetCommonTests.WinForms\DotNetCommonTests.WinForms.csproj", "{61032A0F-FFC3-41B1-958B-605E5FDB6980}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons", "src\DotNetCommons\DotNetCommons.csproj", "{39571976-93FA-462A-BBE5-99A41B1C03B4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons.Web", "src\DotNetCommons.Web\DotNetCommons.Web.csproj", "{2264E536-C323-42CA-BD32-4BDC751A4E30}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommons.Web.Tests", "test\DotNetCommons.Web.Tests\DotNetCommons.Web.Tests.csproj", "{FCFA496A-9854-41E5-A106-0783DFC9EFF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCommonTests.Web", "test\DotNetCommonTests.Web\DotNetCommonTests.Web.csproj", "{FCFA496A-9854-41E5-A106-0783DFC9EFF2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.PlaywrightTesting", "src\DotNetCommons.PlaywrightTesting\DotNetCommons.PlaywrightTesting.csproj", "{FBDAE42F-D900-4AB4-9E7E-B32B3A9C8CE2}"
 EndProject
@@ -29,9 +29,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{26
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fleet", "examples\Fleet\Fleet.csproj", "{2E82B72E-7DAC-45E1-A555-374DB450CC14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.EF.Tests", "test\DotNetCommons.EF.Tests\DotNetCommons.EF.Tests.csproj", "{ED8490A1-67A9-4D8B-ACCC-77BCD5EB93EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommonTests.EF", "test\DotNetCommonTests.EF\DotNetCommonTests.EF.csproj", "{ED8490A1-67A9-4D8B-ACCC-77BCD5EB93EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommons.Services.Tests", "test\DotNetCommons.Services.Tests\DotNetCommons.Services.Tests.csproj", "{FB1C5D01-D1BF-4068-AC5E-4F9B9154E9AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommonTests.Services", "test\DotNetCommonTests.Services\DotNetCommonTests.Services.csproj", "{FB1C5D01-D1BF-4068-AC5E-4F9B9154E9AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

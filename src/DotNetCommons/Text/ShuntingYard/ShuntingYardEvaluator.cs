@@ -122,6 +122,8 @@ public class ShuntingYardEvaluator
         new Strings<ShuntingYardToken>(ShuntingYardToken.Comma, ",", false)
     ];
 
+    private InvalidOperationException InvalidOp(string message) => new(message);
+
     /// <summary>
     /// Represents an evaluator based on the Shunting-Yard algorithm to evaluate mathematical expressions.
     /// Provides functionality to tokenize, convert to postfix notation, and evaluate expressions.
@@ -140,7 +142,7 @@ public class ShuntingYardEvaluator
     public void AddConstant(string name, double value)
     {
         if (this == Default)
-            throw new InvalidOperationException("Cannot add constants to the default instance of the evaluator");
+            throw InvalidOp("Cannot add constants to the default instance of the evaluator");
 
         _constants[name] = value;
     }
@@ -153,7 +155,7 @@ public class ShuntingYardEvaluator
     public void AddFunction(FunctionDefinition function)
     {
         if (this == Default)
-            throw new InvalidOperationException("Cannot add functions to the default instance of the evaluator");
+            throw InvalidOp("Cannot add functions to the default instance of the evaluator");
 
         _functions[function.Name] = function;
     }
@@ -171,46 +173,46 @@ public class ShuntingYardEvaluator
         var result = _tokenizer.Tokenize(source);
 
         // Parse and validate all numbers
-        foreach (var token in result.Where(x => x.ID == ShuntingYardToken.Number))
+        foreach (var token in result.Where(x => x.Id == ShuntingYardToken.Number))
         {
             if (double.TryParse(token.Text, CultureInfo.InvariantCulture, out var value))
                 token.Tag = value;
             else
-                throw new InvalidOperationException($"Invalid number '{token.Text}' at {token.Line}:{token.Column}");
+                throw InvalidOp($"Invalid number '{token.Text}' at {token.Line}:{token.Column}");
         }
 
         // Process identifiers (constants and functions)
-        foreach (var token in result.Where(x => x.ID == ShuntingYardToken.Identifier))
+        foreach (var token in result.Where(x => x.Id == ShuntingYardToken.Identifier))
         {
             var name = token.Text?.ToLowerInvariant();
 
             // Check if it's a constant
             if (_constants.TryGetValue(name!, out var value))
             {
-                token.ID  = ShuntingYardToken.Number;
+                token.Id  = ShuntingYardToken.Number;
                 token.Tag = value;
             }
             // Check if it's a function
             else if (_functions.TryGetValue(name!, out var function))
             {
-                token.ID  = ShuntingYardToken.Function;
+                token.Id  = ShuntingYardToken.Function;
                 token.Tag = function;
             }
             else
-                throw new InvalidOperationException($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
+                throw InvalidOp($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
         }
 
         // Process identifiers (constants)
-        foreach (var token in result.Where(x => x.ID == ShuntingYardToken.Identifier))
+        foreach (var token in result.Where(x => x.Id == ShuntingYardToken.Identifier))
         {
             var constantName = token.Text?.ToLowerInvariant();
             if (DefaultConstants.TryGetValue(constantName!, out var value))
             {
-                token.ID  = ShuntingYardToken.Number;
+                token.Id  = ShuntingYardToken.Number;
                 token.Tag = value;
             }
             else
-                throw new InvalidOperationException($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
+                throw InvalidOp($"Unknown identifier '{token.Text}' at {token.Line}:{token.Column}");
         }
 
         // Rewrite the token stream to handle special cases
@@ -222,7 +224,7 @@ public class ShuntingYardEvaluator
                 if (i == 0 || result.IsToken(i - 1, ShuntingYardToken.Operator) || result.IsToken(i - 1, ShuntingYardToken.LeftParen))
                 {
                     result.RemoveAt(i);
-                    result[i].Tag = -(double)result[i].Tag;
+                    result[i].Tag = -(double)(result[i].Tag ?? throw InvalidOp("Expected Tag to hold value"));
                     continue;
                 }
             }
@@ -240,8 +242,8 @@ public class ShuntingYardEvaluator
             // Verify that any function must always be followed by a LeftParen
             if (result.IsToken(i, ShuntingYardToken.Function) && !result.IsToken(i + 1, ShuntingYardToken.LeftParen))
             {
-                var name = ((FunctionDefinition)result[i].Tag).Name;
-                throw new InvalidOperationException($"Function '{name}' must be followed by '()' at {result[i].Line}:{result[i].Column}");
+                var name = ((FunctionDefinition)(result[i].Tag ?? throw InvalidOp("Expected Tag to hold function definition"))).Name;
+                throw InvalidOp($"Function '{name}' must be followed by '()' at {result[i].Line}:{result[i].Column}");
             }
 
             i++;
@@ -265,7 +267,7 @@ public class ShuntingYardEvaluator
 
         foreach (var token in tokens)
         {
-            switch (token.ID)
+            switch (token.Id)
             {
                 case ShuntingYardToken.Number:
                     output.Add(token);
@@ -277,7 +279,7 @@ public class ShuntingYardEvaluator
                     break;
 
                 case ShuntingYardToken.Operator:
-                    while (stack.Count > 0 && stack.Peek().ID == ShuntingYardToken.Operator)
+                    while (stack.Count > 0 && stack.Peek().Id == ShuntingYardToken.Operator)
                     {
                         var top      = stack.Peek();
                         var currPrec = Operators[token.Text!].precedence;
@@ -298,51 +300,50 @@ public class ShuntingYardEvaluator
                     break;
 
                 case ShuntingYardToken.Comma:
-                    while (stack.Count > 0 && stack.Peek().ID != ShuntingYardToken.LeftParen)
+                    while (stack.Count > 0 && stack.Peek().Id != ShuntingYardToken.LeftParen)
                         output.Add(stack.Pop());
 
                     if (stack.Count == 0)
-                        throw new InvalidOperationException("Mismatched parentheses");
+                        throw InvalidOp("Mismatched parentheses");
 
                     if (argumentCount.Count > 0)
                         argumentCount.Push(argumentCount.Pop() + 1);
                     break;
 
                 case ShuntingYardToken.RightParen:
-                    while (stack.Count > 0 && stack.Peek().ID != ShuntingYardToken.LeftParen)
+                    while (stack.Count > 0 && stack.Peek().Id != ShuntingYardToken.LeftParen)
                         output.Add(stack.Pop());
 
-                    if (stack.Count == 0 || stack.Peek().ID != ShuntingYardToken.LeftParen)
-                        throw new InvalidOperationException("Mismatched parentheses");
+                    if (stack.Count == 0 || stack.Peek().Id != ShuntingYardToken.LeftParen)
+                        throw InvalidOp("Mismatched parentheses");
 
                     stack.Pop(); // discard the left paren
 
                     // If the token at the top of the stack is a function token, pop it onto the output queue
-                    if (stack.Count > 0 && stack.Peek().ID == ShuntingYardToken.Function)
+                    if (stack.Count > 0 && stack.Peek().Id == ShuntingYardToken.Function)
                     {
                         var func    = stack.Pop();
-                        var funcDef = (FunctionDefinition)func.Tag;
+                        var funcDef = (FunctionDefinition)(func.Tag ?? throw InvalidOp("Expected Tag to hold function definition"));
                         var args    = funcDef.Arity == 0 ? 0 : argumentCount.Pop() + 1; // Only add 1 for non-zero arity functions
 
                         if (args != funcDef.Arity)
-                            throw new InvalidOperationException(
-                                $"Function {funcDef.Name} expects {funcDef.Arity} arguments but got {args}");
+                            throw InvalidOp($"Function {funcDef.Name} expects {funcDef.Arity} arguments but got {args}");
 
                         output.Add(func);
                     }
 
                     break;
                 default:
-                    throw new InvalidOperationException($"Unexpected token '{token.ID}' at {token.Line}:{token.Column}");
+                    throw InvalidOp($"Unexpected token '{token.Id}' at {token.Line}:{token.Column}");
             }
         }
 
         while (stack.Count > 0)
         {
-            if (stack.Peek().ID is ShuntingYardToken.LeftParen or ShuntingYardToken.RightParen)
+            if (stack.Peek().Id is ShuntingYardToken.LeftParen or ShuntingYardToken.RightParen)
             {
                 var token = stack.Pop();
-                throw new InvalidOperationException($"Mismatched parentheses at {token.Line}:{token.Column}");
+                throw InvalidOp($"Mismatched parentheses at {token.Line}:{token.Column}");
             }
 
             output.Add(stack.Pop());
@@ -366,16 +367,16 @@ public class ShuntingYardEvaluator
 
         foreach (var token in postfix)
         {
-            switch (token.ID)
+            switch (token.Id)
             {
                 case ShuntingYardToken.Number:
-                    stack.Push((double)token.Tag);
+                    stack.Push((double)(token.Tag ?? throw InvalidOp("Expected Tag to hold number")));
                     break;
 
                 case ShuntingYardToken.Function:
-                    var funcDef = (FunctionDefinition)token.Tag;
+                    var funcDef = (FunctionDefinition)(token.Tag ?? throw InvalidOp("Expected Tag to hold function definition"));
                     if (stack.Count < funcDef.Arity)
-                        throw new InvalidOperationException($"Not enough operands for function at {token.Line}:{token.Column}");
+                        throw InvalidOp($"Not enough operands for function at {token.Line}:{token.Column}");
 
                     var args = new double[funcDef.Arity];
                     for (int i = funcDef.Arity - 1; i >= 0; i--)
@@ -388,14 +389,14 @@ public class ShuntingYardEvaluator
                     if (token.Text == "!")
                     {
                         if (stack.Count < 1)
-                            throw new InvalidOperationException($"Not enough operands at {token.Line}:{token.Column}");
+                            throw InvalidOp($"Not enough operands at {token.Line}:{token.Column}");
                         var a = stack.Pop();
                         stack.Push(IsTruthy(a) ? 0.0 : 1.0);
                     }
                     else
                     {
                         if (stack.Count < 2)
-                            throw new InvalidOperationException($"Not enough operands at {token.Line}:{token.Column}");
+                            throw InvalidOp($"Not enough operands at {token.Line}:{token.Column}");
 
                         var b = stack.Pop();
                         var a = stack.Pop();
@@ -416,18 +417,18 @@ public class ShuntingYardEvaluator
                             "==" => Math.Abs(a - b) < 1e-10 ? 1.0 : 0.0,
                             "!=" => Math.Abs(a - b) >= 1e-10 ? 1.0 : 0.0,
                             "<>" => Math.Abs(a - b) >= 1e-10 ? 1.0 : 0.0,
-                            _    => throw new InvalidOperationException($"Unknown operator '{token.Text}' at {token.Line}:{token.Column}")
+                            _    => throw InvalidOp($"Unknown operator '{token.Text}' at {token.Line}:{token.Column}")
                         });
                     }
                     break;
 
                 default:
-                    throw new InvalidOperationException($"Unexpected token '{token.ID}' at {token.Line}:{token.Column}");
+                    throw InvalidOp($"Unexpected token '{token.Id}' at {token.Line}:{token.Column}");
             }
         }
 
         if (stack.Count != 1)
-            throw new InvalidOperationException("Invalid expression");
+            throw InvalidOp("Invalid expression");
 
         return stack.Pop();
     }

@@ -30,7 +30,7 @@ public class Token
     /// <summary>
     /// Generic tag that can hold any object.
     /// </summary>
-    public object Tag { get; set; }
+    public object? Tag { get; set; }
 
     /// <summary>
     /// Default Empty token.
@@ -60,19 +60,19 @@ public class Token<T> : Token where T : struct, Enum
 {
     public Definition<T>? Definition { get; }
     public TokenList<T> Section { get; } = [];
-    public T ID { get; set; }
+    public T Id { get; set; }
 
     public Token(Definition<T> definition, int line, int column, string? text = null)
         : base(line, column, text)
     {
         Definition = definition;
-        ID = definition.ID;
+        Id = definition.Id;
     }
 
     public override string ToString() => ToString(false);
 
     public string ToString(bool insideText)
     {
-        return $"[{ID}:{(insideText ? InsideText : Text)}{(Section.Any() ? " " + Section : "")}]";
+        return $"[{Id}:{(insideText ? InsideText : Text)}{(Section.Any() ? " " + Section : "")}]";
     }
 }

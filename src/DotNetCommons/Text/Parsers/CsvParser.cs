@@ -41,9 +41,9 @@ public class CsvParser
 
         foreach (var token in tokens)
         {
-            if (token.ID == CsvToken.Newline)
+            if (token.Id == CsvToken.Newline)
                 crlf++;
-            else if (token.ID == CsvToken.Linefeed)
+            else if (token.Id == CsvToken.Linefeed)
                 lf++;
 
             if (crlf + lf > 100)
