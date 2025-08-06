@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.Temporal;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Temporal;
 

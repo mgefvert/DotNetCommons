@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using DotNetCommons.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.IO;
 

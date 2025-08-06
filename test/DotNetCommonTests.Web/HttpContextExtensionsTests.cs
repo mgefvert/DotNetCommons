@@ -2,7 +2,6 @@
 using DotNetCommons.Web;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Web;
 

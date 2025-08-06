@@ -1,23 +1,22 @@
 ﻿using DotNetCommons.Numerics;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Numerics;
 
 [TestClass]
 public class Federated48KeyTests
 {
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
-    public void MakeFederatedKey_SystemKeyTooLarge() => Federated48Key.MakeFederatedKey(0x8000, 1);
+    [TestMethod]
+    public void MakeFederatedKey_SystemKeyTooLarge() => Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Federated48Key.MakeFederatedKey(0x8000, 1));
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
-    public void MakeFederatedKey_SystemKeyZero() => Federated48Key.MakeFederatedKey(0, 1);
+    [TestMethod]
+    public void MakeFederatedKey_SystemKeyZero() => Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Federated48Key.MakeFederatedKey(0, 1));
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
-    public void MakeFederatedKey_RecordKeyTooLarge() => Federated48Key.MakeFederatedKey(1, 0x1_0000_0000_0000);
+    [TestMethod]
+    public void MakeFederatedKey_RecordKeyTooLarge() => Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Federated48Key.MakeFederatedKey(1, 0x1_0000_0000_0000));
 
-    [TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
-    public void MakeFederatedKey_RecordKeyZero() => Federated48Key.MakeFederatedKey(1, 0);
+    [TestMethod]
+    public void MakeFederatedKey_RecordKeyZero() => Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => Federated48Key.MakeFederatedKey(1, 0));
 
     [TestMethod]
     public void MakeFederatedKey_Works()

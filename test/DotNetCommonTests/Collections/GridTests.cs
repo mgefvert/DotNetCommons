@@ -1,6 +1,5 @@
 ﻿using DotNetCommons.Collections;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Collections;
 

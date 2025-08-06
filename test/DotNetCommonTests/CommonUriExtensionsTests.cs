@@ -1,6 +1,5 @@
 ﻿using DotNetCommons;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests;
 
@@ -8,11 +7,10 @@ namespace DotNetCommonTests;
 public class CommonUriExtensionsTests
 {
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void WithQuery_NullUri_ThrowsArgumentNullException()
     {
         Uri? uri = null;
-        uri!.WithQuery("query=value");
+        Assert.ThrowsExactly<ArgumentNullException>(() => uri!.WithQuery("query=value"));
     }
 
     [TestMethod]
@@ -32,11 +30,10 @@ public class CommonUriExtensionsTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void WithQuery_NullQueryParameters_ThrowsArgumentNullException()
     {
         var uri = new Uri("https://example.com");
-        uri.WithQuery((IEnumerable<KeyValuePair<string, string?>>)null!);
+        Assert.ThrowsExactly<ArgumentNullException>(() => uri.WithQuery((IEnumerable<KeyValuePair<string, string?>>)null!));
     }
 
     [TestMethod]

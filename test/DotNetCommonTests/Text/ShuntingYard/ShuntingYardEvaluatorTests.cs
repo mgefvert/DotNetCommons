@@ -1,6 +1,5 @@
 using DotNetCommons.Text.ShuntingYard;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Text.ShuntingYard;
 
@@ -77,27 +76,27 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_InvalidNumberThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("12.3.4 + 5"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("12.3.4 + 5"); });
     }
 
     [TestMethod]
     public void Test_MismatchedParenthesesThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("(2 + 3"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("(2 + 3"); });
 
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("2 + 3)"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("2 + 3)"); });
     }
 
     [TestMethod]
     public void Test_NotEnoughOperandsThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("1 +"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("1 +"); });
     }
 
     [TestMethod]
     public void Test_EmptyExpressionThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate(""); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate(""); });
     }
 
     [TestMethod]
@@ -126,7 +125,7 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_UnknownConstantThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("unknown + 5"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("unknown + 5"); });
     }
 
     [TestMethod]
@@ -168,13 +167,13 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_FunctionWithMissingArgumentThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("sqrt()"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("sqrt()"); });
     }
 
     [TestMethod]
     public void Test_UnknownFunctionThrows()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("unknown(5)"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("unknown(5)"); });
     }
 
     [TestMethod]
@@ -216,7 +215,7 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_CannotModifyDefaultEvaluatorConstants()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { ShuntingYardEvaluator.Default.AddConstant("tau", Math.PI * 2); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { ShuntingYardEvaluator.Default.AddConstant("tau", Math.PI * 2); });
     }
 
     [TestMethod]
@@ -274,7 +273,7 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_CannotModifyDefaultEvaluatorFunctions()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             ShuntingYardEvaluator.Default.AddFunction(new FunctionDefinition("square", 1, x => x[0] * x[0]));
         });
@@ -372,7 +371,7 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_CannotModifyDefaultEvaluatorZeroArityFunctions()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
         {
             ShuntingYardEvaluator.Default.AddFunction(new FunctionDefinition("answer", 0, _ => 42.0));
         });
@@ -381,9 +380,9 @@ public class ShuntingYardEvaluatorTests
     [TestMethod]
     public void Test_FunctionMustBeFollowedByLeftParen()
     {
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("sin 30"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("sin 30"); });
 
-        Assert.ThrowsException<InvalidOperationException>(() => { _eval.Evaluate("rnd + 5"); });
+        Assert.ThrowsExactly<InvalidOperationException>(() => { _eval.Evaluate("rnd + 5"); });
     }
 
     [TestMethod]

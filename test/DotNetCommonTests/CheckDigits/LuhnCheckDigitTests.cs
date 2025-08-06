@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.CheckDigits;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.CheckDigits
 {
@@ -39,10 +38,10 @@ namespace DotNetCommonTests.CheckDigits
             Assert.IsTrue(_checkDigit.Validate("1234567812345670"));
         }
 
-        [TestMethod, ExpectedException(typeof(InvalidOperationException))]
-        public void TestCalculate_NoDigits() => _checkDigit.Calculate("FC-");
+        [TestMethod]
+        public void TestCalculate_NoDigits() => Assert.ThrowsExactly<InvalidOperationException>(() => _checkDigit.Calculate("FC-"));
 
-        [TestMethod, ExpectedException(typeof(InvalidOperationException))]
-        public void TestCalculate_Empty() => _checkDigit.Calculate("");
+        [TestMethod]
+        public void TestCalculate_Empty() => Assert.ThrowsExactly<InvalidOperationException>(() => _checkDigit.Calculate(""));
     }
 }

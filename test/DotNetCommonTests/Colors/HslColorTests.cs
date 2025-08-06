@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using DotNetCommons.Colors;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Colors;
 

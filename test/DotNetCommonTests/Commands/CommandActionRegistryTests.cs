@@ -1,7 +1,6 @@
 ﻿using DotNetCommons.Commands;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Commands;
 

@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.Sys;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Sys;
 

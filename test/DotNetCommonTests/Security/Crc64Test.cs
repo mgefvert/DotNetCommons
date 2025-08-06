@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.Security;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Security;
 

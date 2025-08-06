@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using DotNetCommons.Sys;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable UnusedMember.Global
 

@@ -1,5 +1,4 @@
 ﻿using DotNetCommons;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests;
 
@@ -65,26 +64,26 @@ public class LittleStateMachineTest
         Assert.AreEqual("at:Stopped", _log[7]);
     }
 
-    [TestMethod, ExpectedException(typeof(StateMachineException))]
+    [TestMethod]
     public void TestInvalidState()
     {
-        _lsm.Initialize(States.Unconfigured);
+        Assert.ThrowsExactly<StateMachineException>(() => _lsm.Initialize(States.Unconfigured));
     }
 
-    [TestMethod, ExpectedException(typeof(StateMachineException))]
+    [TestMethod]
     public void TestInvalidTransition()
     {
         _lsm.Initialize(States.Initialized);
         _lsm.MoveTo(States.Starting);
-        _lsm.MoveTo(States.Running);
+        Assert.ThrowsExactly<StateMachineException>(() => _lsm.MoveTo(States.Running));
     }
 
-    [TestMethod, ExpectedException(typeof(StateMachineException))]
+    [TestMethod]
     public void TestInvalidSubstateTransition()
     {
         _lsm.Initialize(States.Initialized);
         _lsm.MoveTo(States.Starting);
         _lsm.MoveTo(States.RunningLow);
-        _lsm.MoveTo(States.Running);
+        Assert.ThrowsExactly<StateMachineException>(() => _lsm.MoveTo(States.Running));
     }
 }

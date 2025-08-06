@@ -1,6 +1,5 @@
 ﻿using DotNetCommons.Text.Tokenizer;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Text.Tokenizer;
 

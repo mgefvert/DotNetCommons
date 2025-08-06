@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Text;
 using DotNetCommons.Text.Parsers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Text.Parsers;
 

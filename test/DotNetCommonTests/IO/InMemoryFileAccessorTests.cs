@@ -2,7 +2,6 @@
 using DotNetCommons.IO;
 using DotNetCommons.Temporal;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.IO;
 
@@ -87,13 +86,13 @@ public class InMemoryFileAccessorTests
         _accessor.GetFileSize("/sbin/bash").Should().Be(4296);
     }
     
-    [TestMethod, ExpectedException(typeof(IOException))]
+    [TestMethod]
     public void CopyFile_CantOverwrite_Fails()
     {
         _accessor.Touch("/sbin/bash");
         _accessor.FileExists("/bin/bash").Should().BeTrue();
         _accessor.FileExists("/sbin/bash").Should().BeTrue();
-        _accessor.CopyFile("/bin/bash", "/sbin/bash", false);
+        Assert.ThrowsExactly<IOException>(() => _accessor.CopyFile("/bin/bash", "/sbin/bash", false));
     }
     
     [TestMethod]
@@ -157,11 +156,11 @@ public class InMemoryFileAccessorTests
         _accessor.DirectoryExists("/var").Should().BeFalse();
     }
 
-    [TestMethod, ExpectedException(typeof(IOException))]
+    [TestMethod]
     public void DeleteDirectory_NonRecursive_FailsOnNotEmpty()
     {
         _accessor.DirectoryExists("/bin").Should().BeTrue();
-        _accessor.DeleteDirectory("/bin", false);
+        Assert.ThrowsExactly<IOException>(() => _accessor.DeleteDirectory("/bin", false));
     }
     
     [TestMethod]
@@ -296,10 +295,10 @@ public class InMemoryFileAccessorTests
         _accessor.GetFileSize("/sbin/sudo").Should().Be(996);
     }
     
-    [TestMethod, ExpectedException(typeof(FileNotFoundException))]
+    [TestMethod]
     public void GetFileSize_NotFound_ThrowsException()
     {
-        _accessor.GetFileSize("/xyzzy/foo/bar").Should().Be(100);
+        Assert.ThrowsExactly<FileNotFoundException>(() => _accessor.GetFileSize("/xyzzy/foo/bar").Should().Be(100));
     }
     
     [TestMethod]
@@ -309,10 +308,10 @@ public class InMemoryFileAccessorTests
         _accessor.GetFileTime("/sbin/sudo").Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
     }
     
-    [TestMethod, ExpectedException(typeof(FileNotFoundException))]
+    [TestMethod]
     public void GetFileTime_NotFound_ThrowsException()
     {
-        _accessor.GetFileTime("/bin/xyzzy");
+        Assert.ThrowsExactly<FileNotFoundException>(() => _accessor.GetFileTime("/bin/xyzzy"));
     }
 
     [TestMethod]
@@ -362,19 +361,19 @@ public class InMemoryFileAccessorTests
         _accessor.GetFileSize("/sbin/bash").Should().Be(4296);
     }
     
-    [TestMethod, ExpectedException(typeof(IOException))]
+    [TestMethod]
     public void MoveFile_CantOverwrite_Fails()
     {
         _accessor.Touch("/sbin/bash");
         _accessor.FileExists("/bin/bash").Should().BeTrue();
         _accessor.FileExists("/sbin/bash").Should().BeTrue();
-        _accessor.MoveFile("/bin/bash", "/sbin/bash", false);
+        Assert.ThrowsExactly<IOException>(() => _accessor.MoveFile("/bin/bash", "/sbin/bash", false));
     }
     
-    [TestMethod, ExpectedException(typeof(FileNotFoundException))]
+    [TestMethod]
     public void OpenFile_NotFound_Fails()
     {
-        _ = _accessor.OpenFile("/bin/xyzzy", FileMode.Open, FileAccess.Read);
+        Assert.ThrowsExactly<FileNotFoundException>(() => _ = _accessor.OpenFile("/bin/xyzzy", FileMode.Open, FileAccess.Read));
     }
     
     [TestMethod]
@@ -400,10 +399,10 @@ public class InMemoryFileAccessorTests
         Encoding.UTF8.GetString(content).Should().Be(new string('A', 996));
     }
     
-    [TestMethod, ExpectedException(typeof(FileNotFoundException))]
+    [TestMethod]
     public void ReadAllBytes_NotFound_Fails()
     {
-        _ = _accessor.ReadAllBytes("/sbin/xyzzy");
+        Assert.ThrowsExactly<FileNotFoundException>(() => _ = _accessor.ReadAllBytes("/sbin/xyzzy"));
     }
     
     [TestMethod]
@@ -414,10 +413,10 @@ public class InMemoryFileAccessorTests
         Encoding.UTF8.GetString(content).Should().Be(new string('A', 996));
     }
     
-    [TestMethod, ExpectedException(typeof(FileNotFoundException))]
+    [TestMethod]
     public async Task ReadAllBytesAsync_NotFound_Fails()
     {
-        _ = await _accessor.ReadAllBytesAsync("/sbin/xyzzy");
+        await Assert.ThrowsExactlyAsync<FileNotFoundException>(async () => _ = await _accessor.ReadAllBytesAsync("/sbin/xyzzy"));
     }
     
     [TestMethod]
@@ -428,10 +427,10 @@ public class InMemoryFileAccessorTests
         content.Should().Be(new string('A', 996));
     }
     
-    [TestMethod, ExpectedException(typeof(FileNotFoundException))]
+    [TestMethod]
     public void ReadAllText_NotFound_Fails()
     {
-        _ = _accessor.ReadAllText("/sbin/xyzzy");
+        Assert.ThrowsExactly<FileNotFoundException>(() => _ = _accessor.ReadAllText("/sbin/xyzzy"));
     }
     
     [TestMethod]
@@ -442,10 +441,10 @@ public class InMemoryFileAccessorTests
         content.Should().Be(new string('A', 996));
     }
     
-    [TestMethod, ExpectedException(typeof(FileNotFoundException))]
+    [TestMethod]
     public async Task ReadAllTextAsync_NotFound_Fails()
     {
-        _ = await _accessor.ReadAllTextAsync("/sbin/xyzzy");
+        await Assert.ThrowsExactlyAsync<FileNotFoundException>(async () => _ = await _accessor.ReadAllTextAsync("/sbin/xyzzy"));
     }
     
     [TestMethod]

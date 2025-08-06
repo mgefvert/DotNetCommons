@@ -1,7 +1,6 @@
 ﻿using DotNetCommons.IO;
 using DotNetCommons.Temporal;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.IO;
 

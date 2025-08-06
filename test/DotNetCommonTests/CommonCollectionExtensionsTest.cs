@@ -1,6 +1,5 @@
 ﻿using DotNetCommons;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests;
 

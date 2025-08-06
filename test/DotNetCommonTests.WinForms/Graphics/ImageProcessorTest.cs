@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.WinForms.Graphics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.WinForms.Graphics;
 

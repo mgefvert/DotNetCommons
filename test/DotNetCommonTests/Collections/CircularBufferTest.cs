@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.Collections;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Collections;
 
@@ -71,7 +70,7 @@ public class CircularBufferTest
         Assert.IsFalse(buffer.Contains(50));
     }
 
-    [TestMethod, ExpectedException(typeof(CircularBufferFullException))]
+    [TestMethod]
     public void TestOverflow()
     {
         var buffer = new CircularBuffer<int>(4);
@@ -79,7 +78,7 @@ public class CircularBufferTest
         buffer.Write(20);
         buffer.Write(30);
         buffer.Write(40);
-        buffer.Write(50);
+        Assert.ThrowsExactly<CircularBufferFullException>(() => buffer.Write(50));
     }
 
     [TestMethod]
@@ -233,19 +232,19 @@ public class CircularBufferTest
         Assert.AreEqual("", string.Join(",", buffer.Values()));
     }
 
-    [TestMethod, ExpectedException(typeof(CircularBufferEmptyException))]
+    [TestMethod]
     public void TestUnderflow_Empty()
     {
         var buffer = new CircularBuffer<int>(4);
-        buffer.Read();
+        Assert.ThrowsExactly<CircularBufferEmptyException>(() => buffer.Read());
     }
 
-    [TestMethod, ExpectedException(typeof(CircularBufferEmptyException))]
+    [TestMethod]
     public void TestUnderflow_NotEmpty()
     {
         var buffer = new CircularBuffer<int>(4);
         buffer.Write(10);
         buffer.Read();
-        buffer.Read();
+        Assert.ThrowsExactly<CircularBufferEmptyException>(() => buffer.Read());
     }
 }

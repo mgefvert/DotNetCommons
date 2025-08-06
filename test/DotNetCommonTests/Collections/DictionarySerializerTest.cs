@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.Collections;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DotNetCommonTests.Collections;
 

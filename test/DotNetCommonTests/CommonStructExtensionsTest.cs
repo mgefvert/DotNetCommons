@@ -1,5 +1,4 @@
 ﻿using DotNetCommons;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // ReSharper disable UnusedMember.Global
 
