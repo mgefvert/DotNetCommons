@@ -1,5 +1,4 @@
-﻿using DotNetCommons.Security;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Sms;
 
@@ -7,10 +6,9 @@ namespace DotNetCommons.Services.Sms;
 /// Represents the Spirius integration for sending SMS messages. Implements the <see cref="ISmsIntegration"/> interface to provide
 /// functionality for sending messages via the Spirius SMS gateway.
 /// </summary>
-public class SpiriusIntegration : ISmsIntegration
+public class SpiriusIntegration : AbstractSmsIntegration, ISmsIntegration
 {
     private readonly HttpClient _httpClient;
-    private readonly IntegrationConfiguration _configuration;
     private readonly SmsConfiguration _smsConfig;
 
     /// Gets or sets the base URL of the Spirius SMS gateway API used for sending messages.
@@ -33,22 +31,22 @@ public class SpiriusIntegration : ISmsIntegration
     public const string FromTypeAlphanumeric = "A";
 
     public SpiriusIntegration(IOptions<IntegrationConfiguration> configuration, HttpClient httpClient)
+        : base(configuration)
     {
-        _configuration = configuration.Value;
-        _configuration.Require(c => c.SmsConfiguration.DefaultCountryCode, "SmsConfiguration.DefaultCountryCode");
-        _configuration.Require(c => c.SmsConfiguration.Username, "SmsConfiguration.Username");
-        _configuration.Require(c => c.SmsConfiguration.Password, "SmsConfiguration.Password");
-        _configuration.Require(c => c.SmsConfiguration.SenderNumber, "SmsConfiguration.SenderNumber");
-        _configuration.Require(c => c.SmsConfiguration.SenderType, "SmsConfiguration.SenderType");
+        Configuration.Require(c => c.SmsConfiguration.DefaultCountryCode, "SmsConfiguration.DefaultCountryCode");
+        Configuration.Require(c => c.SmsConfiguration.Username, "SmsConfiguration.Username");
+        Configuration.Require(c => c.SmsConfiguration.Password, "SmsConfiguration.Password");
+        Configuration.Require(c => c.SmsConfiguration.SenderNumber, "SmsConfiguration.SenderNumber");
+        Configuration.Require(c => c.SmsConfiguration.SenderType, "SmsConfiguration.SenderType");
 
         _httpClient = httpClient;
-        _smsConfig  = _configuration.SmsConfiguration;
+        _smsConfig  = Configuration.SmsConfiguration;
     }
 
     public async Task<List<SmsMessageResult>> SendAsync(List<SmsMessage> messages, CancellationToken cancellationToken = default)
     {
-        var results = messages.Select(m => new SmsMessageResult(m)).ToList();
-        foreach (var item in results)
+        var results = messages.Select(PreprocessMessage).ToList();
+        foreach (var item in results.Where(x => x.Result == Result.None))
         {
             if (cancellationToken.IsCancellationRequested)
                 item.Result = Result.Cancelled;
@@ -62,23 +60,6 @@ public class SpiriusIntegration : ISmsIntegration
     private async Task SendMessage(SmsMessageResult item, CancellationToken cancellationToken)
     {
         var sms = item.SmsMessage;
-
-        sms.Recipient = WhiteWash.PhoneNumberToItuNumber(sms.Recipient, _smsConfig.DefaultCountryCode);
-        sms.From      = WhiteWash.PhoneNumberToItuNumber(sms.From ?? _smsConfig.SenderNumber, _smsConfig.DefaultCountryCode);
-        sms.FromType  ??= _smsConfig.SenderType;
-
-        if (_smsConfig.RecipientOverride.IsSet())
-        {
-            sms.Recipient = _smsConfig.RecipientOverride;
-        }
-        else
-        {
-            if (!_smsConfig.IsAllowedNumber(sms.Recipient))
-            {
-                item.Result = Result.RecipientNumberNotAllowed;
-                return;
-            }
-        }
 
         try
         {

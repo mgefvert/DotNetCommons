@@ -8,15 +8,12 @@ namespace DotNetCommons.Services.Email;
 /// for development and debugging purposes. It implements the IEmailIntegration
 /// interface and captures sent emails in memory without actually dispatching them.
 /// </summary>
-public class DebugIntegration : IEmailIntegration
+public class DebugIntegration : AbstractEmailIntegration, IEmailIntegration
 {
-    private readonly IntegrationConfiguration _configuration;
-
     public List<MailMessageResult> Messages { get; } = new();
 
-    public DebugIntegration(IOptions<IntegrationConfiguration> configuration)
+    public DebugIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
     {
-        _configuration = configuration.Value;
     }
 
     public Task<List<MailMessageResult>> SendAsync(List<MailMessage> messages, CancellationToken cancellationToken = default)
@@ -29,36 +26,9 @@ public class DebugIntegration : IEmailIntegration
 
     private MailMessageResult SendMessage(MailMessage message)
     {
-        var result = new MailMessageResult(message);
-
-        if (message.From == null || message.To.IsEmpty())
-        {
-            result.Result = Result.MissingProperties;
+        var result = PreprocessMessage(message);
+        if (result.Result != Result.None)
             return result;
-        }
-
-        if (_configuration.EmailConfiguration.RecipientOverride.IsSet())
-        {
-            var to = message.To.FirstOrDefault()
-                     ?? message.CC.FirstOrDefault()
-                     ?? message.Bcc.FirstOrDefault();
-
-            message.To.Clear();
-            message.CC.Clear();
-            message.Bcc.Clear();
-            message.To.Add(new MailAddress(_configuration.EmailConfiguration.RecipientOverride));
-            message.Subject =  $"{to}: {message.Subject}";
-        }
-        else
-        {
-            if (message.To.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)) ||
-                message.CC.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)) ||
-                message.Bcc.Any(to => !_configuration.EmailConfiguration.IsAllowedDomain(to)))
-            {
-                result.Result = Result.RecipientDomainNotAllowed;
-                return result;
-            }
-        }
 
         result.Completed = DateTime.UtcNow;
         result.Result    = Result.Success;

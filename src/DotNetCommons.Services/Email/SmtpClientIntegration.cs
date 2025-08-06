@@ -9,15 +9,13 @@ namespace DotNetCommons.Services.Email;
 /// of email messages via SMTP servers. This class supports configuration of SMTP server details,
 /// credentials, and optional TLS encryption.
 /// </summary>
-public class SmtpClientIntegration : IEmailIntegration, IDisposable
+public class SmtpClientIntegration : AbstractEmailIntegration, IEmailIntegration, IDisposable
 {
-    private readonly IntegrationConfiguration _configuration;
     private readonly SmtpClient _smtpClient;
 
-    public SmtpClientIntegration(IOptions<IntegrationConfiguration> configuration)
+    public SmtpClientIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
     {
-        _configuration = configuration.Value;
-        _configuration.Require(c => c.EmailConfiguration.Smtp?.Host, "EmailConfiguration.Smtp.Host");
+        Configuration.Require(c => c.EmailConfiguration.Smtp?.Host, "EmailConfiguration.Smtp.Host");
 
         var smtpConfig = configuration.Value.EmailConfiguration.Smtp!;
 
@@ -37,8 +35,8 @@ public class SmtpClientIntegration : IEmailIntegration, IDisposable
 
     public async Task<List<MailMessageResult>> SendAsync(List<MailMessage> messages, CancellationToken cancellationToken = default)
     {
-        var results = messages.Select(m => new MailMessageResult(m)).ToList();
-        foreach (var item in results)
+        var results = messages.Select(PreprocessMessage).ToList();
+        foreach (var item in results.Where(m => m.Result == Result.None))
         {
             if (cancellationToken.IsCancellationRequested)
                 item.Result = Result.Cancelled;
@@ -52,34 +50,6 @@ public class SmtpClientIntegration : IEmailIntegration, IDisposable
     private async Task SendMessage(MailMessageResult item, CancellationToken cancellationToken)
     {
         var message = item.MailMessage;
-
-        if (_configuration.EmailConfiguration.RecipientOverride.IsSet())
-        {
-            var to = message.To.FirstOrDefault()
-                        ?? message.CC.FirstOrDefault()
-                        ?? message.Bcc.FirstOrDefault();
-
-            message.To.Clear();
-            message.CC.Clear();
-            message.Bcc.Clear();
-            message.To.Add(new MailAddress(_configuration.EmailConfiguration.RecipientOverride));
-            message.Subject =  $"{to}: {message.Subject}";
-        }
-        else
-        {
-            var domains = message.To
-                .Concat(message.CC)
-                .Concat(message.Bcc)
-                .Select(x => x.Host.ToLowerInvariant())
-                .Distinct()
-                .ToArray();
-
-            if (domains.Any(d => !_configuration.EmailConfiguration.IsAllowedDomain(d)))
-            {
-                item.Result = Result.RecipientDomainNotAllowed;
-                return;
-            }
-        }
 
         try
         {
