@@ -1,6 +1,6 @@
 ﻿using System.Text;
+using DotNetCommons;
 using DotNetCommons.IO;
-using DotNetCommons.Temporal;
 using FluentAssertions;
 
 namespace DotNetCommonTests.IO;
@@ -9,7 +9,7 @@ namespace DotNetCommonTests.IO;
 public class InMemoryFileAccessorTests
 {
     private readonly InMemoryFileAccessor _accessor;
-    private readonly TestClock _clock = new();
+    private readonly TimeProvider _clock = TimeProvider.System;
 
     public InMemoryFileAccessorTests()
     {
@@ -319,7 +319,7 @@ public class InMemoryFileAccessorTests
     {
         _accessor.Touch("/usr/foo");
         _accessor.WriteAllText("/usr/foobar", "This is the end, beautiful friend");
-        var now = _clock.Now.ToString("s");
+        var now = _clock.Now().ToString("s");
 
         var files = _accessor.ListFiles("/usr")
             .Select(f => $"{f.Name},{f.Directory},{f.Size},{f.LastWriteTime:s}")

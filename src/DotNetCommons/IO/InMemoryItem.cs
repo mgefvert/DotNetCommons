@@ -1,11 +1,9 @@
-﻿using DotNetCommons.Temporal;
-
-namespace DotNetCommons.IO;
+﻿namespace DotNetCommons.IO;
 
 public class InMemoryItem : BaseFileItem
 {
     private readonly InMemoryFileAccessor.Entry _entry;
-    private readonly IClock _clock;
+    private readonly TimeProvider _clock;
 
     public override string Name => _entry.Name!;
     public override string FullName => _entry.FullName();

@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 using DotNetCommons.Security;
-using DotNetCommons.Temporal;
 using DotNetCommons.Text;
 
 namespace DotNetCommons.IO;
@@ -20,10 +19,10 @@ public class InMemoryFileAccessor : IFileAccessor
         private readonly MemoryBlock _data;
         private readonly File _entry;
         private readonly FileAccess _access;
-        private readonly IClock _clock;
+        private readonly TimeProvider _clock;
         private bool _disposed;
 
-        public NonDisposableStreamWrapper(File entry, FileAccess access, IClock clock)
+        public NonDisposableStreamWrapper(File entry, FileAccess access, TimeProvider clock)
         {
             _access = access;
             _clock  = clock;
@@ -39,7 +38,7 @@ public class InMemoryFileAccessor : IFileAccessor
         public override void Close()
         {
             if (_access.HasFlag(FileAccess.Write))
-                _entry.Time = _clock.Now;
+                _entry.Time = _clock.Now();
             
             _disposed = true;
         }
@@ -179,7 +178,7 @@ public class InMemoryFileAccessor : IFileAccessor
         }
     }
 
-    internal readonly IClock Clock;
+    internal readonly TimeProvider Clock;
     private readonly Directory _root;
     private Directory _currentDirectory;
 
@@ -195,10 +194,10 @@ public class InMemoryFileAccessor : IFileAccessor
     /// <inheritdoc/>
     public Encoding Encoding { get; set; } = Encoding.UTF8;
 
-    public InMemoryFileAccessor(IClock clock)
+    public InMemoryFileAccessor(TimeProvider clock)
     {
         Clock             = clock;
-        _root             = new Directory(null, null, Clock.Now);
+        _root             = new Directory(null, null, Clock.Now());
         _currentDirectory = _root;
     }
 
@@ -249,7 +248,7 @@ public class InMemoryFileAccessor : IFileAccessor
             {
                 if (create)
                 {
-                    subdir = new Directory(dir, segment, Clock.Now);
+                    subdir = new Directory(dir, segment, Clock.Now());
                     dir.Directories.Add(subdir);
                 }
                 else
@@ -331,12 +330,12 @@ public class InMemoryFileAccessor : IFileAccessor
         {
             var (path, file) = SplitPath(GetAbsolutePath(fileName));
             var dir = FindDirectory(path, false) ?? throw DirectoryNotFound(path);
-            result = new File(dir, file, Clock.Now, null);
+            result = new File(dir, file, Clock.Now(), null);
             dir.Files.Add(result);
         }
 
         result.Data.Clear();
-        result.Time = Clock.Now;
+        result.Time = Clock.Now();
         
         return result;
     }
@@ -544,7 +543,7 @@ public class InMemoryFileAccessor : IFileAccessor
     public IFileItem Touch(string fileName)
     {
         var file = FindFile(fileName) ?? CreateFileInternal(fileName);
-        file.Time = Clock.Now;
+        file.Time = Clock.Now();
         return new InMemoryItem(file, this);
     }
 

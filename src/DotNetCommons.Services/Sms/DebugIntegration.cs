@@ -1,5 +1,4 @@
-﻿using DotNetCommons.Security;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Sms;
 

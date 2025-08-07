@@ -5,57 +5,54 @@ namespace DotNetCommons.Temporal;
 /// <summary>
 /// Contains the most common U.S. Federal Holidays and a few more.
 /// </summary>
-public class UnitedStatesHolidays
+public static class UnitedStatesHolidays
 {
-    private readonly Holiday[] _list;
+    public static Holiday NewYearsDay { get; }
+    public static Holiday MlkBirthday { get; }
+    public static Holiday PresidentsDay { get; }
+    public static Holiday Easter { get; }
+    public static Holiday MemorialDay { get; }
+    public static Holiday Juneteenth { get; }
+    public static Holiday IndependenceDay { get; }
+    public static Holiday LaborDay { get; }
+    public static Holiday VeteransDay { get; }
+    public static Holiday Thanksgiving { get; }
+    public static Holiday ChristmasDay { get; }
+
+    public static Holiday[] All { get; }
 
     public static DateTime FederalObservedRules(DateTime date)
     {
-        if (date.DayOfWeek == DayOfWeek.Saturday)
-            return date.AddDays(-1);
-
-        if (date.DayOfWeek == DayOfWeek.Sunday)
-            return date.AddDays(1);
-
-        return date;
+        return date.DayOfWeek switch
+        {
+            DayOfWeek.Saturday => date.AddDays(-1),
+            DayOfWeek.Sunday   => date.AddDays(1),
+            _                  => date
+        };
     }
 
-    public UnitedStatesHolidays()
+    static UnitedStatesHolidays()
     {
-        _list =
+        All =
         [
-            new DateBasedHoliday("New Year's Day", HolidayType.Holiday, 1, 1),
-            new NthDayHoliday("Martin Luther King's Birthday", HolidayType.Holiday, 1, 3, DayOfWeek.Monday),
-            new NthDayHoliday("Washington's Birthday", HolidayType.Holiday, 2, 3, DayOfWeek.Monday),
-            new EasterHoliday("Easter Sunday", HolidayType.Holiday),
-            new LastDayHoliday("Memorial Day", HolidayType.Holiday, 5, DayOfWeek.Monday),
-            new DateBasedHoliday("Juneteenth", HolidayType.Holiday, 6, 19),
-            new DateBasedHoliday("Independence Day", HolidayType.Holiday, 7, 4),
-            new NthDayHoliday("Labor Day", HolidayType.Holiday, 9, 1, DayOfWeek.Monday),
-            new DateBasedHoliday("Veteran's Day", HolidayType.Holiday, 11, 11),
-            new NthDayHoliday("Thanksgiving", HolidayType.Holiday, 11, 4, DayOfWeek.Thursday),
-            new DateBasedHoliday("Christmas Day", HolidayType.Holiday, 12, 25)
+            NewYearsDay     = new DateBasedHoliday("New Year's Day", HolidayType.Holiday, 1, 1),
+            MlkBirthday     = new NthDayHoliday("Martin Luther King's Birthday", HolidayType.Holiday, 1, 3, DayOfWeek.Monday),
+            PresidentsDay   = new NthDayHoliday("Washington's Birthday", HolidayType.Holiday, 2, 3, DayOfWeek.Monday),
+            Easter          = new EasterHoliday("Easter Sunday", HolidayType.Holiday),
+            MemorialDay     = new LastDayHoliday("Memorial Day", HolidayType.Holiday, 5, DayOfWeek.Monday),
+            Juneteenth      = new DateBasedHoliday("Juneteenth", HolidayType.Holiday, 6, 19),
+            IndependenceDay = new DateBasedHoliday("Independence Day", HolidayType.Holiday, 7, 4),
+            LaborDay        = new NthDayHoliday("Labor Day", HolidayType.Holiday, 9, 1, DayOfWeek.Monday),
+            VeteransDay     = new DateBasedHoliday("Veteran's Day", HolidayType.Holiday, 11, 11),
+            Thanksgiving    = new NthDayHoliday("Thanksgiving", HolidayType.Holiday, 11, 4, DayOfWeek.Thursday),
+            ChristmasDay    = new DateBasedHoliday("Christmas Day", HolidayType.Holiday, 12, 25)
         ];
 
-        MlkBirthday.ObservedRule = FederalObservedRules;
-        PresidentsDay.ObservedRule = FederalObservedRules;
-        MemorialDay.ObservedRule = FederalObservedRules;
+        MlkBirthday.ObservedRule     = FederalObservedRules;
+        PresidentsDay.ObservedRule   = FederalObservedRules;
+        MemorialDay.ObservedRule     = FederalObservedRules;
         IndependenceDay.ObservedRule = FederalObservedRules;
-        LaborDay.ObservedRule = FederalObservedRules;
-        VeteransDay.ObservedRule = FederalObservedRules;
+        LaborDay.ObservedRule        = FederalObservedRules;
+        VeteransDay.ObservedRule     = FederalObservedRules;
     }
-
-    public Holiday[] All => _list;
-
-    public Holiday NewYearsDay => _list[0];
-    public Holiday MlkBirthday => _list[1];
-    public Holiday PresidentsDay => _list[2];
-    public Holiday Easter => _list[3];
-    public Holiday MemorialDay => _list[4];
-    public Holiday Juneteenth => _list[5];
-    public Holiday IndependenceDay => _list[6];
-    public Holiday LaborDay => _list[7];
-    public Holiday VeteransDay => _list[8];
-    public Holiday Thanksgiving => _list[9];
-    public Holiday ChristmasDay => _list[10];
 }

@@ -1,5 +1,4 @@
 ﻿using DotNetCommons.IO;
-using DotNetCommons.Temporal;
 using FluentAssertions;
 
 namespace DotNetCommonTests.IO;
@@ -13,7 +12,7 @@ public class FileAccessorToolsTest
     [TestInitialize]
     public void Setup()
     {
-        _fileAccessor = new InMemoryFileAccessor(new SystemClock());
+        _fileAccessor = new InMemoryFileAccessor(TimeProvider.System);
         _testPath     = _fileAccessor.GetDirectory("/w/prj/cpp/snipes", true) ?? throw new Exception("Failed to create test path");
 
         _fileAccessor.Touch(_testPath.FullName + "/config.h");
