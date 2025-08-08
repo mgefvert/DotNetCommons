@@ -12,9 +12,18 @@ public abstract class AbstractEmailIntegration
         Configuration = configuration.Value;
     }
 
-    protected MailMessageResult PreprocessMessage(MailMessage message)
+    public string GetEmailFromKey(string key)
+    {
+        return Configuration.EmailConfiguration.FromAddresses.GetValueOrDefault(key)
+               ?? throw new InvalidOperationException($"No email address defined for key '{key}'");
+    }
+
+    protected virtual MailMessageResult PreprocessMessage(MailMessage message, string? fromEmail)
     {
         var result = new MailMessageResult(message);
+
+        if (message.From == null && fromEmail.IsSet())
+            message.From = new MailAddress(fromEmail);
 
         if (message.From == null || message.To.IsEmpty())
         {
@@ -42,5 +51,18 @@ public abstract class AbstractEmailIntegration
         }
 
         return result;
+    }
+
+    public abstract Task<List<MailMessageResult>> SendAsync(List<MailMessage> messages,
+        string? fromEmailOrKey = null, CancellationToken cancellationToken = default);
+
+    public virtual async Task<MailMessageResult> SendToAdminAsync(MailMessage message, string? fromEmailOrKey = null,
+        CancellationToken cancellationToken = default)
+    {
+        var adminEmails = Configuration.EmailConfiguration.AdminEmails;
+        foreach (var email in adminEmails)
+            message.To.Add(new MailAddress(email));
+
+        return (await SendAsync([message], null, cancellationToken)).First();
     }
 }

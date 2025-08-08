@@ -7,11 +7,11 @@ namespace DotNetCommons.Services.Sms;
 /// development and testing purposes, allowing for debugging and verification of SMS messages.
 /// This integration does not send actual SMS messages but simulates the behavior in a controlled environment.
 /// </summary>
-public class DebugIntegration : AbstractSmsIntegration, ISmsIntegration
+public class DebugSmsIntegration : AbstractSmsIntegration, ISmsIntegration
 {
     public List<SmsMessageResult> Messages { get; } = new();
 
-    public DebugIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
+    public DebugSmsIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
     {
     }
 

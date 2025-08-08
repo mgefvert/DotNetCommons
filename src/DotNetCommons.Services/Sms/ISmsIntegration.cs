@@ -6,6 +6,8 @@
 /// </summary>
 public interface ISmsIntegration
 {
+    string? FormatPhoneNumber(string? phoneNumber, string? defaultNumber = null);
+
     /// <summary>
     /// Sends a list of SMS messages asynchronously to the integration provider for delivery.
     /// </summary>

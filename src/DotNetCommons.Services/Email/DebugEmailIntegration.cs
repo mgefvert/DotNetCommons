@@ -8,25 +8,27 @@ namespace DotNetCommons.Services.Email;
 /// for development and debugging purposes. It implements the IEmailIntegration
 /// interface and captures sent emails in memory without actually dispatching them.
 /// </summary>
-public class DebugIntegration : AbstractEmailIntegration, IEmailIntegration
+public class DebugEmailIntegration : AbstractEmailIntegration, IEmailIntegration
 {
     public List<MailMessageResult> Messages { get; } = new();
 
-    public DebugIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
+    public DebugEmailIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
     {
     }
 
-    public Task<List<MailMessageResult>> SendAsync(List<MailMessage> messages, CancellationToken cancellationToken = default)
+    public override Task<List<MailMessageResult>> SendAsync(List<MailMessage> messages,
+        string? fromEmailOrKey = null, CancellationToken cancellationToken = default)
     {
-        var result = messages.Select(SendMessage).ToList();
+        var fromEmail = fromEmailOrKey.IsSet() ? GetEmailFromKey(fromEmailOrKey) : null;
+        var result    = messages.Select(m => SendMessage(m, fromEmail)).ToList();
 
         Messages.AddRange(result);
         return Task.FromResult(result);
     }
 
-    private MailMessageResult SendMessage(MailMessage message)
+    private MailMessageResult SendMessage(MailMessage message, string? fromEmail)
     {
-        var result = PreprocessMessage(message);
+        var result = PreprocessMessage(message, fromEmail);
         if (result.Result != Result.None)
             return result;
 

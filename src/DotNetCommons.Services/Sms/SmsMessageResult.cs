@@ -30,6 +30,8 @@ public class SmsMessageResult
     /// This property contains the exception that occurred during the processing of the email message, if any.
     public Exception? Exception { get; set; }
 
+    public bool Success => Result == Result.Success;
+
     public SmsMessageResult(SmsMessage smsMessage)
     {
         SmsMessage = smsMessage;

@@ -9,6 +9,9 @@ public class EmailConfiguration
     public const string NoReplyEmail = "noreply";
     public const string SupportEmail = "support";
 
+    /// A list of administrator email addresses that will receive sysadmin email notifications.
+    public List<string> AdminEmails { get; set; } = [];
+
     /// Gets or sets the list of domains that are allowed for processing or validation in the email service.
     /// This property is used to restrict allowed domains when sending or receiving emails, ensuring that
     /// only specified domains are permitted. If the list is empty, all domains are considered allowed.

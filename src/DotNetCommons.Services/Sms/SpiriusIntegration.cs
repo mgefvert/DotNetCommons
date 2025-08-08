@@ -72,7 +72,8 @@ public class SpiriusIntegration : AbstractSmsIntegration, ISmsIntegration
                 ["FromType"] = sms.FromType,
                 ["Msg"]      = sms.Content,
                 ["Concat"]   = "1",
-                ["CharSet"]  = "UTF8"
+                ["CharSet"]  = "UTF8",
+                ["ExtId"]    = sms.Project.Left(20)
             };
 
             if (sms.Validity != null)
