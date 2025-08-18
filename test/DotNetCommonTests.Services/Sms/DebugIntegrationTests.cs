@@ -8,7 +8,7 @@ namespace DotNetCommonTests.Services.Sms;
 [TestClass]
 public class DebugIntegrationTests
 {
-    private DebugIntegration _integration = null!;
+    private DebugSmsIntegration _integration = null!;
     private IntegrationConfiguration _config = null!;
 
     [TestInitialize]
@@ -25,7 +25,7 @@ public class DebugIntegrationTests
             }
         };
 
-        _integration = new DebugIntegration(Options.Create(_config));
+        _integration = new DebugSmsIntegration(Options.Create(_config));
     }
 
     
