@@ -30,6 +30,12 @@ public class MailMessageResult
     /// This property contains the exception that occurred during the processing of the email message, if any.
     public Exception? Exception { get; set; }
 
+    public bool Success => Result == Result.Success;
+    public IEnumerable<MailAddress> AllRecipients =>
+        MailMessage.To
+            .Concat(MailMessage.CC)
+            .Concat(MailMessage.Bcc);
+
     public MailMessageResult(MailMessage mailMessage)
     {
         MailMessage = mailMessage;

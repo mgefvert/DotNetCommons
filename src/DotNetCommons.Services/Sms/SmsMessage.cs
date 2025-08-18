@@ -32,4 +32,9 @@ public class SmsMessage
     /// will be made to send it. The value is typically represented as a TimeSpan duration and converted
     /// into a suitable format (e.g., minutes) by the SMS integration being used.
     public TimeSpan? Validity { get; set; }
+
+    /// Gets or sets the project associated with the SMS message.
+    /// This property can be used to group or categorize SMS messages under a specific project or context,
+    /// enabling easier identification and organization within the SMS integration system.
+    public string? Project { get; set; }
 }

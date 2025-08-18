@@ -12,16 +12,19 @@ public abstract class AbstractSmsIntegration
         Configuration = configuration.Value;
     }
 
+    public string? FormatPhoneNumber(string? phoneNumber, string? defaultNumber = null)
+    {
+        return WhiteWash.PhoneNumberToItuNumber(phoneNumber ?? defaultNumber,
+            Configuration.SmsConfiguration.DefaultCountryCode);
+    }
+
     protected SmsMessageResult PreprocessMessage(SmsMessage message)
     {
-        string? ProcessNumber(string? number, string? defaultNumber) =>
-            WhiteWash.PhoneNumberToItuNumber(number ?? defaultNumber, Configuration.SmsConfiguration.DefaultCountryCode);
-
         var result = new SmsMessageResult(message);
 
-        message.From      = ProcessNumber(message.From, Configuration.SmsConfiguration.SenderNumber);
+        message.From      = FormatPhoneNumber(message.From, Configuration.SmsConfiguration.SenderNumber);
         message.FromType  ??= Configuration.SmsConfiguration.SenderType;
-        message.Recipient = Configuration.SmsConfiguration.RecipientOverride ?? ProcessNumber(message.Recipient, null);
+        message.Recipient = Configuration.SmsConfiguration.RecipientOverride ?? FormatPhoneNumber(message.Recipient);
         if (message.From.IsEmpty() || message.Recipient.IsEmpty() || message.Content.IsEmpty())
         {
             result.Result = Result.MissingProperties;

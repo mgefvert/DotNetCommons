@@ -33,9 +33,11 @@ public class SmtpClientIntegration : AbstractEmailIntegration, IEmailIntegration
         _smtpClient.Dispose();
     }
 
-    public async Task<List<MailMessageResult>> SendAsync(List<MailMessage> messages, CancellationToken cancellationToken = default)
+    public override async Task<List<MailMessageResult>> SendAsync(List<MailMessage> messages,
+        string? fromEmailOrKey = null, CancellationToken cancellationToken = default)
     {
-        var results = messages.Select(PreprocessMessage).ToList();
+        var fromEmail = fromEmailOrKey.IsSet() ? GetEmailFromKey(fromEmailOrKey) : null;
+        var results = messages.Select(message => PreprocessMessage(message, fromEmail)).ToList();
         foreach (var item in results.Where(m => m.Result == Result.None))
         {
             if (cancellationToken.IsCancellationRequested)
