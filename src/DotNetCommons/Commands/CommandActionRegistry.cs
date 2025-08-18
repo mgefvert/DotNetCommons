@@ -1,37 +1,39 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
+using DotNetCommons.Sys;
 using DotNetCommons.Text;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetCommons.Commands;
 
-/// <summary>
 /// Provides a registry to manage and execute command actions with defined priorities and execution strategies.
-/// </summary>
 public class CommandActionRegistry
 {
-    /// <summary>Represents the exit code indicating successful execution of a command.</summary>
+    /// Represents the exit code indicating successful execution of a command.
     public const int ExitCodeSuccess = 0;
 
-    /// <summary>Represents the exit code indicating that no jobs were scheduled for execution.</summary>
+    /// Represents the exit code indicating that no jobs were scheduled for execution.
     public const int ExitCodeNoJobsScheduled = -1;
 
-    /// <summary>Represents the exit code indicating a fatal error occurred during the execution of a command.</summary>
+    /// Represents the exit code indicating a fatal error occurred during the execution of a command.
     public const int ExitCodeFatalError = -2;
 
-    /// <summary>Specifies the priority level for the first command scheduled with the Execute method.</summary>
+    /// Represents the exit code indicating that an operation was canceled before completion.
+    public const int ExitCodeOperationCanceled = -3;
+
+    /// Specifies the priority level for the first command scheduled with the Execute method.
     public const int FirstPriority = 10;
 
-    /// <summary>Represents a high-priority level for scheduling command actions.</summary>
+    /// Represents a high-priority level for scheduling command actions.
     public const int HighPriority = 30;
 
-    /// <summary>Represents a medium-priority level for scheduling command actions.</summary>
+    /// Represents a medium-priority level for scheduling command actions.
     public const int MediumPriority = 50;
 
-    /// <summary>Represents a low-priority level for scheduling command actions.</summary>
+    /// Represents a low-priority level for scheduling command actions.
     public const int LowPriority = 70;
 
-    /// <summary>Represents the priority for commands that are supposed to run absolutely last in the queue.</summary>
+    /// Represents the priority for commands that are supposed to run absolutely last in the queue.
     public const int LastPriority = 99;
 
     private Action<CommandAction, int>? _afterActionCallback;
@@ -41,19 +43,19 @@ public class CommandActionRegistry
     private readonly ICommandLineParser _commandLineParser;
     private readonly PriorityQueue<Invocation, int> _invocationQueue = new();
 
-    /// <summary>
+    private bool _schedulerRunning;
+    private int _ctrlBreakPressed;
+    private CancellationTokenSource? _cancelSource;
+
     /// Provides a registry for managing the registration, scheduling, and execution of command actions.
     /// Uses the DotNetCommons command line parser to parse arguments on the command line.
-    /// </summary>
     public CommandActionRegistry(IServiceProvider serviceProvider)
         : this(serviceProvider, new DotNetCommonsCommandLineParser())
     {
     }
 
-    /// <summary>
     /// Provides a registry for managing the registration, scheduling, and execution of command actions.
     /// Uses a custom command line parser to parse arguments on the command line.
-    /// </summary>
     public CommandActionRegistry(IServiceProvider serviceProvider, ICommandLineParser commandLineParser)
     {
         _serviceProvider   = serviceProvider;
@@ -78,6 +80,21 @@ public class CommandActionRegistry
     {
         _beforeActionCallback = action;
         return this;
+    }
+
+    private void CtrlCHandler(object? sender, ConsoleCancelEventArgs args)
+    {
+        _ctrlBreakPressed++;
+
+        if (_ctrlBreakPressed == 1 && _cancelSource != null)
+        {
+            args.Cancel = true;
+            using (new SetConsoleColor(ConsoleColor.Yellow))
+                Console.WriteLine("Ctrl-C pressed, signaling job to abort ... press again to force exit");
+            _cancelSource.Cancel();
+        }
+        else
+            args.Cancel = false;
     }
 
     /// <summary>
@@ -133,7 +150,12 @@ public class CommandActionRegistry
     /// An integer representing the exit code of the executed command.
     /// Typically, 0 indicates success, while non-zero values indicate errors or specific execution outcomes.
     /// </returns>
-    public int Execute(string[] args)
+    /// <remarks>
+    /// This method is designed to be the "main function" in a job framework. It executes commands, and also captures thrown exceptions,
+    /// prints them on the screen, and provides a suitable return code. It also provides a CTRL-C handler that signals the job to cancel
+    /// the current operation.
+    /// </remarks>
+    public async Task<int> Execute(string[] args)
     {
         if (_commandRegistry.IsEmpty())
             throw new CommandActionResolveException("No command actions are defined.");
@@ -159,28 +181,58 @@ public class CommandActionRegistry
         if (route.commands.Length > 1)
         {
             DisplayHelp(route.commands);
-            return 1;
+            return 0;
         }
 
-        Schedule(FirstPriority, true, route.commands.Single(), route.remaining);
+        if (_schedulerRunning)
+            throw new InvalidOperationException("Scheduler is already running");
 
-        return ExecuteScheduler();
+        _schedulerRunning = true;
+        _cancelSource     = new CancellationTokenSource();
+        _ctrlBreakPressed = 0;
+        try
+        {
+            Schedule(FirstPriority, true, route.commands.Single(), route.remaining);
+
+            _cancelSource = new CancellationTokenSource();
+            Console.CancelKeyPress += CtrlCHandler;
+
+            return await ExecuteScheduler(_cancelSource.Token);
+        }
+        catch (OperationCanceledException e)
+        {
+            using (new SetConsoleColor(ConsoleColor.Red))
+                await Console.Error.WriteLineAsync(e.Message);
+            return ExitCodeOperationCanceled;
+        }
+        catch (Exception e)
+        {
+            using (new SetConsoleColor(ConsoleColor.Red))
+                Console.Error.WriteLine(e);
+            return ExitCodeFatalError;
+        }
+        finally
+        {
+            Console.CancelKeyPress -= CtrlCHandler;
+            _schedulerRunning = false;
+            _cancelSource.Dispose();
+        }
     }
 
-    /// <summary>
     /// Executes a command action based on the provided invocation, handling pre-action and post-action callbacks.
-    /// </summary>
-    private int ExecuteCommand(Invocation invocation)
+    private async Task<int> ExecuteCommand(Invocation invocation, CancellationToken ct, IServiceProvider globalScope)
     {
-        using var scope = _serviceProvider.CreateScope();
+        // Create a new scope specific for this run
+        using var currentScope = _serviceProvider.CreateScope();
 
         // Try-catch block for initialization exceptions
         CommandAction command;
         try
         {
             // Create the command objects and initialize it
-            command = (CommandAction)ActivatorUtilities.CreateInstance(scope.ServiceProvider, invocation.Action);
+            command = (CommandAction)ActivatorUtilities.CreateInstance(currentScope.ServiceProvider, invocation.Action);
             command.Registry = this;
+            command.GlobalScope = globalScope;
 
             // Set the optional argument object
             var prop = invocation.Action.GetProperty(nameof(CommandAction<object>.Args));
@@ -197,10 +249,16 @@ public class CommandActionRegistry
         // Try-catch block for anything that requires the after action handler to be called
         try
         {
-            var result = command.Execute();
+            ct.ThrowIfCancellationRequested();
+            var result = await command.ExecuteAsync(ct);
             _afterActionCallback?.Invoke(command, result);
 
             return result;
+        }
+        catch (OperationCanceledException)
+        {
+            _afterActionCallback?.Invoke(command, ExitCodeOperationCanceled);
+            throw;
         }
         catch (Exception e)
         {
@@ -217,13 +275,15 @@ public class CommandActionRegistry
     /// <returns>
     /// The result code of the last executed command, or -1 if no commands were scheduled.
     /// </returns>
-    public int ExecuteScheduler()
+    public async Task<int> ExecuteScheduler(CancellationToken ct = default)
     {
+        using var schedulerScope = _serviceProvider.CreateScope();
+
         var result = ExitCodeNoJobsScheduled;
-        while (_invocationQueue.Count > 0)
+        while (_invocationQueue.Count > 0 && !ct.IsCancellationRequested)
         {
             var invocation = _invocationQueue.Dequeue();
-            result = ExecuteCommand(invocation);
+            result = await ExecuteCommand(invocation, ct, schedulerScope.ServiceProvider);
 
             if (result != 0 && !invocation.ContinueOnError)
                 break;
@@ -251,9 +311,7 @@ public class CommandActionRegistry
         return null;
     }
 
-    /// <summary>
     /// Constructs a route name by joining the elements of the provided collection, e.g. ["set", "value"] => "set value".
-    /// </summary>
     private static string GetRouteName(ICollection<string> route)
     {
         return string.Join(' ', route
@@ -261,9 +319,7 @@ public class CommandActionRegistry
             .Select(r => r.ToLower()));
     }
 
-    /// <summary>
     /// Constructs a route path by joining the elements of the provided collection with pipes, e.g. ["set", "value"] => "|set|value|".
-    /// </summary>
     private static string GetRoutePath(ICollection<string> route)
     {
         var result = '|' + string.Join('|', route
@@ -277,17 +333,13 @@ public class CommandActionRegistry
         return result;
     }
 
-    /// <summary>
     /// Checks if a command of the specified type is scheduled in the invocation queue.
-    /// </summary>
     public bool IsCommandScheduled(Type type)
     {
         return _invocationQueue.UnorderedItems.Any(x => x.Element.Action == type);
     }
 
-    /// <summary>
     /// Checks if a command of the specified type is scheduled in the invocation queue.
-    /// </summary>
     public bool IsCommandScheduled<TCommand>()
         where TCommand : CommandAction
     {
@@ -329,6 +381,16 @@ public class CommandActionRegistry
         return (types, help, remaining);
     }
 
+    private void Register(Type commandClass, string[] route)
+    {
+        var path = GetRoutePath(route);
+        if (path.IsEmpty())
+            throw new CommandActionInitializationException(commandClass, "CommandAction must provide a valid route.");
+
+        if (!_commandRegistry.TryAdd(path, commandClass))
+            throw new CommandActionInitializationException(commandClass, "A command with the same route is already defined.");
+    }
+
     /// <summary>
     /// Registers the specified assemblies by scanning for classes that implement CommandAction and are decorated with the
     /// CommandActionAttribute. These identified command actions are added to the command registry for execution.
@@ -345,26 +407,16 @@ public class CommandActionRegistry
             foreach (var commandClass in commandClasses)
             {
                 var attr = commandClass.GetCustomAttribute<CommandActionAttribute>();
-                if (attr == null)
-                    throw new CommandActionInitializationException(commandClass,
-                        "CommandAction class must have a [CommandAction] attribute.");
-
-                var route = GetRoutePath(attr.Route);
-                if (route.IsEmpty())
-                    throw new CommandActionInitializationException(commandClass, "[CommandAction] attribute must provide a valid route.");
-
-                if (!_commandRegistry.TryAdd(route, commandClass))
-                    throw new CommandActionInitializationException(commandClass, "A command with the same route is already defined.");
+                if (attr != null)
+                    Register(commandClass, attr.Route);
             }
         }
 
         return this;
     }
 
-    /// <summary>
     /// Registers all command actions from the calling assembly by scanning for classes that implement CommandAction and are decorated
     /// with the CommandActionAttribute. The identified command actions are automatically added to the command registry.
-    /// </summary>
     public CommandActionRegistry RegisterThis()
     {
         return RegisterAssemblies(Assembly.GetCallingAssembly());
