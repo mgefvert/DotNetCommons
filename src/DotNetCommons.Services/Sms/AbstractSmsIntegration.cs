@@ -14,7 +14,7 @@ public abstract class AbstractSmsIntegration
 
     public string? FormatPhoneNumber(string? phoneNumber, string? defaultNumber = null)
     {
-        return WhiteWash.PhoneNumberToItuNumber(phoneNumber ?? defaultNumber,
+        return WhiteWash.PhoneNumberToItuNumber(phoneNumber.NullIfEmpty() ?? defaultNumber,
             Configuration.SmsConfiguration.DefaultCountryCode);
     }
 
@@ -24,7 +24,7 @@ public abstract class AbstractSmsIntegration
 
         message.From      = FormatPhoneNumber(message.From, Configuration.SmsConfiguration.SenderNumber);
         message.FromType  ??= Configuration.SmsConfiguration.SenderType;
-        message.Recipient = Configuration.SmsConfiguration.RecipientOverride ?? FormatPhoneNumber(message.Recipient);
+        message.Recipient = Configuration.SmsConfiguration.RecipientOverride.NullIfEmpty() ?? FormatPhoneNumber(message.Recipient);
         if (message.From.IsEmpty() || message.Recipient.IsEmpty() || message.Content.IsEmpty())
         {
             result.Result = Result.MissingProperties;

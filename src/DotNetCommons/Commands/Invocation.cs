@@ -9,8 +9,6 @@ public class Invocation
     public bool ContinueOnError { get; }
     public object? Options { get; }
 
-    public CommandActionRegistry? Registry { get; set; }
-
     public Invocation(Type action, object? options, bool continueOnError)
     {
         Action = action;
