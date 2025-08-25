@@ -8,7 +8,7 @@ namespace DotNetCommons.Security;
 
 /// <summary>
 /// Class that provides easy encryption and decryption of data using AES-256 encryption and CBC mode with an automatically
-/// generated IV, if need be. 
+/// generated IV, if need be.
 /// </summary>
 public static class Crypt
 {
@@ -17,11 +17,11 @@ public static class Crypt
         var aes = Aes.Create();
         aes.Key = key.KeyBuffer;
         int messageSize;
-        
+
         using (var header = new BinaryReader(encryptedStream, Encoding.UTF8, true))
         {
             var ivSize = header.ReadInt32();
-            aes.IV = header.ReadBytes(ivSize); 
+            aes.IV = header.ReadBytes(ivSize);
             messageSize = header.ReadInt32();
         }
 
@@ -33,7 +33,7 @@ public static class Crypt
 
         return new CryptIoReader(aes, messageSize, encryptedStream, gzipStream, cryptoStream);
     }
-    
+
     public static CryptIoWriter GetEncryptionStream(CryptKey key, int messageSize, Stream encryptedStream, bool compress)
     {
         using var aes = Aes.Create();
@@ -52,7 +52,7 @@ public static class Crypt
 
         return new CryptIoWriter(aes, messageSize, encryptedStream, gzipStream, cryptoStream);
     }
-    
+
     /// <summary>
     /// Decrypt a byte message using a given key.
     /// </summary>
@@ -60,10 +60,10 @@ public static class Crypt
     {
         using var mem = new MemoryStream(data);
         using var io = GetDecryptionStream(key, mem, decompress);
-        
+
         var result = new byte[io.MessageSize];
         io.IoStream.ReadExactly(result, 0, result.Length);
-        
+
         return result;
     }
 

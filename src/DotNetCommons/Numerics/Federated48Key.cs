@@ -11,10 +11,10 @@
 /// </remarks>
 public static class Federated48Key
 {
-    private const ulong SystemBitMask = 0xFFFE_0000_0000_0000;
+    private const ulong SystemBitMask = 0x7FFE_0000_0000_0000;
 	private const ulong RecordBitMask = 0x0001_FFFF_FFFF_FFFE;
 
-	private const uint SystemMax = 0x7FFF;
+	private const uint SystemMax = 0x3FFF;
 	private const ulong RecordMax = 0xFFFF_FFFF_FFFF;
 
 	private const int SystemShift = 49;
@@ -30,7 +30,7 @@ public static class Federated48Key
 	/// <exception cref="ArgumentOutOfRangeException">
 	/// Thrown if either key is zero, negative, or exceeds the maximum allowable value.
 	/// </exception>
-	public static ulong MakeFederatedKey(int systemKey, long recordKey)
+	public static long Make(int systemKey, long recordKey)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemKey);
 		ArgumentOutOfRangeException.ThrowIfGreaterThan(systemKey, (int)SystemMax);
@@ -44,11 +44,35 @@ public static class Federated48Key
 		if (result.IsParityOdd())
 			result |= 1;
 
-		return result;
+		return (long)result;
 	}
 
-	/// <summary>
-	/// Splits a federated key into its individual components: the 15-bit system key,
+    /// <summary>
+    /// Determines the minimum and maximum possible federated keys for the specified system key.
+    /// </summary>
+    /// <param name="systemKey">The 15-bit system key. Must be a positive integer greater than 0 and less than 32,768.</param>
+    /// <returns>A tuple containing the minimum federated key as the first element and the maximum federated key as the second element,
+    /// both represented as 64-bit signed long values.</returns>
+    public static (long MinValue, long MaxValue) MinMax(int systemKey)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemKey);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(systemKey, (int)SystemMax);
+
+        var sk = (ulong)(uint)systemKey << SystemShift;
+
+        var min = sk | (1 << RecordShift);
+        if (min.IsParityOdd())
+            min |= 1;
+
+        var max = sk | (RecordMax << RecordShift);
+        if (max.IsParityOdd())
+            max |= 1;
+
+        return ((long)min, (long)max);
+    }
+
+    /// <summary>
+    /// Splits a federated key into its individual components: the 15-bit system key,
 	/// the 48-bit record key, and a validity flag based on the parity bit.
 	/// </summary>
 	/// <param name="federatedKey">The federated key to split. Must be a 64-bit unsigned long.</param>
@@ -59,11 +83,11 @@ public static class Federated48Key
 	/// - `valid` (bool): A flag indicating whether the federated key is valid and the systemKey and recordKey fields are
 	/// allowed (greater than zero).
 	/// </returns>
-	public static (int systemKey, long recordKey, bool valid) SplitFederatedKey(ulong federatedKey)
+	public static (int systemKey, long recordKey, bool valid) Split(long federatedKey)
 	{
-		var systemKey = (federatedKey & SystemBitMask) >> SystemShift;
-		var recordKey = (federatedKey & RecordBitMask) >> RecordShift;
+		var systemKey = ((ulong)federatedKey & SystemBitMask) >> SystemShift;
+		var recordKey = ((ulong)federatedKey & RecordBitMask) >> RecordShift;
 
-		return ((int)systemKey, (long)recordKey, systemKey > 0 && recordKey > 0 && federatedKey.IsParityEven());
+		return ((int)systemKey, (long)recordKey, systemKey > 0 && recordKey > 0 && ((ulong)federatedKey).IsParityEven());
 	}
 }
