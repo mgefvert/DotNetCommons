@@ -10,10 +10,10 @@ public static class NumericTools
     public static IEnumerable<int> FindFactors(this int number)
     {
         var root = (int)Math.Sqrt(number);
-        
+
         for (var i = 2; i <= root; i++)
         {
-            if (number % i != 0) 
+            if (number % i != 0)
                 continue;
 
             yield return i;
@@ -47,7 +47,7 @@ public static class NumericTools
                 start = end = ordered[i];
             }
         }
-        
+
         result.Add(GetRange(start, end));
 
         return result.Count <= 1
