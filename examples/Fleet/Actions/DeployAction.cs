@@ -17,13 +17,13 @@ public class DeployAction(
         UnitStates unitStates
     ) : CommandAction<UnitArgs>
 {
-    public override int Execute()
+    public override Task<int> ExecuteAsync(CancellationToken ct)
     {
         var units = unitStates.SelectUnits(Args.UnitName, Args.AllUnits);
         if (units.IsEmpty())
         {
             logger.LogError("No unit found.");
-            return 1;
+            return Task.FromResult(1);
         }
 
         foreach (var unit in units)
@@ -37,6 +37,6 @@ public class DeployAction(
             }
         }
 
-        return 0;
+        return Task.FromResult(0);
     }
 }

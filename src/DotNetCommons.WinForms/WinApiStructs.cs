@@ -1,11 +1,14 @@
 ﻿using System.Runtime.InteropServices;
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable FieldCanBeMadeReadOnly.Global
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Global
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 
 namespace DotNetCommons.WinForms;
 
-// ReSharper disable InconsistentNaming
 public static partial class WinApi
 {
     [StructLayout(LayoutKind.Sequential)]

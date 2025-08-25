@@ -86,50 +86,50 @@ public class CommandActionRegistryTests
     }
 
     [TestMethod]
-    public void Execute_CommandOne_Successful()
+    public async Task Execute_CommandOne_Successful()
     {
-        var result = _registry.Execute(["command", "one"]);
+        var result = await _registry.Execute(["command", "one"]);
         result.Should().Be(0);
         _testReporter.Text.Should().Be("CommandOne");
     }
 
     [TestMethod]
-    public void Execute_CommandTest_Successful()
+    public async Task Execute_CommandTest_Successful()
     {
-        var result = _registry.Execute(["test"]);
+        var result = await _registry.Execute(["test"]);
         result.Should().Be(0);
         _testReporter.Text.Should().Be("CommandTest;CommandOne;CommandTwo:0");
     }
 
     [TestMethod]
-    public void Execute_CommandTest_JobAlreadyScheduled()
+    public async Task Execute_CommandTest_JobAlreadyScheduled()
     {
         _registry.Schedule<CommandTest>(10, true);
         _registry.Schedule<CommandOne>(99, true);
 
-        var result = _registry.ExecuteScheduler();
+        var result = await _registry.ExecuteScheduler();
         result.Should().Be(0);
         _testReporter.Text.Should().Be("CommandTest;CommandTwo:0;CommandOne");
     }
 
     [TestMethod]
-    public void Execute_CommandTest_BreaksOnErrorIfNoContinueSet()
+    public async Task Execute_CommandTest_BreaksOnErrorIfNoContinueSet()
     {
         _registry.Schedule<CommandTest>(10, true);
         _registry.Schedule<CommandTwo, ReturnValueArgs>(60, false, new ReturnValueArgs(1));
 
-        var result = _registry.ExecuteScheduler();
+        var result = await _registry.ExecuteScheduler();
         result.Should().Be(1);
         _testReporter.Text.Should().Be("CommandTest;CommandTwo:1");
     }
 
     [TestMethod]
-    public void Execute_CommandTest_DoesNotBreakOnErrorIfContinue()
+    public async Task Execute_CommandTest_DoesNotBreakOnErrorIfContinue()
     {
         _registry.Schedule<CommandTest>(10, true);
         _registry.Schedule<CommandTwo, ReturnValueArgs>(60, true, new ReturnValueArgs(1));
 
-        var result = _registry.ExecuteScheduler();
+        var result = await _registry.ExecuteScheduler();
         result.Should().Be(0);
         _testReporter.Text.Should().Be("CommandTest;CommandTwo:1;CommandOne");
     }

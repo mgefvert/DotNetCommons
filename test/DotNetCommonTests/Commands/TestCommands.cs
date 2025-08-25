@@ -13,10 +13,10 @@ public class CommandOne : CommandAction
         _reporter = reporter;
     }
 
-    public override int Execute()
+    public override Task<int> ExecuteAsync(CancellationToken ct)
     {
         _reporter.Add("CommandOne");
-        return 0;
+        return Task.FromResult(0);
     }
 }
 
@@ -45,10 +45,10 @@ public class CommandTwo : CommandAction<ReturnValueArgs>
         _reporter = reporter;
     }
 
-    public override int Execute()
+    public override Task<int> ExecuteAsync(CancellationToken ct)
     {
         _reporter.Add($"CommandTwo:{Args.ReturnValue}");
-        return Args.ReturnValue;
+        return Task.FromResult(Args.ReturnValue);
     }
 }
 
@@ -62,14 +62,14 @@ public class CommandTest : CommandAction
         _reporter = reporter;
     }
 
-    public override int Execute()
+    public override Task<int> ExecuteAsync(CancellationToken ct)
     {
         _reporter.Add("CommandTest");
 
         Registry.TrySchedule<CommandOne>(80, false);
         Registry.TrySchedule<CommandTwo, ReturnValueArgs>(90, false, new ReturnValueArgs(0));
 
-        return 0;
+        return Task.FromResult(0);
     }
 }
 

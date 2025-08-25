@@ -1,11 +1,14 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
+
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 
 namespace DotNetCommons.WinForms;
 
-// ReSharper disable InconsistentNaming
 public static partial class WinApi
 {
     public delegate bool EnumThreadDelegate (IntPtr hWnd, IntPtr lParam);
@@ -85,6 +88,9 @@ public static partial class WinApi
     [DllImport("user32.dll")]
     public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid powerSettingGuid, int flags);
+
     [DllImport("User32.dll", CharSet = CharSet.Auto)]
     public static extern int RegisterWindowMessage(string msg);
 
@@ -131,7 +137,4 @@ public static partial class WinApi
     [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
     public static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, IntPtr pptDst, IntPtr psize, IntPtr hdcSrc, 
         IntPtr pprSrc, Int32 crKey, ref BLENDFUNCTION pblend, Int32 dwFlags);
-
-    [DllImport("user32.dll")]
-    public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid powerSettingGuid, int flags);
 }

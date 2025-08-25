@@ -1,27 +1,31 @@
-﻿using System.Reflection;
+﻿namespace DotNetCommons.Commands;
 
-namespace DotNetCommons.Commands;
-
-/// <summary>
 /// Represents an abstract base class for command actions that do not require a specific argument model.
 /// This class derives from CommandAction with a generic argument of <see cref="System.Object"/>
 /// and sets up a default argument instance.
-/// </summary>
 public abstract class CommandAction
 {
-    public string[] GetRoute()
-    {
-        var attribute = GetType().GetCustomAttribute<CommandActionAttribute>()
-                        ?? throw new InvalidOperationException($"{GetType().Name} has no CommandActionAttribute");
-
-        return attribute.Route;
-    }
-
-    /// <summary>
     /// The command action registry associated with the current command action. This property
     /// allows interaction with the system of registering, resolving, and executing commands.
-    /// </summary>
     public CommandActionRegistry Registry { get; set; } = null!;
+
+    /// Represents the global scope across all the scheduled jobs. This provides scoped services that can run across
+    /// several different jobs, and yet doesn't require a singleton.
+    public IServiceProvider GlobalScope { get; set; } = null!;
+
+    /// <summary>
+    /// Executes the associated asynchronous command action.
+    /// </summary>
+    /// <param name="ct">A token to monitor for cancellation requests.</param>
+    /// <returns>0 on success.</returns>
+    /// <remarks>
+    /// This method is the default implementation for ExecuteAsync and simply calls <see cref="Execute"/>. It can be overriden in
+    /// a derived class to provide async command execution.
+    /// </remarks>
+    public virtual Task<int> ExecuteAsync(CancellationToken ct)
+    {
+        return Task.FromResult(Execute());
+    }
 
     /// <summary>
     /// Executes the associated command action.
@@ -29,7 +33,14 @@ public abstract class CommandAction
     /// <returns>
     /// An integer representing the result of the executed command, where 0 is success.
     /// </returns>
-    public abstract int Execute();
+    /// <remarks>
+    /// This method is the default implementation for Execute and simply returns 0. Either this method or <see cref="ExecuteAsync"/>
+    /// must be overriden in a derived class to provide actual command execution.
+    /// </remarks>
+    public virtual int Execute()
+    {
+        return 0;
+    }
 }
 
 /// <summary>
