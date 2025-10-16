@@ -46,9 +46,9 @@ public class CollectionLinkerTest
         CollectionLinker.LinkToMany(_posts, _comments, x => x.ID, x => x.PostID,
             (post, comments) => post.Comments = comments.ToArray());
 
-        Assert.AreEqual(3, _posts[0].Comments!.Length);
-        Assert.AreEqual(0, _posts[1].Comments!.Length);
-        Assert.AreEqual(1, _posts[2].Comments!.Length);
+        Assert.HasCount(3, _posts[0].Comments!);
+        Assert.IsEmpty(_posts[1].Comments!);
+        Assert.HasCount(1, _posts[2].Comments!);
 
         Assert.AreEqual(1000, _posts[0].Comments![0].ID);
         Assert.AreEqual(1001, _posts[0].Comments![1].ID);

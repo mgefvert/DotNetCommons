@@ -12,8 +12,8 @@ public class IpAccessListTest
         var al = IPAccessList.Parse(" 192.168.1.20  ,, ,   192.168.2.20,8.0.0.0/8 ,");
 
         Assert.AreEqual("192.168.1.20, 192.168.2.20, 8.0.0.0/8", al.ToString());
-        Assert.AreEqual(2, al.Addresses.Count);
-        Assert.AreEqual(1, al.Ranges.Count);
+        Assert.HasCount(2, al.Addresses);
+        Assert.HasCount(1, al.Ranges);
     }
 
     [TestMethod]
@@ -27,8 +27,8 @@ public class IpAccessListTest
         al.Add(IPNetwork.Parse("10.47.1.0/24")!);
         al.Add(new[] { IPNetwork.Parse("10.47.2.0/24")! });
 
-        Assert.AreEqual(3, al.Addresses.Count);
-        Assert.AreEqual(2, al.Ranges.Count);
+        Assert.HasCount(3, al.Addresses);
+        Assert.HasCount(2, al.Ranges);
     }
 
     [TestMethod]
@@ -39,7 +39,7 @@ public class IpAccessListTest
         al.Add("google-public-dns-a.google.com");
         al.Add("google-public-dns-b.google.com");
 
-        Assert.IsTrue(al.Addresses.Count >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, al.Addresses.Count);
         Assert.IsTrue(al.Contains(IPAddress.Parse("8.8.8.8")));
     }
 

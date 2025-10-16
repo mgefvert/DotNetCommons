@@ -37,7 +37,7 @@ public class Tests
 
         var matches = trie.Find(text).ToArray();
 
-        Assert.AreEqual(2, matches.Length);
+        Assert.HasCount(2, matches);
         Assert.AreEqual("hello", matches[0]);
         Assert.AreEqual("world", matches[1]);
     }
@@ -68,7 +68,7 @@ public class Tests
 
         var lines = trie.Find(text).ToArray();
 
-        Assert.AreEqual(2, lines.Length);
+        Assert.HasCount(2, lines);
         Assert.AreEqual(1, lines[0]);
         Assert.AreEqual(0, lines[1]);
     }

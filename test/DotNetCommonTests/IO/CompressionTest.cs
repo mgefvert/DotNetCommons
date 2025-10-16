@@ -15,7 +15,7 @@ public class CompressionTest
 
         var bytes = Compression.PackString(data);
         Assert.AreNotEqual(bytes, Encoding.UTF8.GetBytes(data));
-        Assert.IsTrue(bytes.Length < data.Length);
+        Assert.IsLessThan(data.Length, bytes.Length);
 
         var newData = Compression.UnpackString(bytes);
         Assert.AreEqual(data, newData);

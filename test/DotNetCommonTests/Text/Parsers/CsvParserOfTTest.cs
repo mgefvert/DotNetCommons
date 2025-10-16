@@ -5,7 +5,7 @@ using DotNetCommons.Text.Parsers;
 
 namespace DotNetCommonTests.Text.Parsers;
 
-[TestClass]
+[TestClass, DoNotParallelize]
 public class CsvParserOfTTest
 {
     private CsvParser<Name> _parser = null!;
@@ -33,7 +33,7 @@ public class CsvParserOfTTest
             var csv = _parser.ProcessLines(text);
             Console.WriteLine((int)(DateTime.Now - t0).TotalMilliseconds + " ms");
 
-            Assert.AreEqual(10000, csv.Count);
+            Assert.HasCount(10000, csv);
 
             var name = csv.First();
             Assert.AreEqual("Sean", name.FirstName);

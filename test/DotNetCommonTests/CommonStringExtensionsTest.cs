@@ -4,6 +4,9 @@ using FluentAssertions;
 
 namespace DotNetCommonTests;
 
+// Condition is always known to be true
+#pragma warning disable MSTEST0032
+
 [TestClass]
 public class CommonStringExtensionsTest
 {
@@ -30,7 +33,7 @@ public class CommonStringExtensionsTest
         Assert.IsNull(null, ((string?)null).Chomp(out remaining));
         Assert.AreEqual("", remaining);
 
-        Assert.AreEqual(null, "".Chomp(out remaining));
+        Assert.IsNull("".Chomp(out remaining));
         Assert.AreEqual("", remaining);
 
         Assert.AreEqual("A", "A".Chomp(out remaining));

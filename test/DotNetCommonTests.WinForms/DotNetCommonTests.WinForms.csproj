@@ -10,17 +10,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="Graphics\test.jpg"/>
+        <None Remove="Graphics\test.jpg" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Graphics\test.jpg"/>
+        <EmbeddedResource Include="Graphics\test.jpg" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
-        <PackageReference Include="MSTest.TestAdapter" Version="3.10.1" />
-        <PackageReference Include="MSTest.TestFramework" Version="3.10.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+        <PackageReference Include="MSTest.TestAdapter" Version="4.0.1" />
+        <PackageReference Include="MSTest.TestFramework" Version="4.0.1" />
         <PackageReference Include="coverlet.collector" Version="6.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\DotNetCommons.WinForms\DotNetCommons.WinForms.csproj"/>
+        <ProjectReference Include="..\..\src\DotNetCommons.WinForms\DotNetCommons.WinForms.csproj" />
     </ItemGroup>
 
 </Project>

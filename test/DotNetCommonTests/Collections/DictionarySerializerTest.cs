@@ -19,12 +19,12 @@ public class DictionarySerializerTest
         var memory = new MemoryStream();
 
         store.Save(dict, memory);
-        Assert.IsTrue(memory.Position > 10);
+        Assert.IsGreaterThan(10, memory.Position);
 
         memory.Position = 0;
         var result = store.Load<int, string>(memory);
 
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(3, result);
         Assert.AreEqual("Adam", result[1]);
         Assert.AreEqual("Sandy", result[2]);
         Assert.AreEqual("Bertha", result[-3]);
@@ -49,7 +49,7 @@ public class DictionarySerializerTest
 
         Console.WriteLine((DateTime.Now - t0).TotalMilliseconds + " ms");
 
-        Assert.AreEqual(100000, result.Count);
+        Assert.HasCount(100000, result);
         Assert.AreEqual("This is string number 4711", result[4711]);
     }
 }

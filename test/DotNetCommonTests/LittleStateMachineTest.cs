@@ -53,7 +53,7 @@ public class LittleStateMachineTest
 
         Console.WriteLine(string.Join("\r\n", _log));
 
-        Assert.AreEqual(8, _log.Count);
+        Assert.HasCount(8, _log);
         Assert.AreEqual("at:Starting", _log[0]);
         Assert.AreEqual("at:Running", _log[1]);
         Assert.AreEqual("at:RunningLow", _log[2]);

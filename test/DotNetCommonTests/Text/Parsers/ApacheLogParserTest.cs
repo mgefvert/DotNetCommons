@@ -18,7 +18,7 @@ public class ApacheLogParserTest
     {
         var logs = _testData.Select(ApacheLogParser.Parse).ToList();
 
-        Assert.AreEqual(4, logs.Count);
+        Assert.HasCount(4, logs);
         Assert.AreEqual("::1", logs[0].IP.ToString());
         Assert.AreEqual("OPTIONS", logs[0].Method);
         Assert.AreEqual("HTTP/1.0", logs[0].Protocol);
