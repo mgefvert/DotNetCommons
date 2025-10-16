@@ -207,6 +207,11 @@ public class CommonStringExtensionsTest
         Assert.AreEqual("CD", "ABCD".Mid(2, 10));
         Assert.AreEqual("", "ABCD".Mid(4, 10));
         Assert.AreEqual("", "ABCD".Mid(6, 10));
+
+        Assert.AreEqual("ABCDef", "ABCDefgh".Mid(0, -2));
+        Assert.AreEqual("", "ABCDefgh".Mid(0, -10));
+        Assert.AreEqual("", "ABCDefgh".Mid(4, -10));
+        Assert.AreEqual("efgh", "ABCDefgh".Mid(4, -4));
     }
 
     [TestMethod]

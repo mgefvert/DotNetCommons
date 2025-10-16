@@ -267,7 +267,7 @@ public static partial class CommonStringExtensions
     /// </summary>
     /// <param name="value">String to work with</param>
     /// <param name="offset">Zero-based offset</param>
-    /// <param name="count">Number of characters to extract</param>
+    /// <param name="count">Number of characters to extract; if negative, extracts that number less than the total length</param>
     public static string Mid(this string? value, int offset, int count)
     {
         if (string.IsNullOrEmpty(value))
@@ -279,6 +279,9 @@ public static partial class CommonStringExtensions
         var len = value.Length;
         if (offset > len)
             return string.Empty;
+
+        if (count < 0)
+            count += len;
 
         var maxLeft = len - offset;
         if (count > maxLeft)
