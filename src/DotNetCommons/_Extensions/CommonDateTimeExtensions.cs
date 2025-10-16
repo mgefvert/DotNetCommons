@@ -38,6 +38,25 @@ public static class CommonDateTimeExtensions
     }
 
     /// <summary>
+    /// Calculate the age of a person in years, months, and days. For instance, a given person could be
+    /// 47 years, 2 months, and 18 days old.
+    /// </summary>
+    public static (int Years, int Days) AgeYearsAndDays(this DateTime birthDate, DateTime? today = null)
+    {
+        var t = today?.Date ?? DateTime.Today;
+        birthDate = birthDate.Date;
+
+        if (t < birthDate)
+            return (0, 0);
+
+        var y = AgeYears(birthDate, today);
+        birthDate = birthDate.AddYears(y);
+        var d = AgeDays(birthDate, today);
+
+        return (y, d);
+    }
+
+    /// <summary>
     /// Calculate the age of a person in number of years from the birth date.
     /// </summary>
     public static int AgeYears(this DateTime birthDate, DateTime? today = null)
