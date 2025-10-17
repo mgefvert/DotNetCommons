@@ -11,7 +11,7 @@ public class ConfigStringParserTest
         var cfg = new ConfigStringParser(allowSpacesInKeywords: true).Parse(
             "Data Source=MYSERVER;Initial Catalog=A_DATABASE;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=false;");
 
-        Assert.AreEqual(5, cfg.Count);
+        Assert.HasCount(5, cfg);
         Assert.AreEqual("MYSERVER", cfg["Data Source"]);
         Assert.AreEqual("A_DATABASE", cfg["Initial Catalog"]);
         Assert.AreEqual("SQLNCLI11.1", cfg["Provider"]);

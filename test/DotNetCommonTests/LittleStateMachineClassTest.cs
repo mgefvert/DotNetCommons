@@ -48,7 +48,7 @@ public class LittleStateMachineClassTest
         _lsm.MoveTo(_running);
         _lsm.MoveTo(_stopped);
 
-        Assert.AreEqual(4, _log.Count);
+        Assert.HasCount(4, _log);
         Assert.AreEqual("at:Initialized", _log[0]);
         Assert.AreEqual("at:Running", _log[1]);
         Assert.AreEqual("leave:Running", _log[2]);

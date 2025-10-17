@@ -21,7 +21,7 @@ public class PasswordsTest
 
         var pw2 = Passwords.GeneratePassword("A13", 3);
 
-        Assert.AreEqual(3, pw2.Length);
+        Assert.HasCount(3, pw2);
         Assert.IsTrue(pw2.All(x => x.Length == 13));
 
         Assert.AreNotEqual(pw2[0], pw2[1]);
