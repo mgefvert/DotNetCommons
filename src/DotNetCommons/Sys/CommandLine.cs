@@ -29,10 +29,12 @@ public static class CommandLine
         return GetDefinitionList(type).Where(x => x.IsAttribute).ToList();
     }
 
-    public static List<KeyValuePair<string, string?>> GetHelpText(Type type)
+    public record OptionHelp(bool Required, string Option, string? Description);
+
+    public static List<OptionHelp> GetHelpText(Type type)
     {
         return GetParameters(type)
-            .Select(x => new KeyValuePair<string, string?>(x.OptionString, x.Description))
+            .Select(x => new OptionHelp(x.Required, x.OptionString, x.Description))
             .ToList();
     }
 
@@ -41,7 +43,7 @@ public static class CommandLine
         var result = new StringBuilder();
 
         var help = GetHelpText(type);
-        var keyLength = help.Max(x => x.Key.Length);
+        var keyLength = help.Max(x => x.Option.Length);
 
         int consoleWidth;
         try
@@ -53,30 +55,50 @@ public static class CommandLine
             consoleWidth = 80;
         }
 
-        if (keyLength > 20)
+        var (required, optional) = help.Toss(x => x.Required);
+
+        if (required.IsAtLeastOne())
         {
-            foreach (var item in help)
-            {
-                result.AppendLine(item.Key);
-                foreach (var line in TextTools.WordWrap(item.Value, consoleWidth - 5))
-                    result.AppendLine("   " + line);
-                result.AppendLine("");
-            }
+            result.AppendLine("Required arguments:");
+            FormatOptions(required);
         }
-        else
+
+        if (required.IsAtLeastOne() && optional.IsAtLeastOne())
+            result.AppendLine();
+
+        if (optional.IsAtLeastOne())
         {
-            foreach (var item in help)
+            result.AppendLine("Optional arguments:");
+            FormatOptions(optional);
+        }
+
+        return result.ToString();
+
+        void FormatOptions(List<OptionHelp> options)
+        {
+            if (keyLength > 20)
             {
-                var key = item.Key;
-                foreach (var line in TextTools.WordWrap(item.Value, consoleWidth - keyLength - 5))
+                foreach (var item in options)
                 {
-                    result.AppendLine(key.PadRight(keyLength) + "   " + line);
-                    key = "";
+                    result.AppendLine(item.Option);
+                    foreach (var line in TextTools.WordWrap(item.Description, consoleWidth - 5))
+                        result.AppendLine("   " + line);
+                    result.AppendLine("");
+                }
+            }
+            else
+            {
+                foreach (var item in options)
+                {
+                    var key = item.Option;
+                    foreach (var line in TextTools.WordWrap(item.Description, consoleWidth - keyLength - 5))
+                    {
+                        result.AppendLine(key.PadRight(keyLength) + "   " + line);
+                        key = "";
+                    }
                 }
             }
         }
-
-        return string.Join("\r\n", result);
     }
 
     /// <summary>
