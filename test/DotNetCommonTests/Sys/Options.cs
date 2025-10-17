@@ -1,4 +1,5 @@
-﻿using DotNetCommons.Sys;
+﻿using System.ComponentModel.DataAnnotations;
+using DotNetCommons.Sys;
 
 namespace DotNetCommonTests.Sys;
 
@@ -28,3 +29,13 @@ public class Options
     [CommandLineRemaining]
     public List<string> Params { get; } = new();
 }
+
+public class OptionsRequired
+{
+    [CommandLineOption('u', "user"), Required]
+    public string User { get; set; } = null!;
+
+    [CommandLineOption('p', "password")]
+    public string? Password { get; set; }
+}
+

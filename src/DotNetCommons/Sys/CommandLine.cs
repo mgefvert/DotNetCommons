@@ -1,4 +1,5 @@
-﻿using DotNetCommons.Text;
+﻿using System.ComponentModel.DataAnnotations;
+using DotNetCommons.Text;
 using System.Reflection;
 using System.Text;
 
@@ -104,6 +105,7 @@ public static class CommandLine
 
         var processor = new CommandLineProcessor(resultType, args.ToList(), GetDefinitionList(resultType));
         processor.Process();
+        processor.Validate();
         return processor.Result;
     }
 
@@ -131,6 +133,10 @@ public static class CommandLine
                 var remaining = property.GetCustomAttribute<CommandLineRemainingAttribute>();
                 if (remaining != null)
                     definition.Remainder = true;
+
+                var requried = property.GetCustomAttribute<RequiredAttribute>();
+                if (requried != null)
+                    definition.Required = true;
 
                 if (!definition.HasInfo)
                     continue;

@@ -13,6 +13,7 @@ public class CommandLineDefinition
     public string[]? LongOptions { get; set; }
     public PropertyInfo Property { get; }
     public string[]? ShortOptions { get; set; }
+    public bool Required { get; set; }
 
     internal bool Remainder { get; set; }
     internal int Position { get; set; }

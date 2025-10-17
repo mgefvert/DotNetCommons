@@ -84,4 +84,18 @@ public class CommandLineTest
         Assert.AreEqual("p2", options.Param2);
         Assert.AreEqual("p3,p4", string.Join(",", options.Params));
     }
+
+    [TestMethod]
+    public void TestValidation()
+    {
+        var options = CommandLine.Parse<OptionsRequired>("-u", "test", "-p", "password");
+        Assert.AreEqual("test", options.User);
+        Assert.AreEqual("password", options.Password);
+
+        options = CommandLine.Parse<OptionsRequired>("-u", "test");
+        Assert.AreEqual("test", options.User);
+        Assert.IsNull(options.Password);
+
+        Assert.ThrowsExactly<CommandLineParameterException>(() => CommandLine.Parse<OptionsRequired>("-p", "password"));
+    }
 }
