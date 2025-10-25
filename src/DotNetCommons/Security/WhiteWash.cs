@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Net.Mail;
 using System.Text;
 
 namespace DotNetCommons.Security;
@@ -15,6 +16,29 @@ public static class WhiteWash
         "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
         "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
     }.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+
+    /// Validates and normalizes an email address. If the input is invalid or empty, null is returned.
+    public static string? EmailAddress(string emailAddress)
+    {
+        if (string.IsNullOrWhiteSpace(emailAddress))
+            return null;
+
+        try
+        {
+            var addr = new MailAddress(emailAddress);
+            return addr.Address;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// Determines whether the given email address is valid by comparing it with its normalized form.
+    public static bool IsValidEmailAddress(string emailAddress)
+    {
+        return EmailAddress(emailAddress) == emailAddress;
+    }
 
     /// <summary>
     /// Sanitizes a file name by removing invalid characters and trimming the result to a maximum length of 200 characters.
