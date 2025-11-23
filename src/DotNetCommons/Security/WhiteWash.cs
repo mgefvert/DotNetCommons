@@ -88,4 +88,53 @@ public static class WhiteWash
 
         return number.Length > 1 ? number : null;
     }
+
+    /// <summary>
+    /// Removes HTML tags from the input string while preserving the remaining text content.
+    /// Handles escape characters and attributes within HTML tags appropriately.
+    /// </summary>
+    /// <remarks>
+    /// While functional, it's not to be treated as a hardened security function - it simply removes tags. It does not remove
+    /// script blocks, just the tags; it may treat &lt; and &gt; as tags when not intended to; and it can possibly be tricked
+    /// by crafty adversaries.
+    /// </remarks>
+    public static string? StripHtmlTags(string? source)
+    {
+        if (string.IsNullOrEmpty(source))
+            return source;
+
+        var inTag       = false;
+        var inAttribute = '\0';
+        var escape      = false;
+
+        var result = new StringBuilder(source.Length);
+        foreach (var c in source)
+        {
+            if (escape)
+            {
+                // Last character was a \ in an attribute string, just ignore this character.
+                escape = false;
+            }
+            else if (inAttribute != 0)
+            {
+                if (c == '\\')
+                    escape = true;
+                else if (c == inAttribute)
+                    inAttribute = '\0';
+            }
+            else if (inTag)
+            {
+                if (c is '\'' or '\"' or '`')
+                    inAttribute = c;
+                else if (c == '>')
+                    inTag = false;
+            }
+            else if (c == '<')
+                inTag = true;
+            else
+                result.Append(c);
+        }
+
+        return result.ToString();
+    }
 }
