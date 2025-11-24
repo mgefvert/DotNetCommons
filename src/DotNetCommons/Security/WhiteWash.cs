@@ -26,6 +26,12 @@ public static class WhiteWash
         try
         {
             var addr = new MailAddress(emailAddress);
+
+            if (!IsValidHostName(addr.Host))
+                return null;
+            if (!IsValidEmailUser(addr.User))
+                return null;
+
             return addr.Address;
         }
         catch
@@ -37,7 +43,76 @@ public static class WhiteWash
     /// Determines whether the given email address is valid by comparing it with its normalized form.
     public static bool IsValidEmailAddress(string emailAddress)
     {
-        return EmailAddress(emailAddress) == emailAddress;
+        return !string.IsNullOrEmpty(emailAddress) && EmailAddress(emailAddress) == emailAddress;
+    }
+
+    /// Determines whether the given email user name (local part) of an email address is valid based on character and format constraints.
+    public static bool IsValidEmailUser(string emailUserName)
+    {
+        // Validate local part according to RFC 5321/5322 standards
+        if (string.IsNullOrEmpty(emailUserName) || emailUserName.Length > 64)
+            return false;
+
+        // Cannot start or end with dot
+        if (emailUserName.StartsWith('.') || emailUserName.EndsWith('.'))
+            return false;
+
+        // Check for consecutive dots
+        if (emailUserName.Contains(".."))
+            return false;
+
+        // Validate characters: letters, digits, and special characters allowed in email local part
+        // Common allowed special characters: . ! # $ % & ' * + - / = ? ^ _ ` { | } ~
+        foreach (var c in emailUserName)
+        {
+            if (!char.IsLetterOrDigit(c) &&
+                c != '.' && c != '!' && c != '#' && c != '$' && c != '%' &&
+                c != '&' && c != '\'' && c != '*' && c != '+' && c != '-' &&
+                c != '/' && c != '=' && c != '?' && c != '^' && c != '_' &&
+                c != '`' && c != '{' && c != '|' && c != '}' && c != '~')
+                return false;
+        }
+
+        return true;
+    }
+
+    /// Validates and checks if the given host name adheres to DNS standards.
+    public static bool IsValidHostName(string hostName)
+    {
+        // Validate host part according to DNS standards
+        if (string.IsNullOrEmpty(hostName) || hostName.Length > 253)
+            return false;
+
+        // Cannot start or end with dot or hyphen
+        if (hostName.StartsWith('.') || hostName.EndsWith('.') ||
+            hostName.StartsWith('-') || hostName.EndsWith('-'))
+            return false;
+
+        // Check for consecutive dots
+        if (hostName.Contains(".."))
+            return false;
+
+        // Validate characters: only letters, digits, dots, and hyphens
+        foreach (var c in hostName)
+        {
+            if (!char.IsLetterOrDigit(c) && c != '.' && c != '-')
+                return false;
+        }
+
+        // Validate individual labels (parts between dots)
+        var labels = hostName.Split('.');
+        foreach (var label in labels)
+        {
+            // Each label must be 1-63 characters
+            if (string.IsNullOrEmpty(label) || label.Length > 63)
+                return false;
+
+            // Labels cannot start or end with hyphen
+            if (label.StartsWith('-') || label.EndsWith('-'))
+                return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -72,7 +147,7 @@ public static class WhiteWash
     /// <param name="number">The phone number to be converted.</param>
     /// <param name="defaultCountryCode">The default country code to prepend when the number starts with a local prefix.</param>
     /// <returns>The ITU-standardized phone number, or null if the input is invalid or empty.</returns>
-    public static string? PhoneNumberToItuNumber(string? number, string? defaultCountryCode)
+    public static string? PhoneNumberToItuNumber(string? number, string? defaultCountryCode = null)
     {
         if (string.IsNullOrWhiteSpace(number))
             return null;
