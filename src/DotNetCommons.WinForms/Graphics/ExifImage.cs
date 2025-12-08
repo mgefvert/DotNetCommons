@@ -16,9 +16,9 @@ public static class ExifTags
 
 public class ExifImage : IDisposable
 {
-    protected MemoryStream Data;
-    protected Stream Source;
-    protected Image Image;
+    private MemoryStream _data;
+    private Stream _source;
+    private Image _image;
 
     public string Comments
     {
@@ -58,7 +58,7 @@ public class ExifImage : IDisposable
 
     public ExifImage(Stream stream)
     {
-        Source = stream;
+        _source = stream;
         LoadExifData();
     }
 
@@ -69,23 +69,23 @@ public class ExifImage : IDisposable
 
     public void Dispose()
     {
-        Source?.Dispose();
-        Source = null;
+        _source?.Dispose();
+        _source = null;
     }
 
     private void LoadExifData()
     {
-        Data = new MemoryStream();
-        Source.CopyTo(Data);
+        _data = new MemoryStream();
+        _source.CopyTo(_data);
 
-        Data.Position = 0;
-        Image = Image.FromStream(Data);
+        _data.Position = 0;
+        _image = Image.FromStream(_data);
     }
 
     public Image GetImage(bool adjustForOrientation)
     {
-        Data.Position = 0;
-        var img = Image.FromStream(Data);
+        _data.Position = 0;
+        var img = Image.FromStream(_data);
 
         if (adjustForOrientation && img.PropertyIdList.Contains(ExifTags.Orientation))
         {
@@ -109,12 +109,12 @@ public class ExifImage : IDisposable
 
     public bool Exists(int id)
     {
-        return Image.PropertyIdList.Contains(id);
+        return _image.PropertyIdList.Contains(id);
     }
 
     public byte[] Read(int id)
     {
-        return Image.GetPropertyItem(id).Value;
+        return _image.GetPropertyItem(id).Value;
     }
 
     public sbyte? ReadInt8(int id)
@@ -160,7 +160,7 @@ public class ExifImage : IDisposable
     public string ReadString(int id, Encoding encoding)
     {
         return Exists(id)
-            ? encoding.GetString(Image.GetPropertyItem(id).Value).TrimEnd('\0')
+            ? encoding.GetString(_image.GetPropertyItem(id).Value).TrimEnd('\0')
             : null;
     }
 
@@ -176,12 +176,12 @@ public class ExifImage : IDisposable
     public void Save()
     {
         // Verify file sizes - must be at least 80% of original
-        if (Data.Length < Source.Length * 0.8)
-            throw new Exception($"File save resulted in an unexpectedly small file ({Data.Length} bytes compared to original {Source.Length} bytes)");
+        if (_data.Length < _source.Length * 0.8)
+            throw new Exception($"File save resulted in an unexpectedly small file ({_data.Length} bytes compared to original {_source.Length} bytes)");
 
-        Source.Position = 0;
-        Source.SetLength(0);
-        Save(Source);
+        _source.Position = 0;
+        _source.SetLength(0);
+        Save(_source);
     }
 
     public void Save(string filename)
@@ -192,17 +192,17 @@ public class ExifImage : IDisposable
 
     public void Save(Stream target)
     {
-        Image.Save(target, ImageFormat.Jpeg);
+        _image.Save(target, ImageFormat.Jpeg);
     }
 
     public void Write(int id, byte[] data)
     {
-        var exists = Image.PropertyIdList.Contains(id);
+        var exists = _image.PropertyIdList.Contains(id);
 
         if (data == null)
         {
             if (exists)
-                Image.RemovePropertyItem(id);
+                _image.RemovePropertyItem(id);
             return;
         }
 
@@ -210,7 +210,7 @@ public class ExifImage : IDisposable
         #pragma warning disable SYSLIB0050
         
         var prop = exists
-            ? Image.GetPropertyItem(id)
+            ? _image.GetPropertyItem(id)
             : (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
         
         #pragma warning restore SYSLIB0050
@@ -220,7 +220,7 @@ public class ExifImage : IDisposable
         prop.Value = data;
         prop.Len = data.Length;
 
-        Image.SetPropertyItem(prop);
+        _image.SetPropertyItem(prop);
     }
 
     public void Write(int id, sbyte? value)

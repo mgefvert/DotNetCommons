@@ -1,5 +1,4 @@
 ﻿using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -8,111 +7,111 @@ namespace DotNetCommons.WinForms.Graphics;
 
 public class BitmapBuffer : IDisposable
 {
-    public Bitmap Bitmap;
-    public int[] Buffer;
-    protected BitmapData Data;
-    public int Length;
-    public int Width;
-    public int Height;
+    private static readonly PixelFormat[] SupportedPixelFormats = [PixelFormat.Format24bppRgb, PixelFormat.Format32bppArgb];
 
-    public BitmapBuffer(Bitmap bitmap)
+    public Bitmap Bitmap { get; }
+    public BitmapData BitmapData { get; }
+    public Rectangle Rectangle { get; }
+    public int Height { get; }
+    public int Width { get; }
+    public bool IsDisposed { get; private set; }
+
+    /// Represents a memory buffer for a bitmap, providing utilities to manipulate and access pixel data.
+    /// This class allows locking a bitmap's memory for pixel-level operations and ensures proper cleanup
+    /// to release resources when no longer needed.
+    public BitmapBuffer(Bitmap bitmap, ImageLockMode lockMode, PixelFormat pixelFormat)
     {
-        Bitmap = bitmap;
-        Width = bitmap.Width;
-        Height = bitmap.Height;
-        Length = Width * Height;
+        if (!SupportedPixelFormats.Contains(pixelFormat))
+            throw new NotSupportedException($"PixelFormat {pixelFormat} not supported");
 
-        Data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-        Buffer = new int[Length];
-        Marshal.Copy(Data.Scan0, Buffer, 0, Length);
+        Bitmap     = bitmap;
+        Rectangle  = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+        BitmapData = bitmap.LockBits(Rectangle, lockMode, pixelFormat);
+        Height     = BitmapData.Height;
+        Width      = BitmapData.Width;
+
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(Width, nameof(Width));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(Height, nameof(Height));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(Width, ushort.MaxValue, nameof(Width));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(Height, ushort.MaxValue, nameof(Height));
     }
 
     public void Dispose()
     {
-        Marshal.Copy(Buffer, 0, Data.Scan0, Length);
-        Bitmap.UnlockBits(Data);
-
-        Bitmap = null;
-        Data = null;
-        Buffer = null;
-        Length = 0;
-    }
-
-    public int GetPixel(int offset)
-    {
-        if (offset < 0)
-            return 0;
-
-        return Buffer[offset];
-    }
-
-    public byte GetPixelAlpha(int offset)
-    {
-        if (offset < 0)
-            return 0;
-
-        return (byte)(Buffer[offset] >> 24);
-    }
-
-    public void SetPixel(int offset, int color)
-    {
-        if (offset < 0)
+        if (IsDisposed)
             return;
 
-        Buffer[offset] = color;
+        IsDisposed = true;
+        Bitmap.UnlockBits(BitmapData);
     }
 
-    public void SetPixelAlpha(int offset, byte alpha)
+    /// Retrieves a scanline from the bitmap buffer at the specified y-coordinate.
+    /// <param name="y">
+    /// The y-coordinate of the scanline to retrieve. If outside the bounds of the bitmap height, a dummy scanline handler will be returned
+    /// that always returns Color.Empty.
+    /// </param>
+    public ScanLine GetScanline(int y)
     {
-        if (offset < 0)
-            return;
+        if (IsDisposed || y < 0 && y >= Height)
+            return new ScanLine(IntPtr.Zero, 0, ScanLineType.Empty);
 
-        Buffer[offset] = Buffer[offset] & 0xFFFFFF | (alpha << 24);
+        var rowStart = BitmapData.Scan0 + y * BitmapData.Stride;
+        return BitmapData.PixelFormat switch
+        {
+            PixelFormat.Format24bppRgb  => new ScanLine(rowStart, (ushort)Width, ScanLineType.Rgb24),
+            PixelFormat.Format32bppArgb => new ScanLine(rowStart, (ushort)Width, ScanLineType.Argb32),
+            _                           => throw new NotSupportedException()
+        };
     }
 
-    public void AdjustPixelMaxAlpha(int offset, byte alpha)
+    /// Executes an action for every scan line in the bitmap buffer.
+    /// <param name="action">
+    /// The action to execute for each pixel. The action receives the current scanline, and the y-coordinate.
+    /// </param>
+    public void ForAllLines(Action<ScanLine, int> action)
     {
-        if (offset < 0)
-            return;
-
-        var color = Buffer[offset];
-        var pixelAlpha = (color >> 24) & 0xFF;
-        var value = alpha + pixelAlpha;
-        if (value > 255)
-            value = 255;
-
-        Buffer[offset] = (color & 0xFFFFFF) | (value << 24);
+        for (var y = 0; y < Height; y++)
+            action(GetScanline(y), y);
     }
 
-    public void MultPixelAlpha(int offset, float multiplier)
+    /// Executes an action for every pixel in the bitmap buffer.
+    /// <param name="action">
+    /// The action to execute for each pixel. The action receives the current scanline, the pixel's x-coordinate,
+    /// and the pixel's y-coordinate.
+    /// </param>
+    public void ForAllPixels(Action<ScanLine, int, int> action)
     {
-        if (offset < 0)
-            return;
-
-        var color = Buffer[offset];
-        var alpha = ((color >> 24) & 0xFF) * multiplier;
-        Buffer[offset] = (color & 0xFFFFFF) | ((byte)alpha << 24);
+        for (var y = 0; y < Height; y++)
+        {
+            var scanLine = GetScanline(y);
+            for (var x = 0; x < Width; x++)
+                action(scanLine, x, y);
+        }
     }
 
-    public int CoordToOffset(int x, int y)
+    /// Gets the alpha value of a specific pixel in the bitmap buffer. Pixels outside the bitmap area return 0.
+    public byte GetAlpha(int x, int y)
     {
-        return (x >= 0 && x < Width && y >= 0 && y < Height) ? y * Data.Width + x : -1;
+        return GetScanline(y).GetAlpha(x);
     }
 
-    public Point OffsetToCoord(int offset)
+    /// Gets the color of a specific pixel in the bitmap buffer, including any alpha value. Pixels outside the bitmap area return
+    /// Color.Empty.
+    public Color GetColor(int x, int y)
     {
-        return offset < 0 || offset >= Length
-            ? Point.Empty
-            : new Point(offset % Data.Width, offset / Data.Width);
+        return GetScanline(y).GetColor(x);
     }
 
-    public int PercentMaxAlpha()
+    /// Sets the alpha value of a specific pixel in the bitmap buffer. Pixels outside the bitmap area are silently discarded.
+    /// If the bitmap doesn't support Alpha layers, the operation is ignored. Alpha 0 is transparent, 255 fully opaque.
+    public void SetAlpha(int x, int y, byte alpha)
     {
-        var count = 0;
-        for (var i = 0; i < Length; i++)
-            if ((byte)(Buffer[i] >> 24) > 250)
-                count++;
+        GetScanline(y).SetAlpha(x, alpha);
+    }
 
-        return 100 * count / Length;
+    /// Sets the color of a specific pixel in the bitmap buffer. Pixels outside the bitmap area are silently discarded.
+    public void SetColor(int x, int y, Color color)
+    {
+        GetScanline(y).SetColor(x, color);
     }
 }

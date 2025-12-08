@@ -6,20 +6,20 @@ namespace DotNetCommonTests.WinForms.Graphics;
 public class ImageProcessorTest
 {
     [TestMethod]
-    public void TestScaleMax()
+    public void TestScaleToFit()
     {
         var size = new Size(3344, 2210);
-        var result = ImageProcessor.ScaleMax(size, new Size(640, 480));
+        var result = BitmapOperations.ScaleToFit(size, new Size(640, 480));
 
         Assert.AreEqual(640, result.Width);
         Assert.AreEqual(423, result.Height);
     }
 
     [TestMethod]
-    public void TestScaleMin()
+    public void TestScaleToCover()
     {
         var size = new Size(3344, 2210);
-        var result = ImageProcessor.ScaleMin(size, new Size(640, 480));
+        var result = BitmapOperations.ScaleToCover(size, new Size(640, 480));
 
         Assert.AreEqual(726, result.Width);
         Assert.AreEqual(480, result.Height);

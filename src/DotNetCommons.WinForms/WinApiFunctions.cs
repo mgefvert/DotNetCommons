@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using System.Text;
 
 // ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
