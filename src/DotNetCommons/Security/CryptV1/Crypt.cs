@@ -4,7 +4,7 @@ using System.Text;
 
 // ReSharper disable UnusedMember.Global
 
-namespace DotNetCommons.Security;
+namespace DotNetCommons.Security.CryptV1;
 
 /// <summary>
 /// Class that provides easy encryption and decryption of data using AES-256 encryption and CBC mode with an automatically

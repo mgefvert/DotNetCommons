@@ -1,7 +1,7 @@
-﻿using DotNetCommons.Security;
+﻿using DotNetCommons.Security.CryptV1;
 using FluentAssertions;
 
-namespace DotNetCommonTests.Security;
+namespace DotNetCommonTests.Security.CryptV1;
 
 [TestClass]
 public class CryptTests
