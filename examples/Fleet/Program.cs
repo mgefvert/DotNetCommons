@@ -23,8 +23,8 @@ try
 {
     return await new CommandActionRegistry(serviceProvider)
         .RegisterThis()
-        .BeforeAction(action => logger.LogInformation("* Starting action {Action}", action.GetType().Name))
-        .AfterAction((action, result) => logger.LogInformation("* Ending action {Action} -> {Result}", action.GetType().Name, result))
+        .BeforeAction(args => logger.LogInformation("* Starting action {Action}", args.GetType().Name))
+        .AfterAction(args => logger.LogInformation("* Ending action {Action} -> {Result}", args.GetType().Name, args.ResultCode))
         .Execute(args);
 }
 finally

@@ -3,8 +3,14 @@ using System.Reflection;
 using DotNetCommons.Sys;
 using DotNetCommons.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetCommons.Commands;
+
+public record AfterActionArgs(CommandAction Action, int ResultCode);
+public record AfterHelpArgs(bool DetailedHelp);
+public record BeforeActionArgs(CommandAction Action);
+public record BeforeHelpArgs(bool DetailedHelp);
 
 /// Provides a registry to manage and execute command actions with defined priorities and execution strategies.
 public class CommandActionRegistry
@@ -36,11 +42,14 @@ public class CommandActionRegistry
     /// Represents the priority for commands that are supposed to run absolutely last in the queue.
     public const int LastPriority = 99;
 
-    private Action<CommandAction, int>? _afterActionCallback;
-    private Action<CommandAction>? _beforeActionCallback;
+    private Action<AfterActionArgs>? _afterActionCallback;
+    private Action<AfterHelpArgs>? _afterHelpCallback;
+    private Action<BeforeActionArgs>? _beforeActionCallback;
+    private Action<BeforeHelpArgs>? _beforeHelpCallback;
     private readonly ConcurrentDictionary<string, Type> _commandRegistry = [];
     private readonly IServiceProvider _serviceProvider;
     private readonly ICommandLineParser _commandLineParser;
+    private readonly ILogger<CommandActionRegistry>? _logger;
     private readonly PriorityQueue<Invocation, int> _invocationQueue = new();
 
     private bool _schedulerRunning;
@@ -50,25 +59,34 @@ public class CommandActionRegistry
     /// Provides a registry for managing the registration, scheduling, and execution of command actions.
     /// Uses the DotNetCommons command line parser to parse arguments on the command line.
     public CommandActionRegistry(IServiceProvider serviceProvider)
-        : this(serviceProvider, new DotNetCommonsCommandLineParser())
+        : this(serviceProvider, new DotNetCommonsCommandLineParser(), serviceProvider.GetService<ILogger<CommandActionRegistry>>())
     {
     }
 
     /// Provides a registry for managing the registration, scheduling, and execution of command actions.
     /// Uses a custom command line parser to parse arguments on the command line.
-    public CommandActionRegistry(IServiceProvider serviceProvider, ICommandLineParser commandLineParser)
+    public CommandActionRegistry(IServiceProvider serviceProvider, ICommandLineParser commandLineParser,
+        ILogger<CommandActionRegistry>? logger)
     {
-        _serviceProvider   = serviceProvider;
         _commandLineParser = commandLineParser;
+        _logger            = logger;
+        _serviceProvider   = serviceProvider;
     }
 
     /// <summary>
     /// Sets a callback to be executed after a command action is performed, providing information about the action and its result status.
     /// </summary>
     /// <param name="action">The callback function to be executed after a command action.</param>
-    public CommandActionRegistry AfterAction(Action<CommandAction, int> action)
+    public CommandActionRegistry AfterAction(Action<AfterActionArgs> action)
     {
         _afterActionCallback = action;
+        return this;
+    }
+
+    /// Sets a callback to be executed after help is displayed.
+    public CommandActionRegistry AfterHelp(Action<AfterHelpArgs> action)
+    {
+        _afterHelpCallback = action;
         return this;
     }
 
@@ -76,9 +94,16 @@ public class CommandActionRegistry
     /// Sets a callback to be executed before a command action is performed, providing information about the action.
     /// </summary>
     /// <param name="action">The callback function to be executed before a command action.</param>
-    public CommandActionRegistry BeforeAction(Action<CommandAction> action)
+    public CommandActionRegistry BeforeAction(Action<BeforeActionArgs> action)
     {
         _beforeActionCallback = action;
+        return this;
+    }
+
+    /// Sets a callback to be executed before help is displayed.
+    public CommandActionRegistry BeforeHelp(Action<BeforeHelpArgs> action)
+    {
+        _beforeHelpCallback = action;
         return this;
     }
 
@@ -107,6 +132,8 @@ public class CommandActionRegistry
         var optionType = GetActionOptionType(command);
         var route      = GetRouteName(attr.Route);
 
+        _beforeHelpCallback?.Invoke(new BeforeHelpArgs(true));
+
         Console.WriteLine(route);
         Console.WriteLine(new string('=', route.Length));
 
@@ -122,6 +149,8 @@ public class CommandActionRegistry
             foreach (var line in TextTools.WordWrap(paragraph, Console.WindowWidth, index == 0 ? 0 : -2))
                 Console.WriteLine(line);
         }
+
+        _afterHelpCallback?.Invoke(new AfterHelpArgs(true));
     }
 
     /// <summary>
@@ -130,6 +159,8 @@ public class CommandActionRegistry
     /// <param name="commands">An array of command types.</param>
     private void DisplayHelp(Type[] commands)
     {
+        _beforeHelpCallback?.Invoke(new BeforeHelpArgs(false));
+
         var entries = commands.Select(x => x.GetCustomAttribute<CommandActionAttribute>()).ToDictionary(
             x => GetRouteName(x!.Route),
             x => x!.Description
@@ -140,6 +171,8 @@ public class CommandActionRegistry
         {
             Console.WriteLine($"{entry.Key.PadRight(maxRoute)}  {entry.Value}");
         }
+
+        _afterHelpCallback?.Invoke(new AfterHelpArgs(false));
     }
 
     /// <summary>
@@ -167,7 +200,7 @@ public class CommandActionRegistry
             if (route.commands.IsEmpty())
                 route.commands = _commandRegistry.Values.ToArray();
 
-            if (route.commands.IsOne())
+            if (!route.routeWasEmpty && route.commands.IsOne())
                 DisplayHelp(route.commands.Single());
             else
                 DisplayHelp(route.commands);
@@ -201,14 +234,12 @@ public class CommandActionRegistry
         }
         catch (OperationCanceledException e)
         {
-            using (new SetConsoleColor(ConsoleColor.Red))
-                await Console.Error.WriteLineAsync(e.Message);
+            LogError(e, $"An exception of type {e.GetType().Name} was thrown.");
             return ExitCodeOperationCanceled;
         }
         catch (Exception e)
         {
-            using (new SetConsoleColor(ConsoleColor.Red))
-                Console.Error.WriteLine(e);
+            LogError(e, "An exception of type {e.GetType().Name} was thrown.");
             return ExitCodeFatalError;
         }
         finally
@@ -216,6 +247,17 @@ public class CommandActionRegistry
             Console.CancelKeyPress -= CtrlCHandler;
             _schedulerRunning = false;
             _cancelSource.Dispose();
+        }
+    }
+
+    private void LogError(Exception exception, string message)
+    {
+        if (_logger != null)
+            _logger.LogError(exception, message);
+        else
+        {
+            using (new SetConsoleColor(ConsoleColor.Red))
+                Console.WriteLine($"{message}: {exception.Message}");
         }
     }
 
@@ -239,7 +281,7 @@ public class CommandActionRegistry
             prop?.SetValue(command, invocation.Options);
 
             // Call the before action handler
-            _beforeActionCallback?.Invoke(command);
+            _beforeActionCallback?.Invoke(new BeforeActionArgs(command));
         }
         catch (Exception e)
         {
@@ -251,18 +293,18 @@ public class CommandActionRegistry
         {
             ct.ThrowIfCancellationRequested();
             var result = await command.ExecuteAsync(ct);
-            _afterActionCallback?.Invoke(command, result);
+            _afterActionCallback?.Invoke(new AfterActionArgs(command, result));
 
             return result;
         }
         catch (OperationCanceledException)
         {
-            _afterActionCallback?.Invoke(command, ExitCodeOperationCanceled);
+            _afterActionCallback?.Invoke(new AfterActionArgs(command, ExitCodeOperationCanceled));
             throw;
         }
         catch (Exception e)
         {
-            _afterActionCallback?.Invoke(command, ExitCodeFatalError);
+            _afterActionCallback?.Invoke(new AfterActionArgs(command, ExitCodeFatalError));
             throw new CommandActionException($"{invocation.Action.Name}: {e.Message}", e);
         }
     }
@@ -351,14 +393,14 @@ public class CommandActionRegistry
     /// and returns the matching command types along with any remaining arguments.
     /// </summary>
     /// <param name="args">An array of arguments provided for command resolution.</param>
-    public (Type[] commands, bool help, string[] remaining) Resolve(string[] args)
+    public (Type[] commands, bool help, bool routeWasEmpty, string[] remaining) Resolve(string[] args)
     {
         if (_commandRegistry.IsEmpty())
             throw new CommandActionResolveException("No command actions are defined.");
 
         var route     = args.TakeWhile(x => !x.StartsWith('/') && !x.StartsWith('-')).ToList();
         var remaining = args.Skip(route.Count).ToArray();
-        var help      = false;
+        var help      = route.IsEmpty();
 
         if (route.IsAtLeastOne() && route.First() == "help")
         {
@@ -378,7 +420,7 @@ public class CommandActionRegistry
             .Select(x => x.Value)
             .ToArray();
 
-        return (types, help, remaining);
+        return (types, help, route.IsEmpty(), remaining);
     }
 
     private void Register(Type commandClass, string[] route)
