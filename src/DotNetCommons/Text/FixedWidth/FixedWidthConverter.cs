@@ -97,7 +97,17 @@ public class FixedWidthConverter
             var s     = data.Substring(f.StartIndex, f.Length);
             var value = f.Attr.Parse(s, Culture);
 
-            f.Prop.SetPropertyValue(result, value);
+            if (value == null && f.Prop.PropertyType.IsNumeric() && !f.Prop.PropertyType.IsNullable())
+                value = 0;
+
+            try
+            {
+                f.Prop.SetPropertyValue(result, value);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidDataException($"Data conversion failed for field {typeof(T).Name}.{f.Prop.Name}, data='{s}'.", e);
+            }
         }
 
         return result;

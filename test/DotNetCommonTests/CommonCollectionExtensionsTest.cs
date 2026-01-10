@@ -29,7 +29,7 @@ public class CommonCollectionExtensionsTest
         list.AddIfNotNull("");
         list.AddIfNotNull(null);
 
-        Assert.HasCount(2, list);
+        Assert.AreEqual(2, list.Count);
     }
 
     [TestMethod]
@@ -43,7 +43,7 @@ public class CommonCollectionExtensionsTest
         list.AddRangeIfNotNull(null);
         list.AddRangeIfNotNull(new[] { "hello", "", null });
 
-        Assert.HasCount(2, list);
+        Assert.AreEqual(2, list.Count);
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class CommonCollectionExtensionsTest
             .Select(x => string.Join("", x))
             .ToList();
 
-        Assert.HasCount(2, batches);
+        Assert.AreEqual(2, batches.Count);
         Assert.AreEqual("abc", batches[0]);
         Assert.AreEqual("def", batches[1]);
 
@@ -61,7 +61,7 @@ public class CommonCollectionExtensionsTest
             .Select(x => string.Join("", x))
             .ToList();
 
-        Assert.HasCount(3, batches);
+        Assert.AreEqual(3, batches.Count);
         Assert.AreEqual("abc", batches[0]);
         Assert.AreEqual("def", batches[1]);
         Assert.AreEqual("gh", batches[2]);
@@ -70,14 +70,14 @@ public class CommonCollectionExtensionsTest
             .Select(x => string.Join("", x))
             .ToList();
 
-        Assert.HasCount(1, batches);
+        Assert.AreEqual(1, batches.Count);
         Assert.AreEqual("a", batches[0]);
 
         batches = Array.Empty<char>().Batch(3)
             .Select(x => string.Join("", x))
             .ToList();
 
-        Assert.IsEmpty(batches);
+        Assert.AreEqual(0, batches.Count);
     }
 
     [TestMethod]
@@ -85,7 +85,7 @@ public class CommonCollectionExtensionsTest
     {
         var item = _list.ExtractAt(1);
 
-        Assert.AreEqual("AB", item);
+        Assert.AreEqual(item, "AB");
         Assert.AreEqual("A,C,D", string.Join(",", _list));
     }
 
@@ -94,7 +94,7 @@ public class CommonCollectionExtensionsTest
     {
         var item = _list.ExtractAtOrDefault(1);
 
-        Assert.AreEqual("AB", item);
+        Assert.AreEqual(item, "AB");
         Assert.AreEqual("A,C,D", string.Join(",", _list));
 
         item = _list.ExtractAtOrDefault(99);
@@ -108,8 +108,8 @@ public class CommonCollectionExtensionsTest
     {
         var items = _list.ExtractAll();
 
-        Assert.HasCount(4, items);
-        Assert.IsEmpty(_list);
+        Assert.AreEqual(4, items.Count);
+        Assert.AreEqual(0, _list.Count);
     }
 
     [TestMethod]
@@ -266,23 +266,23 @@ public class CommonCollectionExtensionsTest
 
         foreach (var n in left)
         {
-            Assert.AreEqual(0, n % 2);
-            Assert.DoesNotContain(n, right);
-            Assert.DoesNotContain(n, both);
+            Assert.IsTrue(n % 2 == 0);
+            Assert.IsFalse(right.Contains(n));
+            Assert.IsFalse(both.Contains(n));
         }
 
         foreach (var n in right)
         {
-            Assert.AreEqual(0, n % 3);
-            Assert.DoesNotContain(n, left);
-            Assert.DoesNotContain(n, both);
+            Assert.IsTrue(n % 3 == 0);
+            Assert.IsFalse(left.Contains(n));
+            Assert.IsFalse(both.Contains(n));
         }
 
         foreach (var n in both)
         {
             Assert.IsTrue(n % 2 == 0 && n % 3 == 0);
-            Assert.DoesNotContain(n, right);
-            Assert.DoesNotContain(n, left);
+            Assert.IsFalse(right.Contains(n));
+            Assert.IsFalse(left.Contains(n));
         }
     }
 

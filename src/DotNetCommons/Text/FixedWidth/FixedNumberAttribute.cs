@@ -9,6 +9,7 @@ public class FixedNumberAttribute : FixedWidthAttribute
 
     public FixedNumberAttribute(int start, int length) : base(start, length)
     {
+        Pad = '0';
     }
 
     public override string FormatValue(object? value, CultureInfo culture)
@@ -25,12 +26,11 @@ public class FixedNumberAttribute : FixedWidthAttribute
         return PadValue(result, Alignment.Right);
     }
 
-    public override object Parse(string data, CultureInfo culture)
+    public override object? Parse(string data, CultureInfo culture)
     {
         data = TrimValue(data, Alignment.Right);
-
-        if (string.IsNullOrEmpty(data))
-            return DefaultValue ?? 0.0;
+        if (string.IsNullOrWhiteSpace(data))
+            return null;
 
         var number = double.Parse(data, NumberStyles.Any, culture);
 

@@ -24,7 +24,7 @@ public abstract class FixedWidthAttribute : Attribute
     }
 
     public abstract string FormatValue(object? value, CultureInfo culture);
-    public abstract object Parse(string data, CultureInfo culture);
+    public abstract object? Parse(string data, CultureInfo culture);
 
     protected string PadValue(string value, Alignment defaultAlign)
     {
@@ -45,7 +45,7 @@ public abstract class FixedWidthAttribute : Attribute
             _               => throw new InvalidOperationException("Alignment value must be Left/Right in PadValue")
         };
     }
-    
+
     protected string TrimValue(string value, Alignment defaultAlign)
     {
         var align = Align;
@@ -59,5 +59,5 @@ public abstract class FixedWidthAttribute : Attribute
             _               => throw new InvalidOperationException("Alignment value must be Left/Right in TrimValue")
         };
     }
-    
+
 }

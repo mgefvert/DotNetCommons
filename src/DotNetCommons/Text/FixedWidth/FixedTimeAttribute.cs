@@ -23,9 +23,9 @@ public class FixedTimeAttribute : FixedWidthAttribute
         return PadValue(result, Alignment.Left);
     }
 
-    public override object Parse(string data, CultureInfo culture)
+    public override object? Parse(string data, CultureInfo culture)
     {
         data = TrimValue(data, Alignment.Left);
-        return DateTime.ParseExact(data, Format, culture);
+        return data.IsEmpty() ? null : DateTime.ParseExact(data, Format, culture);
     }
 }

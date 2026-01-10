@@ -13,6 +13,10 @@ public abstract class CommandAction
     /// several different jobs, and yet doesn't require a singleton.
     public IServiceProvider GlobalScope { get; set; } = null!;
 
+    /// Represents the job-local scope for the current running job. This provides access to all scoped services that finalize
+    /// once this job is done.
+    public IServiceProvider JobScope { get; set; } = null!;
+
     /// <summary>
     /// Executes the associated asynchronous command action.
     /// </summary>

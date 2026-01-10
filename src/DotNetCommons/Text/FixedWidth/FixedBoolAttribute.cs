@@ -24,14 +24,14 @@ public class FixedBoolAttribute : FixedWidthAttribute
         return PadValue(result, Alignment.Left);
     }
 
+    // ReSharper disable SimplifyConditionalTernaryExpression
     public override object Parse(string data, CultureInfo culture)
     {
         data = TrimValue(data, Alignment.Left);
 
-        // ReSharper disable SimplifyConditionalTernaryExpression
         return data == True ? true
             : data == False ? false
             : data.ParseBoolean(false);
-        // ReSharper restore SimplifyConditionalTernaryExpression
     }
+    // ReSharper restore SimplifyConditionalTernaryExpression
 }

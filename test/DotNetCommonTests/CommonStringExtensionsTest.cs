@@ -33,7 +33,7 @@ public class CommonStringExtensionsTest
         Assert.IsNull(null, ((string?)null).Chomp(out remaining));
         Assert.AreEqual("", remaining);
 
-        Assert.IsNull("".Chomp(out remaining));
+        Assert.AreEqual(null, "".Chomp(out remaining));
         Assert.AreEqual("", remaining);
 
         Assert.AreEqual("A", "A".Chomp(out remaining));

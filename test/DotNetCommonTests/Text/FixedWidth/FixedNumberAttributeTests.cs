@@ -12,14 +12,14 @@ public class FixedNumberAttributeTests
     public void FormatValue_Int()
     {
         var attr = new FixedNumberAttribute(1, 5);
-        Assert.AreEqual("  123", attr.FormatValue(123, _culture));
+        Assert.AreEqual("00123", attr.FormatValue(123, _culture));
     }
 
     [TestMethod]
     public void FormatValue_Double()
     {
         var attr = new FixedNumberAttribute(1, 10) { Decimals = 2 };
-        Assert.AreEqual("    123.46", attr.FormatValue(123.456, _culture));
+        Assert.AreEqual("0000123.46", attr.FormatValue(123.456, _culture));
     }
 
     [TestMethod]
@@ -33,7 +33,7 @@ public class FixedNumberAttributeTests
     public void FormatValue_Null_ReturnsEmptyPadded()
     {
         var attr = new FixedNumberAttribute(1, 5);
-        Assert.AreEqual("     ", attr.FormatValue(null, _culture));
+        Assert.AreEqual("00000", attr.FormatValue(null, _culture));
     }
 
     [TestMethod]
@@ -55,12 +55,5 @@ public class FixedNumberAttributeTests
     {
         var attr = new FixedNumberAttribute(1, 5) { Scale = 2 };
         Assert.AreEqual(1.23, attr.Parse("  123", _culture));
-    }
-
-    [TestMethod]
-    public void Parse_Empty_ReturnsDefault()
-    {
-        var attr = new FixedNumberAttribute(1, 5) { DefaultValue = 9.9 };
-        Assert.AreEqual(9.9, attr.Parse("     ", _culture));
     }
 }

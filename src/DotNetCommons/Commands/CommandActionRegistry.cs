@@ -275,6 +275,7 @@ public class CommandActionRegistry
             command = (CommandAction)ActivatorUtilities.CreateInstance(currentScope.ServiceProvider, invocation.Action);
             command.Registry = this;
             command.GlobalScope = globalScope;
+            command.JobScope = currentScope.ServiceProvider;
 
             // Set the optional argument object
             var prop = invocation.Action.GetProperty(nameof(CommandAction<object>.Args));
@@ -497,7 +498,7 @@ public class CommandActionRegistry
     /// <param name="priority">The priority level of the command action in the execution queue. Lower values indicate earlier execution
     /// in the priority queue.</param>
     /// <param name="continueOnError">Indicates whether subsequent actions should continue executing if an error occurs</param>
-    public CommandActionRegistry Schedule<TCommand>(int priority, bool continueOnError)
+    public CommandActionRegistry Schedule<TCommand>(int priority = MediumPriority, bool continueOnError = false)
         where TCommand : CommandAction
     {
         var argsType = GetActionOptionType(typeof(TCommand));
