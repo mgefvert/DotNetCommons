@@ -1,4 +1,22 @@
-﻿namespace DotNetCommons.Numerics;
+﻿/*
+ * This class defines a stable, production-critical encoding for federated identifiers.
+ *
+ * The bit layout, masks, shifts, and value ranges are part of an external data contract.
+ * Federated keys created with this scheme are persisted, migrated between systems, and relied upon
+ * to preserve referential integrity across heterogeneous data sources without translation.
+ *
+ * Do not change the bit widths, shifts, masks, or parity behavior. Any such change will invalidate
+ * existing data and break cross-system relationships. This includes reclaiming the sign bit, altering
+ * parity rules, or expanding system/record ranges.
+ *
+ * The parity bit is intentionally simple and exists to make invalid or manually-constructed identifiers
+ * fail loudly during processing. It is not a security feature.
+ *
+ * The highest (sign) bit is deliberately unused to maintain compatibility with signed 64-bit identifiers
+ * in databases, serializers, and application code. Negative values are considered invalid by design.
+ */
+
+namespace DotNetCommons.Numerics;
 
 /// <summary>
 /// Provides functionality to create and interpret federated ulong keys from 15-bit system keys and 48-bit
