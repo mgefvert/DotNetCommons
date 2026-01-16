@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace DotNetCommons;
 
-public static class CommonObjectExtensions
+public static class CommonPropertyInfoExtensions
 {
     /// <summary>
     /// Determines whether the specified property of an object has its default value,
