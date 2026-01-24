@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/DatabaseSeeder/DatabaseSeeder.csproj" />
+    <Project Path="examples/Fleet/Fleet.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/DotNetCommons.EF/DotNetCommons.EF.csproj" />
+    <Project Path="src/DotNetCommons.PlaywrightTesting/DotNetCommons.PlaywrightTesting.csproj" />
+    <Project Path="src/DotNetCommons.Services/DotNetCommons.Services.csproj" />
+    <Project Path="src/DotNetCommons.Web/DotNetCommons.Web.csproj" />
+    <Project Path="src/DotNetCommons.WinForms/DotNetCommons.WinForms.csproj" />
+    <Project Path="src/DotNetCommons/DotNetCommons.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="test/DotNetCommonTests.EF/DotNetCommonTests.EF.csproj" />
+    <Project Path="test/DotNetCommonTests.Services/DotNetCommonTests.Services.csproj" />
+    <Project Path="test/DotNetCommonTests.Web/DotNetCommonTests.Web.csproj" />
+    <Project Path="test/DotNetCommonTests.WinForms/DotNetCommonTests.WinForms.csproj" />
+    <Project Path="test/DotNetCommonTests/DotNetCommonTests.csproj" />
+  </Folder>
+</Solution>
