@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace DotNetCommons.EF;
@@ -33,6 +34,8 @@ public enum PatchMode
 
 public class Patch
 {
+    private readonly bool _allowAnyField;
+
     /// <summary>
     /// Gets or sets the threshold for allowable removals in the patch operation as a fraction (0 to 1).
     /// If the ratio of removed items exceeds this threshold, an <see cref="InvalidOperationException"/> is thrown.
@@ -42,6 +45,18 @@ public class Patch
     /// The default value is 0.95 (95%).
     /// </value>
     public double RemoveThreshold { get; set; } = 0.95;
+
+    /// <summary>
+    /// Contains methods for updating and synchronizing objects based on specified rules and conditions.
+    /// Responsible for transferring data between different object states, handling additions, updates,
+    /// and removals of elements. Primarily supports operations on properties marked with the <see cref="PatchAttribute"/>.
+    /// </summary>
+    /// <param name="allowAnyField">Disables using the Patch attribute and allows operations on any field. Use only when you
+    ///     have full control of the incoming data.</param>
+    public Patch(bool allowAnyField = false)
+    {
+        _allowAnyField = allowAnyField;
+    }
 
     private class UpdateableProperty(PropertyInfo propertyInfo, PatchAttribute attribute)
     {
@@ -61,12 +76,26 @@ public class Patch
         if (Properties.TryGetValue(type, out var properties))
             return properties;
 
-        return Properties[type] = (
+        if (_allowAnyField)
+        {
+            // Get a list of all fields, except for the primary key fields.
+            return Properties[type] = type.GetProperties()
+                .Where(prop => prop.GetCustomAttribute<KeyAttribute>() == null)
+                .Select(prop => new UpdateableProperty(prop, new PatchAttribute()))
+                .ToArray();
+        }
+
+        var result = Properties[type] = (
             from prop in type.GetProperties()
             let attr = prop.GetCustomAttribute<PatchAttribute>()
             where attr != null
             select new UpdateableProperty(prop, attr)
         ).ToArray();
+
+        if (result.Length == 0)
+            throw new InvalidOperationException($"Class {type} has no Patch attributes and cannot be updated.");
+
+        return result;
     }
 
     /// <summary>

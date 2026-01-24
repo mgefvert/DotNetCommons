@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommonTests.EF", "tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCommonTests.Services", "test\DotNetCommonTests.Services\DotNetCommonTests.Services.csproj", "{FB1C5D01-D1BF-4068-AC5E-4F9B9154E9AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseSeeder", "examples\DatabaseSeeder\DatabaseSeeder.csproj", "{23013B13-0E90-4DC0-B12B-DC8C3ECC39ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{FB1C5D01-D1BF-4068-AC5E-4F9B9154E9AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB1C5D01-D1BF-4068-AC5E-4F9B9154E9AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB1C5D01-D1BF-4068-AC5E-4F9B9154E9AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23013B13-0E90-4DC0-B12B-DC8C3ECC39ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23013B13-0E90-4DC0-B12B-DC8C3ECC39ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23013B13-0E90-4DC0-B12B-DC8C3ECC39ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23013B13-0E90-4DC0-B12B-DC8C3ECC39ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{2E82B72E-7DAC-45E1-A555-374DB450CC14} = {264F973B-6E97-4222-9139-EC1F9073EFFB}
 		{ED8490A1-67A9-4D8B-ACCC-77BCD5EB93EC} = {3B5E0F1C-3195-454F-9270-0FF1525418EF}
 		{FB1C5D01-D1BF-4068-AC5E-4F9B9154E9AE} = {3B5E0F1C-3195-454F-9270-0FF1525418EF}
+		{23013B13-0E90-4DC0-B12B-DC8C3ECC39ED} = {264F973B-6E97-4222-9139-EC1F9073EFFB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ACF2AE89-03F6-4E0F-BB13-5576A5D994EF}
