@@ -100,6 +100,13 @@ public class Accessor<T> where T : class
         }
     }
 
+    /// Retrieves the current instance of the encapsulated reference type in a thread-safe manner.
+    /// If no object has been encapsulated, this throws an exception.
+    public T GetOrThrow()
+    {
+        return _value ?? throw new InvalidOperationException($"Accessor for {typeof(T).Name} has not been initialized.");
+    }
+
     /// Replaces the current value held by the Accessor with a new instance.
     /// This method is thread-safe and ensures that any waiting tasks are notified of the new value.
     public void Replace(T value)

@@ -69,6 +69,48 @@ public class ClockJobRunner : IDisposable
         }
     }
 
+    /// <summary>
+    /// Forces an immediate run of the given jobs and waits for them to complete successfully within the given timeout period.
+    /// If a job fails, it will be restarted and tried again.
+    /// </summary>
+    /// <remarks>
+    /// This is useful when starting up service applications, and you have to wait for initial processing to complete, before
+    /// starting to serve requests.
+    /// </remarks>
+    public void WaitForSuccessfulRun(TimeSpan timeout, params string[] jobNames)
+    {
+        var jobs = jobNames
+            .Select(n => _jobs.FirstOrDefault(x => x.Name == n) ?? throw new ArgumentException($"Job '{n}' not found", nameof(jobNames)))
+            .ToList();
+
+        // Force the jobs to run
+        jobs.ForEach(x => x.ForceRun = true);
+        _logger.LogInformation("Waiting for jobs: {jobs}", string.Join(", ", jobs.Select(x => x.Name)));
+
+        var i       = 0;
+        var horizon = DateTime.UtcNow.Add(timeout);
+        while (jobs.IsAtLeastOne())
+        {
+            if (DateTime.UtcNow > horizon)
+                throw new TimeoutException($"Timed out waiting for jobs: {string.Join(", ", jobs.Select(x => x.Name))}");
+
+            if (++i % 5 == 4)
+                _logger.LogInformation("Still waiting for jobs: {jobs}", string.Join(", ", jobs.Select(x => x.Name)));
+
+            OnTimer(null);
+            Thread.Sleep(1000);
+
+            // Any jobs with a successful Task completion, remove from the list
+            jobs.RemoveAll(j => j.IsCompletedSuccessfully());
+            if (jobs.IsEmpty())
+                break;
+
+            // If any stopped and failed, restart them again
+            foreach (var job in jobs.Where(j => j.IsCompletedFailed()))
+                job.ForceRun = true;
+        }
+    }
+
     /// Stops all running instances of the specified job by its name. This method identifies and stops all jobs matching the given name
     /// by canceling their execution and ensuring they are properly terminated.
     public Task Stop(string name)
