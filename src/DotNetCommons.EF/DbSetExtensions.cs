@@ -44,27 +44,48 @@ public static class DbSetExtensions
     }
 
     /// <summary>
+    /// Creates an expression that checks if a specified property of an entity is equal to a given value.
+    /// </summary>
+    /// <remarks>
+    /// This function takes an expression like e => e->Id, and generates an expression e => e-Id == value.
+    /// </remarks>
+    public static Expression<Func<TEntity, bool>> PredicatePropertyEqualTo<TEntity, TProp>(
+        Expression<Func<TEntity, TProp>> propertySelector,
+        TProp value)
+    {
+        var parameter = propertySelector.Parameters[0];
+
+        // Ensure the constant matches the property type (important for nullables/conversions)
+        Expression constant = Expression.Constant(value, typeof(TProp));
+        if (constant.Type != propertySelector.Body.Type)
+            constant = Expression.Convert(constant, propertySelector.Body.Type);
+
+        var body = Expression.Equal(propertySelector.Body, constant);
+        return Expression.Lambda<Func<TEntity, bool>>(body, parameter);
+    }
+
+    /// <summary>
     /// Generates a predicate expression that checks if the specified property values exist within a given collection.
     /// </summary>
-    /// <param name="keySelector">An expression that selects the property from the entity to match against the collection.</param>
+    /// <param name="propertySelector">An expression that selects the property from the entity to match against the collection.</param>
     /// <param name="values">The collection of values to be checked for existence against the selected property.</param>
-    /// <typeparam name="T">The type of the entity.</typeparam>
-    /// <typeparam name="TKey">The type of the property being selected and matched.</typeparam>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <typeparam name="TProp">The type of the property being selected and matched.</typeparam>
     /// <returns>An expression that represents a predicate to check if the selected property exists in the given collection.</returns>
-    public static Expression<Func<T, bool>> PredicatePropertyExistsInCollection<T, TKey>(
-        Expression<Func<T, TKey>> keySelector, ICollection<TKey> values)
-        where T : class
+    public static Expression<Func<TEntity, bool>> PredicatePropertyExistsInCollection<TEntity, TProp>(
+        Expression<Func<TEntity, TProp>> propertySelector, ICollection<TProp> values)
+        where TEntity : class
     {
-        var parameter    = Expression.Parameter(typeof(T), "entity");
-        var selectorBody = ReplaceParameter(keySelector.Body, keySelector.Parameters[0], parameter);
+        var parameter    = Expression.Parameter(typeof(TEntity), "entity");
+        var selectorBody = ReplaceParameter(propertySelector.Body, propertySelector.Parameters[0], parameter);
 
         var containsMethod = typeof(Enumerable)
             .GetMethods()
             .Single(m => m.Name == nameof(Enumerable.Contains) && m.GetParameters().Length == 2)
-            .MakeGenericMethod(typeof(TKey));
+            .MakeGenericMethod(typeof(TProp));
 
         var containsCall = Expression.Call(null, containsMethod, Expression.Constant(values), selectorBody);
-        var predicate    = Expression.Lambda<Func<T, bool>>(containsCall, parameter);
+        var predicate    = Expression.Lambda<Func<TEntity, bool>>(containsCall, parameter);
 
         return predicate;
     }
