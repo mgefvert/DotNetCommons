@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace DotNetCommons.EF;
 
-public class EntityConcurrentResolver<TContext, TEntity>
+public class DbConcurrentList<TContext, TEntity>
     where TContext : DbContext
     where TEntity : class, new()
 {
@@ -16,7 +16,7 @@ public class EntityConcurrentResolver<TContext, TEntity>
     private readonly IDbContextFactory<TContext> _contextFactory;
     private readonly Expression<Func<TEntity, string>> _valueExpression;
 
-    public EntityConcurrentResolver(
+    public DbConcurrentList(
         IDbContextFactory<TContext> contextFactory,
         Expression<Func<TEntity, int>> idProperty,
         Expression<Func<TEntity, string>> valueProperty)
@@ -34,9 +34,10 @@ public class EntityConcurrentResolver<TContext, TEntity>
     public async Task LoadInitialData(CancellationToken ct = default)
     {
         await using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var dataset = context.Set<TEntity>();
+        var             dataset = context.Set<TEntity>();
 
-        var data = dataset.AsNoTracking().ToList();
+        var query = ApplyFilter(dataset.AsNoTracking());
+        var data  = query.ToList();
         foreach (var item in data)
             _cache.TryAdd(_valueSelector(item), _idSelector(item));
     }
@@ -60,7 +61,7 @@ public class EntityConcurrentResolver<TContext, TEntity>
 
             // We do not have it in the cache. Start interacting with the database.
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var dataset = context.Set<TEntity>();
+            var             dataset = context.Set<TEntity>();
 
             // Check database for the value
             var lookupId = await AddFromDatabase(dataset, name);
@@ -90,12 +91,21 @@ public class EntityConcurrentResolver<TContext, TEntity>
         }
     }
 
+    protected virtual IQueryable<TEntity> ApplyFilter(IQueryable<TEntity> query)
+    {
+        return query;
+    }
+
+    protected virtual void ConfigureNewEntity(TEntity entity, string name)
+    {
+    }
+
     private async Task<int?> AddFromDatabase(DbSet<TEntity> dataset, string name)
     {
         // Try to load from the database
-        var existingItem = await dataset
-            .Where(DbSetExtensions.PredicatePropertyEqualTo(_valueExpression, name))
-            .FirstOrDefaultAsync();
+        var query = dataset.Where(DbSetExtensions.PredicatePropertyEqualTo(_valueExpression, name));
+        query = ApplyFilter(query);
+        var existingItem = await query.FirstOrDefaultAsync();
 
         if (existingItem == null)
             return null;
@@ -110,6 +120,7 @@ public class EntityConcurrentResolver<TContext, TEntity>
     {
         var newItem = new TEntity();
         _valueSetter(newItem, name);
+        ConfigureNewEntity(newItem, name);
 
         dataset.Add(newItem);
         await context.SaveChangesAsync();
@@ -122,8 +133,8 @@ public class EntityConcurrentResolver<TContext, TEntity>
     private static Action<TEntity, string> CreateSetter(Expression<Func<TEntity, string>> valueProperty)
     {
         var memberExpression = (MemberExpression)valueProperty.Body;
-        var parameter = Expression.Parameter(typeof(TEntity));
-        var valueParameter = Expression.Parameter(typeof(string));
+        var parameter        = Expression.Parameter(typeof(TEntity));
+        var valueParameter   = Expression.Parameter(typeof(string));
         var assign = Expression.Assign(
             Expression.Property(parameter, memberExpression.Member.Name),
             valueParameter);
