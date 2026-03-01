@@ -79,6 +79,15 @@ public static class CommonPropertyInfoExtensions
                 value = !ValueIsNull(value) ? DateTimeOffset.Parse(value!.ToString()!, culture) : DateTimeOffset.MinValue;
             else if (propertyType == typeof(DateTime))
                 value = !ValueIsNull(value) ? DateTime.Parse(value!.ToString()!, culture) : DateTime.MinValue;
+            else if (propertyType == typeof(DateOnly))
+            {
+                if (value is DateTime dt)
+                    value = DateOnly.FromDateTime(dt);
+                else if (!ValueIsNull(value))
+                    value = DateOnly.Parse(value!.ToString()!, culture);
+                else
+                    value = DateOnly.MinValue;
+            }
             else if (propertyType == typeof(TimeSpan))
                 value = !ValueIsNull(value) ? TimeSpan.Parse(value!.ToString()!, culture) : TimeSpan.Zero;
             else if (propertyType == typeof(Guid))

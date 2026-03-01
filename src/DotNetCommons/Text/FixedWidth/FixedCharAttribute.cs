@@ -15,7 +15,7 @@ public class FixedCharAttribute : FixedWidthAttribute
             return Pad.ToString();
 
         if (value is char c)
-            return c.ToString();
+            return c == 0 ? Pad.ToString() : c.ToString(); // NUL gets padded with the pad character
 
         var s = value.ToString() ?? "";
         var result = s.Length switch

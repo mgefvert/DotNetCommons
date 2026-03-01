@@ -2,6 +2,8 @@
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace DotNetCommons;
 
 public enum ISO8601Format
@@ -39,7 +41,7 @@ public static class CommonDateTimeExtensions
 
     /// <summary>
     /// Calculate the age of a person in years, months, and days. For instance, a given person could be
-    /// 47 years, 2 months, and 18 days old.
+    /// 47 years, and 118 days old.
     /// </summary>
     public static (int Years, int Days) AgeYearsAndDays(this DateTime birthDate, DateTime? today = null)
     {
@@ -105,6 +107,14 @@ public static class CommonDateTimeExtensions
             return 0;
 
         return (int)t.ToOADate() - (int)birthDate.ToOADate();
+    }
+
+    /// <summary>
+    /// Calculate the end of month (e.g. 2019-06-30).
+    /// </summary>
+    public static DateTime EndOfDay(this DateTime date)
+    {
+        return date.Date.AddDays(1).AddTicks(-1);
     }
 
     /// <summary>
@@ -230,6 +240,17 @@ public static class CommonDateTimeExtensions
     public static DateTime StartOfYear(this DateTime datetime)
     {
         return new DateTime(datetime.Year, 1, 1);
+    }
+
+    public static DateOnly ToDateOnly(this DateTime datetime)
+    {
+        return DateOnly.FromDateTime(datetime);
+    }
+
+    [return: NotNullIfNotNull(nameof(datetime))]
+    public static DateOnly? ToDateOnly(this DateTime? datetime)
+    {
+        return datetime != null ? DateOnly.FromDateTime(datetime.Value) : null;
     }
 
     /// <summary>

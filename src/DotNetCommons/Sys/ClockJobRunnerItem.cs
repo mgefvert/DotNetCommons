@@ -14,13 +14,11 @@ internal class ClockJobRunnerItem
     private readonly Func<JobContext, Task> _jobAction;
 
     private CancellationTokenSource? _cancellationTokenSource;
-    private Task? _running;
 
+    public Task? RunningTask { get; private set; }
     public string Name { get; }
     public ClockSchedule Schedule { get; }
     public DateTime LastRun { get; private set; }
-    public bool ForceRun { get; set; }
-    public Exception? Exception { get; private set; }
 
     public ClockJobRunnerItem(string name, Func<JobContext, Task> jobAction, ClockSchedule schedule, bool runImmediately)
     {
@@ -34,33 +32,12 @@ internal class ClockJobRunnerItem
     public bool IsRunning()
     {
         lock (this)
-            return _running is { IsCompleted: false };
-    }
-
-    public bool IsCompleted()
-    {
-        lock (this)
-            return _running is { IsCompleted: true };
-    }
-
-    public bool IsCompletedFailed()
-    {
-        lock (this)
-            return _running is { IsCompleted: true } && Exception != null;
-    }
-
-    public bool IsCompletedSuccessfully()
-    {
-        lock (this)
-            return _running is { IsCompleted: true } && Exception == null;
+            return RunningTask is { IsCompleted: false };
     }
 
     /// Determines whether the job should initiate execution based on its schedule and current state.
     public bool ShouldStart()
     {
-        if (ForceRun)
-            return true;
-
         var resolution = Schedule switch
         {
             ClockSchedule.Daily        => TimeSpan.TicksPerDay,
@@ -87,9 +64,8 @@ internal class ClockJobRunnerItem
 
         lock (this)
         {
-            ForceRun = false;
             _cancellationTokenSource = new CancellationTokenSource();
-            _running = Task.Run(() => TaskRunner(logger, services));
+            RunningTask = Task.Run(() => TaskRunner(logger, services));
             return true;
         }
     }
@@ -102,7 +78,7 @@ internal class ClockJobRunnerItem
             return Task.CompletedTask;
 
         _cancellationTokenSource!.Cancel();
-        return _running!.WaitAsync(Timeout.InfiniteTimeSpan);
+        return RunningTask!.WaitAsync(Timeout.InfiniteTimeSpan);
     }
 
     /// Executes the specified job logic in an asynchronous task and handles logging, lifecycle, and exception management for
@@ -120,14 +96,12 @@ internal class ClockJobRunnerItem
             await _jobAction(context);
             logger.LogInformation("Job {name} finished in {time}", Name, DateTime.UtcNow - t0);
         }
-        catch (TaskCanceledException e)
+        catch (TaskCanceledException)
         {
-            Exception = e;
             logger.LogInformation("Job {name} canceled after {time}", Name, DateTime.UtcNow - t0);
         }
         catch (Exception e)
         {
-            Exception = e;
             logger.LogError(e, "Exception occured in job {name}", Name);
         }
     }

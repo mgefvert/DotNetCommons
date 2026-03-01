@@ -281,6 +281,9 @@ public class CommandActionRegistry
             var prop = invocation.Action.GetProperty(nameof(CommandAction<object>.Args));
             prop?.SetValue(command, invocation.Options);
 
+            // Ready for custom wiring up
+            command.Initialize();
+
             // Call the before action handler
             _beforeActionCallback?.Invoke(new BeforeActionArgs(command));
         }

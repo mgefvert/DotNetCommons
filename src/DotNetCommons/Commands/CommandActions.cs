@@ -17,6 +17,12 @@ public abstract class CommandAction
     /// once this job is done.
     public IServiceProvider JobScope { get; set; } = null!;
 
+    /// Hook for allowing the system to initialize the command action with any necessary setup, after
+    /// all the properties are filled out.
+    public virtual void Initialize()
+    {
+    }
+
     /// <summary>
     /// Executes the associated asynchronous command action.
     /// </summary>

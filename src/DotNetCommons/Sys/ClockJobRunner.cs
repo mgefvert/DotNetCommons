@@ -21,12 +21,16 @@ public class ClockJobRunner : IDisposable
     private readonly List<ClockJobRunnerItem> _jobs = [];
 
     private volatile bool _inTimer;
+    private readonly object _lock = new();
+
+    /// Whether the job scheduler is enabled or not. If disabled, jobs will have to be checked manually by calling <see cref="Run"/>.
+    public bool SchedulerEnabled { get; set; } = true;
 
     public ClockJobRunner(ILogger<ClockJobRunner> logger, IServiceProvider serviceProvider)
     {
         _logger   = logger;
         _services = serviceProvider;
-        _timer    = new Timer(OnTimer, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5));
+        _timer    = new Timer(OnTimer, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
     }
 
     /// Releases all resources used by the ClockJobRunner instance and stops any running jobs. If jobs are still in progress,
@@ -51,17 +55,27 @@ public class ClockJobRunner : IDisposable
         _jobs.Add(new ClockJobRunnerItem(name, job, schedule, runImmediately));
     }
 
+    private List<ClockJobRunnerItem> InternalStartJobs()
+    {
+        lock (_lock)
+        {
+            var starting = _jobs.Where(x => x.ShouldStart()).ToList();
+            foreach (var job in starting)
+                job.Start(_logger, _services);
+
+            return starting;
+        }
+    }
+
     private void OnTimer(object? state)
     {
-        if (_inTimer)
+        if (_inTimer || !SchedulerEnabled)
             return;
 
         _inTimer = true;
         try
         {
-            var starting = _jobs.Where(x => x.ShouldStart()).ToList();
-            foreach (var job in starting)
-                job.Start(_logger, _services);
+            InternalStartJobs();
         }
         finally
         {
@@ -69,46 +83,37 @@ public class ClockJobRunner : IDisposable
         }
     }
 
-    /// <summary>
-    /// Forces an immediate run of the given jobs and waits for them to complete successfully within the given timeout period.
-    /// If a job fails, it will be restarted and tried again.
-    /// </summary>
-    /// <remarks>
-    /// This is useful when starting up service applications, and you have to wait for initial processing to complete, before
-    /// starting to serve requests.
-    /// </remarks>
-    public void WaitForSuccessfulRun(TimeSpan timeout, params string[] jobNames)
+    /// Remove a job from the scheduler.
+    public void RemoveJob(string name)
     {
-        var jobs = jobNames
-            .Select(n => _jobs.FirstOrDefault(x => x.Name == n) ?? throw new ArgumentException($"Job '{n}' not found", nameof(jobNames)))
-            .ToList();
+        _jobs.RemoveAll(x => x.Name == name);
+    }
 
-        // Force the jobs to run
-        jobs.ForEach(x => x.ForceRun = true);
-        _logger.LogInformation("Waiting for jobs: {jobs}", string.Join(", ", jobs.Select(x => x.Name)));
+    /// <summary>
+    /// Force a manual check to see if any jobs should start. Does not guarantee that any jobs will actually start. Waits for
+    /// the completion of those tasks up until the given timeout period.
+    /// </summary>
+    /// <returns>A list of any jobs started by this call.</returns>
+    /// <remarks>
+    /// This is useful if you want to make sure that the initialization tasks for an application have completed before moving on.
+    /// </remarks>
+    /// <param name="timeout">Timeout to wait for jobs to complete, or <see cref="Timeout.Infinite"/> to wait forever.</param>
+    /// <param name="waitForCompletion">Wait for the started jobs to complete. Note that this will not consider any job with the
+    /// ClockSchedule.Continuously setting as those are probably not going to ever exit or their own.</param>
+    public async Task Run(TimeSpan timeout, bool waitForCompletion)
+    {
+        var started = InternalStartJobs();
+        if (!waitForCompletion)
+            return;
 
-        var i       = 0;
-        var horizon = DateTime.UtcNow.Add(timeout);
-        while (jobs.IsAtLeastOne())
-        {
-            if (DateTime.UtcNow > horizon)
-                throw new TimeoutException($"Timed out waiting for jobs: {string.Join(", ", jobs.Select(x => x.Name))}");
+        var tasks = started
+            .Where(x => x.Schedule != ClockSchedule.Continuously)
+            .Select(x => x.RunningTask)
+            .NotNulls()
+            .Select(x => x.WaitAsync(timeout))
+            .ToArray();
 
-            if (++i % 5 == 4)
-                _logger.LogInformation("Still waiting for jobs: {jobs}", string.Join(", ", jobs.Select(x => x.Name)));
-
-            OnTimer(null);
-            Thread.Sleep(1000);
-
-            // Any jobs with a successful Task completion, remove from the list
-            jobs.RemoveAll(j => j.IsCompletedSuccessfully());
-            if (jobs.IsEmpty())
-                break;
-
-            // If any stopped and failed, restart them again
-            foreach (var job in jobs.Where(j => j.IsCompletedFailed()))
-                job.ForceRun = true;
-        }
+        await Task.WhenAll(tasks);
     }
 
     /// Stops all running instances of the specified job by its name. This method identifies and stops all jobs matching the given name

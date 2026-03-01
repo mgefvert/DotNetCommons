@@ -2,6 +2,8 @@
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 // ReSharper disable UnusedMember.Global
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace DotNetCommons;
 
 public static class CommonDateOnlyExtensions
@@ -79,6 +81,17 @@ public static class CommonDateOnlyExtensions
     public static DateOnly StartOfYear(this DateOnly date)
     {
         return new DateOnly(date.Year, 1, 1);
+    }
+
+    public static DateTime ToDateTime(this DateOnly date)
+    {
+        return date.ToDateTime(TimeOnly.MinValue);
+    }
+
+    [return: NotNullIfNotNull(nameof(date))]
+    public static DateTime? ToDateTime(this DateOnly? date)
+    {
+        return date?.ToDateTime(TimeOnly.MinValue);
     }
 
     /// <summary>
