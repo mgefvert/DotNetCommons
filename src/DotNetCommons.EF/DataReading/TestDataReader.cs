@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -275,82 +274,8 @@ public class TestDataReader
             return;
         }
 
-        var converted = ConvertValue(cellValue.Value!, property.PropertyType);
-        property.SetValue(item, converted);
-    }
-
-    private static object? ConvertValue(string token, Type targetType)
-    {
-        var nullableTarget = Nullable.GetUnderlyingType(targetType);
-        var actualType = nullableTarget ?? targetType;
-
-        var raw = ExpandMacro(token);
-        if (raw == null)
-            return null;
-
-        if (actualType == typeof(string))
-            return raw.ToString();
-
-        if (actualType == typeof(Guid))
-        {
-            if (raw is Guid guid)
-                return guid;
-
-            return Guid.Parse(raw.ToString()!);
-        }
-
-        if (actualType == typeof(DateOnly))
-        {
-            if (raw is DateOnly dateOnly)
-                return dateOnly;
-
-            if (raw is DateTime dateTime)
-                return DateOnly.FromDateTime(dateTime);
-
-            return DateOnly.Parse(raw.ToString()!, CultureInfo.InvariantCulture);
-        }
-
-        if (actualType == typeof(DateTime))
-        {
-            if (raw is DateTime dateTime)
-                return dateTime;
-
-            return DateTime.Parse(raw.ToString()!, CultureInfo.InvariantCulture);
-        }
-
-        if (actualType.IsEnum)
-            return Enum.Parse(actualType, raw.ToString()!, ignoreCase: true);
-
-        var text = raw.ToString()!;
-        if (actualType == typeof(bool))
-            return bool.Parse(text);
-
-        if (actualType == typeof(byte))
-            return byte.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-
-        if (actualType == typeof(short))
-            return short.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-
-        if (actualType == typeof(int))
-            return int.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-
-        if (actualType == typeof(long))
-            return long.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-
-        if (actualType == typeof(float))
-            return float.Parse(text, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-
-        if (actualType == typeof(double))
-            return double.Parse(text, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-
-        if (actualType == typeof(decimal))
-            return decimal.Parse(text, NumberStyles.Number, CultureInfo.InvariantCulture);
-
-        var converter = TypeDescriptor.GetConverter(actualType);
-        if (converter.CanConvertFrom(typeof(string)))
-            return converter.ConvertFromInvariantString(text);
-
-        return Convert.ChangeType(text, actualType, CultureInfo.InvariantCulture);
+        var raw = ExpandMacro(cellValue.Value!);
+        property.SetPropertyValue(item!, raw, CultureInfo.InvariantCulture);
     }
 
     private static object ExpandMacro(string token)
