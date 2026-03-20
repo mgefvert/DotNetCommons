@@ -4,6 +4,8 @@ namespace DotNetCommonTests.Text.FixedWidth;
 
 public static class People
 {
+    public static DateTime Now { get; set; } = new(2026, 1, 1);
+
     public static readonly Person John = new Person
     {
         FirstName = "John",
@@ -40,11 +42,13 @@ public static class People
         Deceased  = true
     };
 
-    public static readonly Person[] All = [John, Jane, Jack];
-
-    static People()
+    public static IEnumerable<Person> All()
     {
-        foreach (var person in All)
-            person.Age = person.BirthDate?.AgeYears();
+        foreach (var person in new[] { John, Jane, Jack })
+            person.Age = person.BirthDate?.AgeYears(Now);
+
+        yield return John;
+        yield return Jane;
+        yield return Jack;
     }
 }

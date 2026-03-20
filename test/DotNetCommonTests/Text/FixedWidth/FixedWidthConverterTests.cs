@@ -32,7 +32,7 @@ public class FixedWidthConverterTests
     public void Convert_WithMultiplePeople_ReturnsExpectedFixedWidthStrings()
     {
         var converter = new FixedWidthConverter();
-        var strings = People.All.Select(converter.Convert).ToArray();
+        var strings = People.All().Select(converter.Convert).ToArray();
 
         CollectionAssert.AreEqual(new string[] {
             "JOHN                                    DOE                                     0005512341958120406700156000000043700000MN",
@@ -65,7 +65,7 @@ public class FixedWidthConverterTests
     {
         var converter = new FixedWidthConverter();
 
-        foreach (var person in People.All)
+        foreach (var person in People.All())
         {
             var data = converter.Convert(person);
             var parsed = converter.Parse<Person>(data);
