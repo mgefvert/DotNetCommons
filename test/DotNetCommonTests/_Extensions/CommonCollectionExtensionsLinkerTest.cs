@@ -1,9 +1,9 @@
-﻿using DotNetCommons.Collections;
+﻿using DotNetCommons;
 
-namespace DotNetCommonTests.Collections;
+namespace DotNetCommonTests;
 
 [TestClass]
-public class CollectionLinkerTest
+public class CommonCollectionExtensionsLinkerTest
 {
     public class Post
     {
@@ -43,8 +43,7 @@ public class CollectionLinkerTest
     [TestMethod]
     public void TestLinkToMany()
     {
-        CollectionLinker.LinkToMany(_posts, _comments, x => x.ID, x => x.PostID,
-            (post, comments) => post.Comments = comments.ToArray());
+        _posts.LinkToMany(_comments, x => x.ID, x => x.PostID, (post, comments) => post.Comments = comments.ToArray());
 
         Assert.HasCount(3, _posts[0].Comments!);
         Assert.IsEmpty(_posts[1].Comments!);
@@ -59,8 +58,7 @@ public class CollectionLinkerTest
     [TestMethod]
     public void TestLinkToOne()
     {
-        CollectionLinker.LinkToOne(_comments, _posts, x => x.PostID, x => x.ID,
-            (comment, post) => comment.Post = post);
+        _comments.LinkToOne(_posts, x => x.PostID, x => x.ID, (comment, post) => comment.Post = post);
 
         Assert.AreEqual(1, _comments[0].Post!.ID);
         Assert.AreEqual(1, _comments[1].Post!.ID);

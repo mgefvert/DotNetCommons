@@ -4,6 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DotNetCommons.EF;
 
+/// <summary>
+/// Represents a thread-safe, in-memory cache for entities managed by a DbContext. This also allows for a lock-free
+/// mechanism to create new entities if they do not exist in the database.
+/// </summary>
+/// <typeparam name="TContext">The type of the DbContext used to access the database.</typeparam>
+/// <typeparam name="TEntity">The type of the entity managed by this list.</typeparam>
 public class DbConcurrentList<TContext, TEntity>
     where TContext : DbContext
     where TEntity : class, new()
