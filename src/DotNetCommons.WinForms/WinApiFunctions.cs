@@ -134,4 +134,7 @@ public static partial class WinApi
 
     [DllImport("user32.dll")]
     public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid powerSettingGuid, int flags);
+
+    [DllImport("wtsapi32.dll", SetLastError = true)]
+    public static extern bool WTSRegisterSessionNotification(IntPtr hWnd, int dwFlags);
 }

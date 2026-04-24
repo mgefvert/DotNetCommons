@@ -18,6 +18,9 @@ public static partial class WinApi
     public const int MOD_SHIFT = 4;
     public const int MOD_WIN = 8;
 
+    public const int NOTIFY_FOR_THIS_SESSION = 0;
+    public const int NOTIFY_FOR_ALL_SESSIONS = 1;
+
     public const int SERVICE_WIN32_OWN_PROCESS = 0x00000010;
 
     public const int STANDARD_RIGHTS_REQUIRED = 0xF0000;
