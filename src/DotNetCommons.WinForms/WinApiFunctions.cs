@@ -140,9 +140,6 @@ public static partial class WinApi
     public static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, IntPtr pptDst, IntPtr psize, IntPtr hdcSrc, 
         IntPtr pprSrc, Int32 crKey, ref BLENDFUNCTION pblend, Int32 dwFlags);
 
-    [DllImport("user32.dll")]
-    public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid powerSettingGuid, int flags);
-
     [DllImport("wtsapi32.dll", SetLastError = true)]
     public static extern bool WTSRegisterSessionNotification(IntPtr hWnd, int dwFlags);
 }
