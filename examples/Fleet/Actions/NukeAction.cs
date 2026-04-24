@@ -17,7 +17,7 @@ public class NukeAction(
         UnitStates unitStates
     ) : CommandAction<NukeArgs>
 {
-    public override int Execute()
+    public override async Task<int> ExecuteAsync(CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrEmpty(Args.UnitName, nameof(Args.UnitName));
         ArgumentException.ThrowIfNullOrEmpty(Args.Target, nameof(Args.Target));
@@ -36,6 +36,11 @@ public class NukeAction(
         }
 
         logger.LogInformation("{UnitName} is nuking target: {Target}", Args.UnitName, Args.Target);
+        logger.LogInformation("Waiting for result...");
+
+        await Task.Delay(3000, ct);
+
+        logger.LogInformation("There were {Count:F1}M casualties.", Random.Shared.NextSingle() * 3);
 
         return 0;
     }

@@ -3,35 +3,123 @@ using System.Reflection;
 using DotNetCommons.Sys;
 using DotNetCommons.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DotNetCommons.Commands;
 
-/// <summary>
-/// A registry that manages command actions and facilitates their execution. This class is designed to
-/// register, resolve, and execute commands while optionally providing help functionality and other features.
-/// </summary>
+public record AfterActionArgs(CommandAction Action, int ResultCode);
+public record AfterHelpArgs(bool DetailedHelp);
+public record BeforeActionArgs(CommandAction Action);
+public record BeforeHelpArgs(bool DetailedHelp);
+
+/// Provides a registry to manage and execute command actions with defined priorities and execution strategies.
 public class CommandActionRegistry
 {
-    private Action<ICommandAction, int>? _afterActionCallback;
-    private Action<ICommandAction>? _beforeActionCallback;
+    /// Represents the exit code indicating successful execution of a command.
+    public const int ExitCodeSuccess = 0;
+
+    /// Represents the exit code indicating that no jobs were scheduled for execution.
+    public const int ExitCodeNoJobsScheduled = -1;
+
+    /// Represents the exit code indicating a fatal error occurred during the execution of a command.
+    public const int ExitCodeFatalError = -2;
+
+    /// Represents the exit code indicating that an operation was canceled before completion.
+    public const int ExitCodeOperationCanceled = -3;
+
+    /// Specifies the priority level for the first command scheduled with the Execute method.
+    public const int FirstPriority = 10;
+
+    /// Represents a high-priority level for scheduling command actions.
+    public const int HighPriority = 30;
+
+    /// Represents a medium-priority level for scheduling command actions.
+    public const int MediumPriority = 50;
+
+    /// Represents a low-priority level for scheduling command actions.
+    public const int LowPriority = 70;
+
+    /// Represents the priority for commands that are supposed to run absolutely last in the queue.
+    public const int LastPriority = 99;
+
+    private Action<AfterActionArgs>? _afterActionCallback;
+    private Action<AfterHelpArgs>? _afterHelpCallback;
+    private Action<BeforeActionArgs>? _beforeActionCallback;
+    private Action<BeforeHelpArgs>? _beforeHelpCallback;
     private readonly ConcurrentDictionary<string, Type> _commandRegistry = [];
     private readonly IServiceProvider _serviceProvider;
+    private readonly ICommandLineParser _commandLineParser;
+    private readonly ILogger<CommandActionRegistry>? _logger;
+    private readonly PriorityQueue<Invocation, int> _invocationQueue = new();
 
+    private bool _schedulerRunning;
+    private int _ctrlBreakPressed;
+    private CancellationTokenSource? _cancelSource;
+
+    /// Provides a registry for managing the registration, scheduling, and execution of command actions.
+    /// Uses the DotNetCommons command line parser to parse arguments on the command line.
     public CommandActionRegistry(IServiceProvider serviceProvider)
+        : this(serviceProvider, new DotNetCommonsCommandLineParser(), serviceProvider.GetService<ILogger<CommandActionRegistry>>())
     {
-        _serviceProvider = serviceProvider;
     }
 
-    public CommandActionRegistry AfterAction(Action<ICommandAction, int> action)
+    /// Provides a registry for managing the registration, scheduling, and execution of command actions.
+    /// Uses a custom command line parser to parse arguments on the command line.
+    public CommandActionRegistry(IServiceProvider serviceProvider, ICommandLineParser commandLineParser,
+        ILogger<CommandActionRegistry>? logger)
+    {
+        _commandLineParser = commandLineParser;
+        _logger            = logger;
+        _serviceProvider   = serviceProvider;
+    }
+
+    /// <summary>
+    /// Sets a callback to be executed after a command action is performed, providing information about the action and its result status.
+    /// </summary>
+    /// <param name="action">The callback function to be executed after a command action.</param>
+    public CommandActionRegistry AfterAction(Action<AfterActionArgs> action)
     {
         _afterActionCallback = action;
         return this;
     }
 
-    public CommandActionRegistry BeforeAction(Action<ICommandAction> action)
+    /// Sets a callback to be executed after help is displayed.
+    public CommandActionRegistry AfterHelp(Action<AfterHelpArgs> action)
+    {
+        _afterHelpCallback = action;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a callback to be executed before a command action is performed, providing information about the action.
+    /// </summary>
+    /// <param name="action">The callback function to be executed before a command action.</param>
+    public CommandActionRegistry BeforeAction(Action<BeforeActionArgs> action)
     {
         _beforeActionCallback = action;
         return this;
+    }
+
+    /// Sets a callback to be executed before help is displayed.
+    public CommandActionRegistry BeforeHelp(Action<BeforeHelpArgs> action)
+    {
+        _beforeHelpCallback = action;
+        return this;
+    }
+
+    private void CtrlCHandler(object? sender, ConsoleCancelEventArgs args)
+    {
+        _ctrlBreakPressed++;
+
+        if (_ctrlBreakPressed == 1 && _cancelSource != null)
+        {
+            args.Cancel = true;
+            using (new SetConsoleColor(ConsoleColor.Yellow))
+                Console.WriteLine("Ctrl-C pressed, signaling job to abort ... press again to force exit");
+            _cancelSource.Cancel();
+        }
+        else
+            args.Cancel = false;
     }
 
     /// <summary>
@@ -42,20 +130,27 @@ public class CommandActionRegistry
     {
         var attr       = command.GetCustomAttribute<CommandActionAttribute>()!;
         var optionType = GetActionOptionType(command);
-        var route      = GetRoute(attr.Route, ' ');
-        
+        var route      = GetRouteName(attr.Route);
+
+        _beforeHelpCallback?.Invoke(new BeforeHelpArgs(true));
+
         Console.WriteLine(route);
         Console.WriteLine(new string('=', route.Length));
 
-        Console.WriteLine();
-        Console.WriteLine(CommandLine.GetFormattedHelpText(optionType));
+        if (optionType != null)
+        {
+            Console.WriteLine();
+            _commandLineParser.DisplayHelpFor(Console.Out, optionType);
+        }
 
         if (attr.HelpText.IsAtLeastOne())
         {
             foreach (var (paragraph, index) in attr.HelpText.WithIndex())
-                foreach (var line in TextTools.WordWrap(paragraph, Console.WindowWidth, index == 0 ? 0 : -2))
-                    Console.WriteLine(line);
+            foreach (var line in TextTools.WordWrap(paragraph, Console.WindowWidth, index == 0 ? 0 : -2))
+                Console.WriteLine(line);
         }
+
+        _afterHelpCallback?.Invoke(new AfterHelpArgs(true));
     }
 
     /// <summary>
@@ -64,8 +159,10 @@ public class CommandActionRegistry
     /// <param name="commands">An array of command types.</param>
     private void DisplayHelp(Type[] commands)
     {
+        _beforeHelpCallback?.Invoke(new BeforeHelpArgs(false));
+
         var entries = commands.Select(x => x.GetCustomAttribute<CommandActionAttribute>()).ToDictionary(
-            x => GetRoute(x!.Route, ' '),
+            x => GetRouteName(x!.Route),
             x => x!.Description
         );
         var maxRoute = entries.Keys.Max(x => x.Length);
@@ -74,6 +171,8 @@ public class CommandActionRegistry
         {
             Console.WriteLine($"{entry.Key.PadRight(maxRoute)}  {entry.Value}");
         }
+
+        _afterHelpCallback?.Invoke(new AfterHelpArgs(false));
     }
 
     /// <summary>
@@ -84,140 +183,159 @@ public class CommandActionRegistry
     /// An integer representing the exit code of the executed command.
     /// Typically, 0 indicates success, while non-zero values indicate errors or specific execution outcomes.
     /// </returns>
-    public int Execute(string[] args)
-    {
-        return Execute(CommandActionOptions.Default, args);
-    }
-
-    /// <summary>
-    /// Executes the registered command action with the provided array of arguments.
-    /// </summary>
-    /// <param name="options">How to handle resolution of commands, whether help can be automatically displayed etc.</param>
-    /// <param name="args">An array of strings representing the command-line arguments passed for execution.</param>
-    /// <returns>
-    /// An integer value indicating the outcome of the execution. Typically, 0 indicates success, while
-    /// non-zero values represent errors or specific execution conditions.
-    /// </returns>
-    // ReSharper disable once MemberCanBePrivate.Global
-    public int Execute(CommandActionOptions options, string[] args)
+    /// <remarks>
+    /// This method is designed to be the "main function" in a job framework. It executes commands, and also captures thrown exceptions,
+    /// prints them on the screen, and provides a suitable return code. It also provides a CTRL-C handler that signals the job to cancel
+    /// the current operation.
+    /// </remarks>
+    public async Task<int> Execute(string[] args)
     {
         if (_commandRegistry.IsEmpty())
             throw new CommandActionResolveException("No command actions are defined.");
 
-        var route     = args.TakeWhile(x => !x.StartsWith('/') && !x.StartsWith('-')).ToList();
-        var remaining = args.Skip(route.Count).ToArray();
-        var help      = route.IsEmpty() && options.HasFlag(CommandActionOptions.ShowHelpOnNoArgs);
+        var route = Resolve(args);
 
-        if (!help && options.HasFlag(CommandActionOptions.AllowHelpVerb))
+        if (route.help)
         {
-            if (route.Any() && route.First() == "help")
-            {
-                route.ExtractFirst();
-                help = true;
-            }
+            if (route.commands.IsEmpty())
+                route.commands = _commandRegistry.Values.ToArray();
 
-            if (route.Any() && route.Last() == "help")
-            {
-                route.ExtractLast();
-                help = true;
-            }
-        }
-
-        var commands = ResolveCommand(route);
-        if (help)
-        {
-            if (commands.IsEmpty())
-                commands = _commandRegistry.Values.ToArray();
-
-            if (commands.IsOne())
-                DisplayHelp(commands.Single());
+            if (!route.routeWasEmpty && route.commands.IsOne())
+                DisplayHelp(route.commands.Single());
             else
-                DisplayHelp(commands);
+                DisplayHelp(route.commands);
 
             return 1;
         }
 
-        if (commands.Length == 0)
+        if (route.commands.Length == 0)
             throw new CommandActionNoCommandFoundException("No such command found.");
 
-        if (commands.Length > 1)
+        if (route.commands.Length > 1)
         {
-            if (!options.HasFlag(CommandActionOptions.ShowHelpOnMultipleMatches))
-                throw new CommandActionMultipleCommandsFoundException(commands);
-
-            DisplayHelp(commands);
-            return 1;
+            DisplayHelp(route.commands);
+            return 0;
         }
 
-        var command = commands.Single();
-        return ExecuteCommand(true, command, remaining);
-    }
+        if (_schedulerRunning)
+            throw new InvalidOperationException("Scheduler is already running");
 
-    /// <summary>
-    /// Executes the specified command action of the given type with the provided arguments.
-    /// </summary>
-    /// <param name="continueOnError">Whether execution should continue if the action results in an error code. If this is false,
-    ///     an <see cref="CommandActionErrorResultException"/> will be thrown.</param>
-    /// <param name="args">An array of strings representing the arguments passed to the command.</param>
-    /// <returns>
-    /// An integer representing the result of the executed command. Typically, 0 indicates successful execution,
-    /// while non-zero values indicate errors or specific execution outcomes.
-    /// </returns>
-    public int ExecuteCommand<TCommand>(bool continueOnError, string[] args)
-    {
-        return ExecuteCommand(continueOnError, typeof(TCommand), args);
-    }
-
-    /// <summary>
-    /// Executes a specific command action of the given type with the provided arguments.
-    /// </summary>
-    /// <param name="continueOnError">Whether execution should continue if the action results in an error code. If this is false,
-    ///     an <see cref="CommandActionErrorResultException"/> will be thrown.</param>
-    /// <param name="commandType">The type of the command action to execute. This must implement <see cref="ICommandAction"/>.</param>
-    /// <param name="args">An array of strings representing the arguments passed to the command.</param>
-    /// <returns>
-    /// An integer representing the result of the executed command. Typically, 0 indicates success, while non-zero values indicate
-    /// errors or specific execution outcomes.
-    /// </returns>
-    // ReSharper disable once MemberCanBePrivate.Global
-    public int ExecuteCommand(bool continueOnError, Type commandType, string[] args)
-    {
-        ICommandAction command;
-
+        _schedulerRunning = true;
+        _cancelSource     = new CancellationTokenSource();
+        _ctrlBreakPressed = 0;
         try
         {
-            CommandLine.DisplayHelpOnEmpty = false;
-            var options = CommandLine.Parse(GetActionOptionType(commandType), args);
+            Schedule(FirstPriority, true, route.commands.Single(), route.remaining);
 
-            using var scope = _serviceProvider.CreateScope();
-            command = (ICommandAction)ActivatorUtilities.CreateInstance(scope.ServiceProvider, commandType);
+            _cancelSource = new CancellationTokenSource();
+            Console.CancelKeyPress += CtrlCHandler;
 
-            var prop = commandType.GetProperty(nameof(CommandAction.Args));
-            prop?.SetValue(command, options);
-            prop = commandType.GetProperty(nameof(CommandAction.Registry));
-            prop?.SetValue(command, this);
+            return await ExecuteScheduler(_cancelSource.Token);
+        }
+        catch (OperationCanceledException e)
+        {
+            LogError(e, $"An exception of type {e.GetType().Name} was thrown.");
+            return ExitCodeOperationCanceled;
         }
         catch (Exception e)
         {
-            throw new CommandActionException($"{commandType.Name}: {e.Message}", e);
+            LogError(e, "An exception of type {e.GetType().Name} was thrown.");
+            return ExitCodeFatalError;
         }
+        finally
+        {
+            Console.CancelKeyPress -= CtrlCHandler;
+            _schedulerRunning = false;
+            _cancelSource.Dispose();
+        }
+    }
 
+    private void LogError(Exception exception, string message)
+    {
+        if (_logger != null)
+            _logger.LogError(exception, message);
+        else
+        {
+            using (new SetConsoleColor(ConsoleColor.Red))
+                Console.WriteLine($"{message}: {exception.Message}");
+        }
+    }
+
+    /// Executes a command action based on the provided invocation, handling pre-action and post-action callbacks.
+    private async Task<int> ExecuteCommand(Invocation invocation, CancellationToken ct, IServiceProvider globalScope)
+    {
+        // Create a new scope specific for this run
+        using var currentScope = _serviceProvider.CreateScope();
+
+        // Try-catch block for initialization exceptions
+        CommandAction command;
         try
         {
-            _beforeActionCallback?.Invoke(command);
-            var result = command.Execute();
-            _afterActionCallback?.Invoke(command, result);
+            // Create the command objects and initialize it
+            command = (CommandAction)ActivatorUtilities.CreateInstance(currentScope.ServiceProvider, invocation.Action);
+            command.Registry = this;
+            command.GlobalScope = globalScope;
+            command.JobScope = currentScope.ServiceProvider;
 
-            if (!continueOnError && result != 0)
-                throw new CommandActionErrorResultException(result);
+            // Set the optional argument object
+            var prop = invocation.Action.GetProperty(nameof(CommandAction<object>.Args));
+            prop?.SetValue(command, invocation.Options);
+
+            // Ready for custom wiring up
+            command.Initialize();
+
+            // Call the before action handler
+            _beforeActionCallback?.Invoke(new BeforeActionArgs(command));
+        }
+        catch (Exception e)
+        {
+            throw new CommandActionException($"{invocation.Action.Name}: {e.Message}", e);
+        }
+
+        // Try-catch block for anything that requires the after action handler to be called
+        try
+        {
+            ct.ThrowIfCancellationRequested();
+            var result = await command.ExecuteAsync(ct);
+            _afterActionCallback?.Invoke(new AfterActionArgs(command, result));
 
             return result;
         }
+        catch (OperationCanceledException)
+        {
+            _afterActionCallback?.Invoke(new AfterActionArgs(command, ExitCodeOperationCanceled));
+            throw;
+        }
         catch (Exception e)
         {
-            _afterActionCallback?.Invoke(command, 255);
-            throw new CommandActionException($"{commandType.Name}: {e.Message}", e);
+            _afterActionCallback?.Invoke(new AfterActionArgs(command, ExitCodeFatalError));
+            throw new CommandActionException($"{invocation.Action.Name}: {e.Message}", e);
         }
+    }
+
+    /// <summary>
+    /// Executes the scheduled commands from the invocation queue in priority order.
+    /// If a command fails and its "ContinueOnError" property is set to false, execution halts.
+    /// Returns the result of the last executed command or a designated exit code if no jobs are executed.
+    /// </summary>
+    /// <returns>
+    /// The result code of the last executed command, or -1 if no commands were scheduled.
+    /// </returns>
+    public async Task<int> ExecuteScheduler(CancellationToken ct = default)
+    {
+        using var schedulerScope = _serviceProvider.CreateScope();
+
+        var result = ExitCodeNoJobsScheduled;
+        while (_invocationQueue.Count > 0 && !ct.IsCancellationRequested)
+        {
+            var invocation = _invocationQueue.Dequeue();
+            result = await ExecuteCommand(invocation, ct, schedulerScope.ServiceProvider);
+
+            if (result != 0 && !invocation.ContinueOnError)
+                break;
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -225,88 +343,242 @@ public class CommandActionRegistry
     /// </summary>
     /// <param name="commandType">The <see cref="Type"/> of the command whose associated options type is to be resolved. This must inherit
     /// from a generic CommandAction&lt;&gt; type.</param>
-    private static Type GetActionOptionType(Type commandType)
+    private static Type? GetActionOptionType(Type commandType)
     {
         Type? commandActionClass = commandType;
         while (commandActionClass != null)
         {
             if (commandActionClass.IsGenericType && commandActionClass.GetGenericTypeDefinition() == typeof(CommandAction<>))
                 return commandActionClass.GetGenericArguments().Single();
-            
+
             commandActionClass = commandActionClass.BaseType;
         }
-        
-        throw new CommandActionResolveException($"Unable to instantiate {commandType.Name}: Generic parent CommandAction<> not found in inheritance.");
+
+        return null;
     }
 
-    private static string GetRoute(ICollection<string> route, char delimiter = '|') => string.Join(delimiter, route
-        .Where(r => r.IsSet())
-        .Select(r => r.ToLower()));
+    /// Constructs a route name by joining the elements of the provided collection, e.g. ["set", "value"] => "set value".
+    private static string GetRouteName(ICollection<string> route)
+    {
+        return string.Join(' ', route
+            .Where(r => r.IsSet())
+            .Select(r => r.ToLower()));
+    }
+
+    /// Constructs a route path by joining the elements of the provided collection with pipes, e.g. ["set", "value"] => "|set|value|".
+    private static string GetRoutePath(ICollection<string> route)
+    {
+        var result = '|' + string.Join('|', route
+                             .Where(r => r.IsSet())
+                             .Select(r => r.ToLower()))
+                         + '|';
+
+        while (result.Contains("||"))
+            result = result.Replace("||", "|");
+
+        return result;
+    }
+
+    /// Checks if a command of the specified type is scheduled in the invocation queue.
+    public bool IsCommandScheduled(Type type)
+    {
+        return _invocationQueue.UnorderedItems.Any(x => x.Element.Action == type);
+    }
+
+    /// Checks if a command of the specified type is scheduled in the invocation queue.
+    public bool IsCommandScheduled<TCommand>()
+        where TCommand : CommandAction
+    {
+        return _invocationQueue.UnorderedItems.Any(x => x.Element.Action == typeof(TCommand));
+    }
 
     /// <summary>
-    /// Registers the specified assemblies by scanning for classes that implement the ICommandAction interface
-    /// and are decorated with the CommandActionAttribute. These identified command actions are added
-    /// to the command registry for execution.
+    /// Resolves the command actions based on the provided arguments, determines if help is requested,
+    /// and returns the matching command types along with any remaining arguments.
+    /// </summary>
+    /// <param name="args">An array of arguments provided for command resolution.</param>
+    public (Type[] commands, bool help, bool routeWasEmpty, string[] remaining) Resolve(string[] args)
+    {
+        if (_commandRegistry.IsEmpty())
+            throw new CommandActionResolveException("No command actions are defined.");
+
+        var route     = args.TakeWhile(x => !x.StartsWith('/') && !x.StartsWith('-')).ToList();
+        var remaining = args.Skip(route.Count).ToArray();
+        var help      = route.IsEmpty();
+
+        if (route.IsAtLeastOne() && route.First() == "help")
+        {
+            route.ExtractFirst();
+            help = true;
+        }
+
+        if (route.IsAtLeastOne() && route.Last() == "help")
+        {
+            route.ExtractLast();
+            help = true;
+        }
+
+        var search = GetRoutePath(route);
+        var types = _commandRegistry
+            .Where(x => x.Key.StartsWith(search, StringComparison.CurrentCultureIgnoreCase))
+            .Select(x => x.Value)
+            .ToArray();
+
+        return (types, help, route.IsEmpty(), remaining);
+    }
+
+    private void Register(Type commandClass, string[] route)
+    {
+        var path = GetRoutePath(route);
+        if (path.IsEmpty())
+            throw new CommandActionInitializationException(commandClass, "CommandAction must provide a valid route.");
+
+        if (!_commandRegistry.TryAdd(path, commandClass))
+            throw new CommandActionInitializationException(commandClass, "A command with the same route is already defined.");
+    }
+
+    /// <summary>
+    /// Registers the specified assemblies by scanning for classes that implement CommandAction and are decorated with the
+    /// CommandActionAttribute. These identified command actions are added to the command registry for execution.
     /// </summary>
     /// <param name="assemblies">An array of assemblies to scan for command action classes to register.</param>
-    /// <returns>
-    /// The current instance of the CommandActionRegistry to allow for method chaining after registering the assemblies.
-    /// </returns>
-    // ReSharper disable once MemberCanBePrivate.Global
     public CommandActionRegistry RegisterAssemblies(params Assembly[] assemblies)
     {
         foreach (var assembly in assemblies)
         {
             var commandClasses = assembly.GetTypes()
-                .Where(t => t.IsClass && t.IsAssignableTo(typeof(ICommandAction)))
+                .Where(t => t.IsClass && t.IsAssignableTo(typeof(CommandAction)))
                 .ToArray();
 
             foreach (var commandClass in commandClasses)
             {
                 var attr = commandClass.GetCustomAttribute<CommandActionAttribute>();
-                if (attr == null)
-                    throw new CommandActionInitializationException(commandClass, "CommandAction class must have a [CommandAction] attribute.");
-
-                var route = GetRoute(attr.Route);
-                if (route.IsEmpty())
-                    throw new CommandActionInitializationException(commandClass, "[CommandAction] attribute must provide a valid route.");
-                
-                if (!_commandRegistry.TryAdd(route, commandClass))
-                    throw new CommandActionInitializationException(commandClass, "A command with the same route is already defined.");
+                if (attr != null)
+                    Register(commandClass, attr.Route);
             }
         }
 
         return this;
     }
 
-    /// <summary>
-    /// Registers all command actions from the calling assembly by scanning for classes
-    /// that implement the ICommandAction interface and are decorated with the CommandActionAttribute.
-    /// The identified command actions are automatically added to the command registry.
-    /// </summary>
-    /// <returns>
-    /// The current instance of the CommandActionRegistry, enabling method chaining after completing
-    /// the registration process for the calling assembly.
-    /// </returns>
+    /// Registers all command actions from the calling assembly by scanning for classes that implement CommandAction and are decorated
+    /// with the CommandActionAttribute. The identified command actions are automatically added to the command registry.
     public CommandActionRegistry RegisterThis()
     {
         return RegisterAssemblies(Assembly.GetCallingAssembly());
     }
 
     /// <summary>
-    /// Resolves and retrieves a list of command types based on the provided route sequence.
+    /// Schedules a command action for execution with the specified priority, error handling behavior, command type,
+    /// and command-line arguments.
     /// </summary>
-    /// <param name="route">A collection of strings representing the command route used to identify the target commands to resolve.</param>
-    /// <returns>
-    /// An array of <see cref="Type"/> objects representing the resolved command types that match the specified route.
-    /// If no commands are found, an empty array is returned.
-    /// </returns>
-    private Type[] ResolveCommand(ICollection<string> route)
+    /// <param name="priority">The priority level of the command action in the execution queue. Lower values indicate earlier execution
+    /// in the priority queue.</param>
+    /// <param name="continueOnError">Indicates whether subsequent actions should continue executing if an error occurs</param>
+    /// <param name="type">The command action to execute.</param>
+    /// <param name="args">Optional arguments that the command action requires.</param>
+    public CommandActionRegistry Schedule(int priority, bool continueOnError, Type type, string[] args)
     {
-        var search = GetRoute(route);
-        return _commandRegistry
-            .Where(x => x.Key.Equals(search, StringComparison.CurrentCultureIgnoreCase))
-            .Select(x => x.Value)
-            .ToArray();
+        if (!type.IsAssignableTo(typeof(CommandAction)))
+            throw new CommandActionInitializationException(type, "Type must inherit from CommandAction.");
+
+        var argsType = GetActionOptionType(type);
+        if (argsType == null)
+            _invocationQueue.Enqueue(new Invocation(type, null, continueOnError), priority);
+        else
+        {
+            var options = _commandLineParser.Parse(argsType, args);
+            _invocationQueue.Enqueue(new Invocation(type, options, continueOnError), priority);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Schedules a command action for execution with the specified priority and error handling behavior. The command is supposed to be
+    /// a CommandAction that does not accept an argument object.
+    /// </summary>
+    /// <param name="priority">The priority level of the command action in the execution queue. Lower values indicate earlier execution
+    /// in the priority queue.</param>
+    /// <param name="continueOnError">Indicates whether subsequent actions should continue executing if an error occurs</param>
+    public CommandActionRegistry Schedule<TCommand>(int priority = MediumPriority, bool continueOnError = false)
+        where TCommand : CommandAction
+    {
+        var argsType = GetActionOptionType(typeof(TCommand));
+        if (argsType != null)
+            throw new CommandActionException($"Command action {typeof(TCommand).Name} needs an argument object of type {argsType.Name}.");
+
+        _invocationQueue.Enqueue(new Invocation(typeof(TCommand), null, continueOnError), priority);
+        return this;
+    }
+
+    /// <summary>
+    /// Schedules a command action for execution with the specified priority and error handling behavior. The command is supposed to be
+    /// a CommandAction&lt;TArgs&gt; that does requires a specific argument object.
+    /// </summary>
+    /// <param name="priority">The priority level of the command action in the execution queue. Lower values indicate earlier execution
+    /// in the priority queue.</param>
+    /// <param name="continueOnError">Indicates whether subsequent actions should continue executing if an error occurs</param>
+    /// <param name="args">An argument object to pass to the command action.</param>
+    public CommandActionRegistry Schedule<TCommand, TArgs>(int priority, bool continueOnError, TArgs args)
+        where TCommand : CommandAction<TArgs>
+        where TArgs : class, new()
+    {
+        _invocationQueue.Enqueue(new Invocation(typeof(TCommand), args, continueOnError), priority);
+        return this;
+    }
+
+    /// <summary>
+    /// Attempts to schedule a command action with the specified priority and arguments.
+    /// If the command is already scheduled (even with a different priority), it will not be scheduled again.
+    /// </summary>
+    /// <param name="priority">The priority level of the command, where lower numbers indicate higher priority.</param>
+    /// <param name="continueOnError">Indicates whether the execution should continue if the command fails.</param>
+    /// <param name="type">The type of the command action to schedule.</param>
+    /// <param name="args">An array of arguments to pass to the command action.</param>
+    /// <returns>Returns true if the command is successfully scheduled; otherwise, false if a command of the same type is already scheduled.</returns>
+    public bool TrySchedule(int priority, bool continueOnError, Type type, string[] args)
+    {
+        if (IsCommandScheduled(type))
+            return false;
+
+        Schedule(priority, continueOnError, type, args);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to schedule a command action with the specified priority and arguments.
+    /// If the command is already scheduled (even with a different priority), it will not be scheduled again.
+    /// </summary>
+    /// <param name="priority">The priority level of the command, where lower numbers indicate higher priority.</param>
+    /// <param name="continueOnError">Indicates whether the execution should continue if the command fails.</param>
+    /// <returns>Returns true if the command is successfully scheduled; otherwise, false if a command of the same type is already scheduled.</returns>
+    public bool TrySchedule<TCommand>(int priority, bool continueOnError)
+        where TCommand : CommandAction
+    {
+        if (IsCommandScheduled(typeof(TCommand)))
+            return false;
+
+        Schedule<TCommand>(priority, continueOnError);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to schedule a command action with the specified priority and arguments.
+    /// If the command is already scheduled (even with a different priority), it will not be scheduled again.
+    /// </summary>
+    /// <param name="priority">The priority level of the command, where lower numbers indicate higher priority.</param>
+    /// <param name="continueOnError">Indicates whether the execution should continue if the command fails.</param>
+    /// <param name="args">The argument options to pass to the command action.</param>
+    /// <returns>Returns true if the command is successfully scheduled; otherwise, false if a command of the same type is already scheduled.</returns>
+    public bool TrySchedule<TCommand, TArgs>(int priority, bool continueOnError, TArgs args)
+        where TCommand : CommandAction<TArgs>
+        where TArgs : class, new()
+    {
+        if (IsCommandScheduled(typeof(TCommand)))
+            return false;
+
+        Schedule<TCommand, TArgs>(priority, continueOnError, args);
+        return true;
     }
 }

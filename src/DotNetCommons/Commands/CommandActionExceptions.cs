@@ -12,8 +12,3 @@ public class CommandActionMultipleCommandsFoundException(Type[] commands) : Exce
 {
     public Type[] Commands { get; } = commands;
 }
-
-public class CommandActionErrorResultException(int resultCode) : Exception
-{
-    public int ResultCode { get; } = resultCode;
-}

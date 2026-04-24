@@ -5,7 +5,7 @@ namespace DotNetCommons.Text.Tokenizer;
 /// <summary>
 /// Contains a list of captured tokens.
 /// </summary>
-public class TokenList<T> : List<Token<T>> where T : struct
+public class TokenList<T> : List<Token<T>> where T : struct, Enum
 {
     public TokenList()
     {
@@ -26,8 +26,8 @@ public class TokenList<T> : List<Token<T>> where T : struct
     {
         var result = this.ExtractFirstOrDefault();
         if (required && result == null)
-            throw new StringTokenizerException($"Unexpected end of text");
-        if (result != null && allowed != null && allowed.Length > 0 && !allowed.Contains(result.ID))
+            throw new StringTokenizerException("Unexpected end of text");
+        if (result != null && allowed != null && allowed.Length > 0 && !allowed.Contains(result.Id))
             throw new StringTokenizerException($"Unexpected '{result.Text}' in text at {result.Line}:{result.Column}");
 
         return result;
@@ -60,6 +60,29 @@ public class TokenList<T> : List<Token<T>> where T : struct
     }
 
     /// <summary>
+    /// Evaluate to see if a given token in the list is of a specific type.
+    /// </summary>
+    /// <param name="position">Position in the list; can be out of bounds.</param>
+    /// <param name="token">Expected token type</param>
+    /// <returns>True if it's a match; false otherwise, or if the position is out of bounds.</returns>
+    public bool IsToken(int position, T token)
+    {
+        return position >= 0 && position < Count && this[position].Id.Equals(token);
+    }
+
+    /// <summary>
+    /// Evaluate to see if a given token in the list is of a specific type and equals the given text.
+    /// </summary>
+    /// <param name="position">Position in the list; can be out of bounds.</param>
+    /// <param name="token">Expected token type</param>
+    /// <param name="text">Expected token text</param>
+    /// <returns>True if it's a match; false otherwise, or if the position is out of bounds.</returns>
+    public bool IsToken(int position, T token, string text)
+    {
+        return position >= 0 && position < Count && this[position].Id.Equals(token) && this[position].Text == text;
+    }
+
+    /// <summary>
     /// Peek at the next token.
     /// </summary>
     public Token<T>? Peek()
@@ -74,7 +97,7 @@ public class TokenList<T> : List<Token<T>> where T : struct
     public bool Peek(params T[] allowed)
     {
         var next = Peek();
-        return next != null && allowed.Contains(next.ID);
+        return next != null && allowed.Contains(next.Id);
     }
 
     /// <summary>
@@ -83,7 +106,7 @@ public class TokenList<T> : List<Token<T>> where T : struct
     /// <param name="values">Values to remove.</param>
     public void RemoveValues(params T[] values)
     {
-        RemoveAll(token => values.Contains(token.ID));
+        RemoveAll(token => values.Contains(token.Id));
     }
 
     /// <summary>
@@ -116,7 +139,7 @@ public class TokenList<T> : List<Token<T>> where T : struct
 
         foreach (var token in this)
         {
-            if (token.ID.Equals(splitValue))
+            if (token.Id.Equals(splitValue))
                 result.Add(list = []);
             else
                 list.Add(token);
@@ -150,7 +173,7 @@ public class TokenList<T> : List<Token<T>> where T : struct
     /// </summary>
     private void TrimEnd(T[] values)
     {
-        while (Count > 0 && values.Contains(this[Count - 1].ID))
+        while (Count > 0 && values.Contains(this[Count - 1].Id))
             RemoveAt(Count - 1);
     }
 
@@ -159,7 +182,7 @@ public class TokenList<T> : List<Token<T>> where T : struct
     /// </summary>
     private void TrimStart(T[] values)
     {
-        while (Count > 0 && values.Contains(this[0].ID))
+        while (Count > 0 && values.Contains(this[0].Id))
             RemoveAt(0);
     }
 }

@@ -69,21 +69,6 @@ public abstract class Holiday
     }
 
     private readonly Dictionary<int, DateTime> _dates = new();
-    private DateTime _nextDate = DateTime.MinValue;
-
-    /// <summary>
-    /// When the next holiday occurs.
-    /// </summary>
-    public DateTime NextDate
-    {
-        get
-        {
-            if (_nextDate < DateTime.Today)
-                Recalculate();
-
-            return _nextDate;
-        }
-    }
 
     /// <summary>
     /// Holiday type (its status - half day, federal, unofficial etc).
@@ -101,6 +86,7 @@ public abstract class Holiday
     public Func<DateTime, DateTime>? ObservedRule { get; set; }
 
     protected internal abstract DateTime InternalCalculateDate(int year);
+
     public abstract string TextDefinition();
 
     protected Holiday(string name, HolidayType type)
@@ -114,11 +100,13 @@ public abstract class Holiday
     /// holiday itself, nor any other holidays.
     /// </summary>
     /// <returns>Business days left.</returns>
-    public int BusinessDaysLeft()
+    public int BusinessDaysLeft(TimeProvider? clock = null)
     {
+        clock ??= TimeProvider.System;
+
         var result = 0;
-        var dt = DateTime.Today;
-        var next = NextDate;
+        var dt = clock.Today();
+        var next = NextDate(clock);
 
         while (dt < next)
         {
@@ -152,42 +140,33 @@ public abstract class Holiday
     /// Number of whole days left until the holiday. Does not include the holiday itself.
     /// </summary>
     /// <returns>Days left.</returns>
-    public int DaysLeft()
+    public int DaysLeft(TimeProvider? clock = null)
     {
-        return (int)(NextDate - DateTime.Today).TotalDays;
+        clock ??= TimeProvider.System;
+
+        return (int)(NextDate(clock) - clock.Today()).TotalDays;
     }
 
     /// <summary>
     /// Determine whether the given date falls on this holiday.
     /// </summary>
     /// <param name="date">Date to test.</param>
+    /// <param name="applyObservedRule">Whether to apply observation rules or not.</param>
     /// <returns>True if the date is the holiday for that year.</returns>
-    public bool IsHoliday(DateTime date)
+    public bool IsHoliday(DateTime date, bool applyObservedRule)
     {
-        return date.Date == CalculateDate(date.Year, false);
+        return date.Date == CalculateDate(date.Year, applyObservedRule);
     }
 
     /// <summary>
-    /// Determine whether the given date falls on this observed holiday.
+    /// When the next holiday occurs.
     /// </summary>
-    /// <param name="date">Date to test.</param>
-    /// <returns>True if the date is the holiday for that year.</returns>
-    public bool IsObservedHoliday(DateTime date)
+    public DateTime NextDate(TimeProvider? clock = null)
     {
-        return date.Date == CalculateDate(date.Year, true);
-    }
+        var today = (clock ?? TimeProvider.System).Today();
 
-    private void Recalculate()
-    {
-        var year = DateTime.Today.Year;
-        if (_nextDate.Year == year)
-            _nextDate = CalculateDate(year + 1, false);
-        else
-        {
-            _nextDate = CalculateDate(year, false);
-            if (_nextDate < DateTime.Today)
-                _nextDate = CalculateDate(year + 1, false);
-        }
+        var result = CalculateDate(today.Year, true);
+        return result >= today ? result : CalculateDate(today.Year + 1, true);
     }
 
     /// <summary>
@@ -196,6 +175,6 @@ public abstract class Holiday
     /// <returns>String containing the name of the holiday and date it occurs on.</returns>
     public override string ToString()
     {
-        return (Name != null ? Name + ": " : "") + NextDate.ToShortDateString();
+        return (Name != null ? Name + ": " : "") + NextDate().ToShortDateString();
     }
 }

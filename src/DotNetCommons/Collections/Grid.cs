@@ -160,12 +160,19 @@ public class Grid<TRow, TCol, TData>
         Rows = new HashSet<TRow>(rowComparer);
     }
 
+    public void Clear()
+    {
+        Columns.Clear();
+        Rows.Clear();
+        Data.Clear();
+    }
+
     public bool Exists(TRow row, TCol column)
     {
         var key = Key(row, column);
         return Data.ContainsKey(key);
     }
-    
+
     /// <summary>
     /// Extract a given row/column item from the grid, removing it.
     /// </summary>

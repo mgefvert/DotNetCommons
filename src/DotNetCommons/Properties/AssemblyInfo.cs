@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("DotNetCommons.Test")]
+[assembly: InternalsVisibleTo("DotNetCommonTests")]

@@ -174,4 +174,14 @@ internal class CommandLineProcessor
 
         definition.Property.SetPropertyValue(Result, value);
     }
+
+    public void Validate()
+    {
+        foreach (var definition in Definitions.Where(x => x.Required))
+        {
+            var value = definition.Property.GetValue(Result);
+            if (value == null)
+                throw new CommandLineParameterException(definition.OptionString, CommandLineParameterError.ValueRequired);
+        }
+    }
 }

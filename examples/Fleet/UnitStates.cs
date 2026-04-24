@@ -5,14 +5,34 @@ namespace Fleet;
 
 public class UnitStates : Dictionary<string, UnitState>
 {
+    private static readonly string[] Subs =
+    [
+        ..Enumerable.Range(1, 8).Select(i => $"ohio-{i}"),
+        ..Enumerable.Range(1, 2).Select(i => $"columbia-{i}"),
+        ..Enumerable.Range(1, 5).Select(i => $"los-angeles-{i}"),
+    ];
+
+    private static readonly string[] Wings =
+    [
+        "2nd-wing", "5th-wing", "307th-wing", "509th-wing"
+    ];
+
+    private void Initialize()
+    {
+        foreach (var name in Subs)
+            this[name] = new UnitState(true);
+        foreach (var name in Wings)
+            this[name] = new UnitState(false);
+    }
+
     /// <summary>
     /// Load UnitStates from a JSON file.
     /// </summary>
-    public void Load(string fileName, Action<UnitStates> initialize)
+    public void Load(string fileName)
     {
         if (!File.Exists(fileName))
         {
-            initialize(this);
+            Initialize();
             return;
         }
 

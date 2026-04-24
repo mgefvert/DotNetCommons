@@ -10,12 +10,12 @@ public class Token
     /// <summary>
     /// Text captured by this token. Includes quotes and surrounding text.
     /// </summary>
-    public string? Text { get; private set; }
+    public string? Text { get; set; }
 
     /// <summary>
     /// Text captured by this token. Excludes surrounding quotes and similar.
     /// </summary>
-    public string? InsideText { get; private set; }
+    public string? InsideText { get; set; }
 
     /// <summary>
     /// Line number where this text was captured.
@@ -26,6 +26,11 @@ public class Token
     /// Column number where this text was captured.
     /// </summary>
     public int Column { get; }
+
+    /// <summary>
+    /// Generic tag that can hold any object.
+    /// </summary>
+    public object? Tag { get; set; }
 
     /// <summary>
     /// Default Empty token.
@@ -51,23 +56,23 @@ public class Token
     }
 }
 
-public class Token<T> : Token where T : struct
+public class Token<T> : Token where T : struct, Enum
 {
     public Definition<T>? Definition { get; }
     public TokenList<T> Section { get; } = [];
-    public T ID { get; }
+    public T Id { get; set; }
 
     public Token(Definition<T> definition, int line, int column, string? text = null)
         : base(line, column, text)
     {
         Definition = definition;
-        ID = definition.ID;
+        Id = definition.Id;
     }
 
     public override string ToString() => ToString(false);
 
     public string ToString(bool insideText)
     {
-        return $"[{ID}:{(insideText ? InsideText : Text)}{(Section.Any() ? " " + Section : "")}]";
+        return $"[{Id}:{(insideText ? InsideText : Text)}{(Section.Any() ? " " + Section : "")}]";
     }
 }

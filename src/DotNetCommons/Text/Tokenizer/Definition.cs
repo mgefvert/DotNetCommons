@@ -22,7 +22,7 @@ public enum TokenMode
 public abstract class Definition<T> where T : struct
 {
     public bool Discard { get; }
-    public T ID { get; }
+    public T Id { get; }
     
     /// <summary>
     /// Generic value that can be used for user-defined things. 
@@ -32,7 +32,7 @@ public abstract class Definition<T> where T : struct
     protected Definition(T id, bool discard)
     {
         Discard = discard;
-        ID = id;
+        Id = id;
     }
 }
 

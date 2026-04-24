@@ -1,11 +1,13 @@
 ﻿using System.Runtime.InteropServices;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
+
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
 
 namespace DotNetCommons.WinForms;
 
-// ReSharper disable InconsistentNaming
 public static partial class WinApi
 {
     public delegate bool EnumThreadDelegate (IntPtr hWnd, IntPtr lParam);
@@ -73,8 +75,11 @@ public static partial class WinApi
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     public static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, ServiceAccessRights dwDesiredAccess);
 
+    [DllImport("advapi32.dll", SetLastError = true)]
+    public static extern bool QueryServiceConfig(IntPtr hService, IntPtr lpServiceConfig, int cbBufSize, out int pcbBytesNeeded);
+    
     [DllImport("advapi32.dll")]
-    public static extern int QueryServiceStatus(IntPtr hService, SERVICE_STATUS lpServiceStatus);
+    public static extern int QueryServiceStatus(IntPtr hService, ref SERVICE_STATUS lpServiceStatus);
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -84,6 +89,9 @@ public static partial class WinApi
 
     [DllImport("user32.dll")]
     public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid powerSettingGuid, int flags);
 
     [DllImport("User32.dll", CharSet = CharSet.Auto)]
     public static extern int RegisterWindowMessage(string msg);

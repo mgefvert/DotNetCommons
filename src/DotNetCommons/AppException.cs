@@ -12,12 +12,11 @@ public class AppException : Exception
     {
     }
 
-    public AppException(string userMessage) : 
-        this(HttpStatusCode.InternalServerError, userMessage)
+    public AppException(string userMessage) : this(HttpStatusCode.InternalServerError, userMessage)
     {
     }
 
-    public AppException(HttpStatusCode statusCode, string userMessage)
+    public AppException(HttpStatusCode statusCode, string userMessage) : base(userMessage)
     {
         StatusCode  = statusCode;
         UserMessage = userMessage;

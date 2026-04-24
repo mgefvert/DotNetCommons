@@ -109,4 +109,20 @@ public class TotpGeneratorRfc6238
             _                    => throw new ArgumentException("Invalid TOTP algorithm", nameof(algorithm))
         };
     }
+
+    public bool ValidatePassword(string numericPassword, int driftCount = 1)
+    {
+		if (string.IsNullOrEmpty(numericPassword))
+			return false;
+		
+        var now = DateTime.UtcNow;
+        for (var i = -driftCount; i <= driftCount; i++)
+        {
+            var testTime = now.AddSeconds(_timeStep * i);
+            if (GeneratePassword(testTime) == numericPassword)
+                return true;
+        }
+
+        return false;
+    }
 }
