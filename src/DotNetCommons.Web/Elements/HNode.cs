@@ -1,10 +1,10 @@
 ﻿namespace DotNetCommons.Web.Elements;
 
-public class HtmlNode
+public class HNode
 {
-    public List<HtmlNode> Children { get; } = [];
-    public IEnumerable<HtmlElement> Elements => Children.OfType<HtmlElement>();
-    public IEnumerable<HtmlNode> Nodes => Children.Where(x => x is not HtmlAttribute);
+    public List<HNode> Children { get; } = [];
+    public IEnumerable<HElement> Elements => Children.OfType<HElement>();
+    public IEnumerable<HNode> Nodes => Children.Where(x => x is not HAttribute);
 
     public bool HasNodes => Nodes.Any();
 

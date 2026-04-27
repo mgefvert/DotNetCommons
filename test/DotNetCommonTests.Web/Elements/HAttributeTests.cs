@@ -4,12 +4,12 @@ using FluentAssertions;
 namespace DotNetCommonTests.Web.Elements;
 
 [TestClass]
-public class HtmlAttributeTests
+public class HAttributeTests
 {
     [TestMethod]
     public void Constructor_NameOnly_SetsNameAndLeavesValueNull()
     {
-        var attribute = new HtmlAttribute("disabled");
+        var attribute = new HAttribute("disabled");
 
         attribute.Name.Should().Be("disabled");
         attribute.Value.Should().BeNull();
@@ -18,7 +18,7 @@ public class HtmlAttributeTests
     [TestMethod]
     public void Constructor_NameAndValue_SetsNameAndValue()
     {
-        var attribute = new HtmlAttribute("href", "/products");
+        var attribute = new HAttribute("href", "/products");
 
         attribute.Name.Should().Be("href");
         attribute.Value.Should().Be("/products");
@@ -27,7 +27,7 @@ public class HtmlAttributeTests
     [TestMethod]
     public void Render_WithNullValue_RendersNameOnly()
     {
-        var attribute = new HtmlAttribute("required");
+        var attribute = new HAttribute("required");
 
         attribute.Render().Should().Be("required");
     }
@@ -35,7 +35,7 @@ public class HtmlAttributeTests
     [TestMethod]
     public void Render_WithValue_EncodesAndFormatsHtmlAttribute()
     {
-        var attribute = new HtmlAttribute("title", "Bob \"<Admin>\" & Co");
+        var attribute = new HAttribute("title", "Bob \"<Admin>\" & Co");
 
         attribute.Render().Should().Be("title=\"Bob &quot;&lt;Admin>&quot; &amp; Co\"");
     }

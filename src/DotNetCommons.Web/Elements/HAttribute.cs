@@ -2,17 +2,17 @@
 
 namespace DotNetCommons.Web.Elements;
 
-public class HtmlAttribute : HtmlNode
+public class HAttribute : HNode
 {
     public string Name { get; }
     public string? Value { get; set; }
 
-    public HtmlAttribute(string name)
+    public HAttribute(string name)
     {
         Name = name;
     }
 
-    public HtmlAttribute(string name, string value) : this(name)
+    public HAttribute(string name, string value) : this(name)
     {
         Value = value;
     }

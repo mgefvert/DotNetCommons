@@ -4,12 +4,12 @@ using FluentAssertions;
 namespace DotNetCommonTests.Web.Elements;
 
 [TestClass]
-public class HtmlCommentTests
+public class HCommentTests
 {
     [TestMethod]
     public void Constructor_WithoutText_LeavesTextNull()
     {
-        var comment = new HtmlComment();
+        var comment = new HComment();
 
         comment.Text.Should().BeNull();
     }
@@ -17,7 +17,7 @@ public class HtmlCommentTests
     [TestMethod]
     public void Constructor_WithText_SetsText()
     {
-        var comment = new HtmlComment("hello");
+        var comment = new HComment("hello");
 
         comment.Text.Should().Be("hello");
     }
@@ -25,7 +25,7 @@ public class HtmlCommentTests
     [TestMethod]
     public void Render_EncodesTextInsideHtmlComment()
     {
-        var comment = new HtmlComment("<script>alert('x')</script>");
+        var comment = new HComment("<script>alert('x')</script>");
 
         comment.Render().Should().Be("<!-- &lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt; -->");
     }

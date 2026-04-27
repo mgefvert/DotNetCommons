@@ -2,15 +2,15 @@
 
 namespace DotNetCommons.Web.Elements;
 
-public class HtmlComment : HtmlNode
+public class HComment : HNode
 {
     public string? Text { get; set; }
 
-    public HtmlComment()
+    public HComment()
     {
     }
 
-    public HtmlComment(string text)
+    public HComment(string text)
     {
         Text = text;
     }
