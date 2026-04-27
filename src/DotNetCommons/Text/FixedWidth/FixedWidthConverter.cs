@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace DotNetCommons.Text.FixedWidth;
@@ -111,5 +112,42 @@ public class FixedWidthConverter
         }
 
         return result;
+    }
+
+    public async IAsyncEnumerable<T> Read<T>(StreamReader reader, [EnumeratorCancellation] CancellationToken ct = default)
+        where T : class, new()
+    {
+        while (!reader.EndOfStream)
+        {
+            var item = await ReadOne<T>(reader, ct);
+            if (item != null)
+                yield return item;
+            else
+                yield break;
+        }
+    }
+
+    public async Task<T?> ReadOne<T>(StreamReader reader, CancellationToken ct = default)
+        where T : class, new()
+    {
+        var line = await reader.ReadLineAsync(ct);
+        return line == null ? null : Parse<T>(line);
+    }
+
+    public async Task Write<T>(StreamWriter writer, IEnumerable<T> items, CancellationToken ct = default)
+    {
+        foreach (var item in items)
+        {
+            if (ct.IsCancellationRequested)
+                break;
+
+            await WriteOne(writer, item);
+        }
+    }
+
+    public async Task WriteOne<T>(StreamWriter writer, T item, CancellationToken ct = default)
+    {
+        var line = Convert(item);
+        await writer.WriteLineAsync(line);
     }
 }
