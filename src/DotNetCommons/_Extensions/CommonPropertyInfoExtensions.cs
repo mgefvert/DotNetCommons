@@ -97,8 +97,9 @@ public static class CommonPropertyInfoExtensions
             else if (propertyType == typeof(bool))
                 value = !ValueIsNull(value) && value!.ToString()!.ParseBoolean(false);
             else if (propertyType.IsInterface && value.GetType().IsAssignableTo(propertyType))
+            {
                 // If the value already implements the interface requested by the target property, do nothing
-                value = value;
+            }
             else
                 value = Convert.ChangeType(value, propertyType, culture);
         }
