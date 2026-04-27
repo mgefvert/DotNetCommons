@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
-using DotNetCommons.Net;
 using Microsoft.AspNetCore.Html;
 
 // ReSharper disable UnusedMember.Global
@@ -27,14 +26,14 @@ public static class HtmlTools
     ///                    Examples include "404", "mm", "identicon".</param>
     /// <param name="rating">Optional. The rating of the Gravatar image. Examples include "g", "pg", "r", or "x".</param>
     /// <returns>The fully constructed Gravatar URL.</returns>
-    public static string GravatarUrl(string email, int? size = null, string? mode = null, string? rating = null)
+    public static Uri GravatarUrl(string email, int? size = null, string? mode = null, string? rating = null)
     {
         using var md5 = MD5.Create();
 
         var data = Encoding.UTF8.GetBytes(email.Trim().ToLower());
         var hash = md5.ComputeString(data);
 
-        var parameters = new Dictionary<string, string>();
+        var parameters = new Dictionary<string, string?>();
 
         if (size != null)
             parameters["s"] = size.ToString()!;
@@ -43,7 +42,7 @@ public static class HtmlTools
         if (rating != null)
             parameters["r"] = rating;
 
-        return CommonWebClient.EncodeQuery("https://www.gravatar.com/avatar/" + hash, parameters);
+        return new Uri("https://www.gravatar.com/avatar/" + hash).WithQuery(parameters);
     }
 
     /// <summary>
