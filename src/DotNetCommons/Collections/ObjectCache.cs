@@ -1,5 +1,6 @@
 ﻿namespace DotNetCommons.Collections;
 
+/// A caching mechanism that allows for storing and retrieving collections of objects by type and key.
 public class ObjectCache
 {
     private sealed record CacheKey(Type Type, object Key);
@@ -21,10 +22,17 @@ public class ObjectCache
     private readonly TimeSpan _expireTimeout;
     private DateTime _nextPurge = DateTime.UtcNow;
 
+    /// Create a new ObjectCache with sensible defaults for expiring objects (1 hour).
     public ObjectCache() : this(TimeSpan.FromHours(1), TimeSpan.FromMinutes(1))
     {
     }
 
+    /// <summary>
+    /// Create a new ObjectCache with specific expiration timeouts.
+    /// </summary>
+    /// <param name="expireTimeout">The timeout for when objects automatically expire.</param>
+    /// <param name="checkTimeout">How often we should check for object expiration. Should be substantially less
+    /// than the expireTimeout parameter.</param>
     public ObjectCache(TimeSpan expireTimeout, TimeSpan checkTimeout)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(expireTimeout, TimeSpan.Zero);
@@ -74,21 +82,31 @@ public class ObjectCache
         }
     }
 
+    /// Caches a single item under a default, empty key as an array.
+    /// If items already exist under the default key, they will be overridden.
+    /// This is a shorthand for adding a single item, which converts it into an array internally.
     public void Cache<T>(T item)
     {
         Cache("", [item]);
     }
 
+    /// Caches an array of items under a default, empty key.
+    /// If items already exist under the default key, they will be overridden.
     public void Cache<T>(T[] items)
     {
         Cache("", items);
     }
 
+    /// Caches a single item under a specific key as an array.
+    /// If items already exist under the given key, they will be overridden.
+    /// This is a shorthand for adding a single item, which converts it into an array internally.
     public void Cache<T>(string key, T item)
     {
         Cache(key, [item]);
     }
 
+    /// Caches an array of items under a specific key.
+    /// If items already exist under the given key, they will be overridden.
     public void Cache<T>(string key, T[] items)
     {
         _lockObject.EnterUpgradeableReadLock();
@@ -103,11 +121,15 @@ public class ObjectCache
         }
     }
 
+    /// Retrieve all cached objects of the specified type with the default, empty key.
+    /// If no objects of the given type have been cached, returns null.
     public T[]? Get<T>()
     {
         return Get<T>("");
     }
 
+    /// Retrieve all cached objects of the specified type with a specific key.
+    /// If no objects of the given type have been cached, returns null.
     public T[]? Get<T>(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -127,6 +149,7 @@ public class ObjectCache
         }
     }
 
+    /// Immediately evict all cached objects.
     public void InvalidateAll()
     {
         _lockObject.EnterWriteLock();
@@ -140,6 +163,7 @@ public class ObjectCache
         }
     }
 
+    /// Immediately evict all cached objects of a specific type, regardless of key.
     public void InvalidateAllOfType<T>()
     {
         _lockObject.EnterWriteLock();
@@ -155,11 +179,13 @@ public class ObjectCache
         }
     }
 
+    /// Immediately evict all cached objects of a specific type, with the default, empty key.
     public void Invalidate<T>()
     {
         Invalidate<T>("");
     }
 
+    /// Immediately evict all cached objects of a specific type and a specific key.
     public void Invalidate<T>(string key)
     {
         _lockObject.EnterWriteLock();
