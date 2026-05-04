@@ -7,6 +7,7 @@ namespace DotNetCommons.Security.CryptV1;
 /// Represents a cryptographic key used for encryption and decryption purposes. This class ensures the key provided is of the
 /// correct length and supports generating message-specific keys using the HMAC-SHA256 algorithm.
 /// </summary>
+[Obsolete]
 public class CryptKey : IDisposable
 {
     public const int KeyLength = 32;

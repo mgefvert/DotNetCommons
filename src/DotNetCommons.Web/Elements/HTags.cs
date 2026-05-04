@@ -46,7 +46,7 @@ public static class HTags
     public static HElement Label(string label) => New("label", [HText.Escape(label)]);
     public static HElement Label(params HNode?[] content) => New("label", content);
     public static HElement Li(params HNode?[] content) => New("li", content);
-    public static HElement Ol(params HNode?[] content) => New("ol", content);
+    public static HElement P(params HNode?[] content) => New("p", content);
     public static HElement Script(string script) => New("script", [HText.Script(script)]);
     public static HElement Span(params HNode?[] content) => New("span", content);
     public static HElement Style(string style) => New("style", [HText.Style(style)]);

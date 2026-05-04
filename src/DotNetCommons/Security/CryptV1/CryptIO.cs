@@ -7,6 +7,7 @@ namespace DotNetCommons.Security.CryptV1;
 /// Class that provides easy encryption and decryption of data using AES-256 encryption and CBC mode with an automatically
 /// generated IV, if need be. 
 /// </summary>
+[Obsolete]
 public class CryptIo : IDisposable
 {
     public Aes Aes { get; }
@@ -41,6 +42,7 @@ public class CryptIo : IDisposable
     }
 }
 
+[Obsolete]
 public class CryptIoReader : CryptIo
 {
     public BinaryReader Reader { get; }
@@ -59,6 +61,7 @@ public class CryptIoReader : CryptIo
 }
 
 
+[Obsolete]
 public class CryptIoWriter : CryptIo
 {
     public BinaryWriter Writer { get; }

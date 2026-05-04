@@ -10,7 +10,7 @@ namespace DotNetCommons.Sys;
 ///    Console.WriteLine("Hello, world!");
 /// 
 /// </summary>
-public class SetConsoleColor : IDisposable
+public readonly struct SetConsoleColor : IDisposable
 {
     private readonly ConsoleColor _fg;
     private readonly ConsoleColor _bg;

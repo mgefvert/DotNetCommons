@@ -15,6 +15,8 @@ public class HText : HNode
     public string? Content { get; set; }
     public TextType Type { get; set; }
 
+    public static HText Empty { get; } = new() { Content = "", Type = TextType.RawHtml };
+
     protected HText()
     {
     }

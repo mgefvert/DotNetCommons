@@ -10,6 +10,7 @@ namespace DotNetCommons.Security.CryptV1;
 /// Class that provides easy encryption and decryption of data using AES-256 encryption and CBC mode with an automatically
 /// generated IV, if need be.
 /// </summary>
+[Obsolete]
 public static class Crypt
 {
     public static CryptIoReader GetDecryptionStream(CryptKey key, Stream encryptedStream, bool decompress)
