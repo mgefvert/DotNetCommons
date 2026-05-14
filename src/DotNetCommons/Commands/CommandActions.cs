@@ -34,7 +34,9 @@ public abstract class CommandAction
     /// </remarks>
     public virtual Task<int> ExecuteAsync(CancellationToken ct)
     {
-        return Task.FromResult(Execute());
+        return ct.IsCancellationRequested
+            ? Task.FromCanceled<int>(ct)
+            : Task.FromResult(Execute());
     }
 
     /// <summary>
