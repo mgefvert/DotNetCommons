@@ -13,6 +13,8 @@ public class CommonObjectExtensionsTest
     public bool BoolValue { get; set; }
     public bool? BoolNullableValue { get; set; }
     public DateTime DateTimeValue { get; set; }
+    public DateOnly DateOnlyValue { get; set; }
+    public TimeOnly TimeOnlyValue { get; set; }
     public TimeSpan TimeSpanValue { get; set; }
     public Guid GuidValue { get; set; }
     public Uri UriValue { get; set; } = null!;
@@ -65,5 +67,32 @@ public class CommonObjectExtensionsTest
         p = typeof(CommonObjectExtensionsTest).GetProperty(nameof(UriValue))!;
         p.SetPropertyValue(this, "https://example.com/");
         Assert.AreEqual(new Uri("https://example.com/"), UriValue);
+    }
+
+    [TestMethod]
+    public void SetPropertyValue_WithFormat_ParsesExactDateAndTimeValues()
+    {
+        var p = typeof(CommonObjectExtensionsTest).GetProperty(nameof(DateTimeValue))!;
+        p.SetPropertyValue(this, "20240115", System.Globalization.CultureInfo.InvariantCulture, "yyyyMMdd");
+        Assert.AreEqual(new DateTime(2024, 1, 15), DateTimeValue);
+
+        p = typeof(CommonObjectExtensionsTest).GetProperty(nameof(DateOnlyValue))!;
+        p.SetPropertyValue(this, "2024-02-05", System.Globalization.CultureInfo.InvariantCulture, "yyyy-MM-dd");
+        Assert.AreEqual(new DateOnly(2024, 2, 5), DateOnlyValue);
+
+        p = typeof(CommonObjectExtensionsTest).GetProperty(nameof(TimeOnlyValue))!;
+        p.SetPropertyValue(this, "142530", System.Globalization.CultureInfo.InvariantCulture, "HHmmss");
+        Assert.AreEqual(new TimeOnly(14, 25, 30), TimeOnlyValue);
+    }
+
+    [TestMethod]
+    public void ConvertPropertyValue_ReturnsConvertedValueWithoutSettingProperty()
+    {
+        var p = typeof(CommonObjectExtensionsTest).GetProperty(nameof(IntNullableValue))!;
+
+        var value = p.ConvertPropertyValue("42", System.Globalization.CultureInfo.InvariantCulture);
+
+        Assert.AreEqual(42, value);
+        Assert.IsNull(IntNullableValue);
     }
 }
