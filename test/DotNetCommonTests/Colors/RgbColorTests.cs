@@ -11,7 +11,7 @@ public class RgbColorTests
     public void SetRed_Works()
     {
         var color = new RgbColor();
-        
+
         color.Red = 128;
         color.Red.Should().Be(128);
         color.Red = 0;
@@ -22,6 +22,8 @@ public class RgbColorTests
         color.Red.Should().Be(255);
         color.Red = 500;
         color.Red.Should().Be(255);
+        color.Red = double.NaN;
+        color.Red.Should().Be(0);
     }
 
     [TestMethod]
@@ -39,13 +41,15 @@ public class RgbColorTests
         color.Green.Should().Be(255);
         color.Green = 500;
         color.Green.Should().Be(255);
+        color.Green = double.NaN;
+        color.Green.Should().Be(0);
     }
 
     [TestMethod]
     public void SetBlue_Works()
     {
         var color = new RgbColor();
-        
+
         color.Blue = 128;
         color.Blue.Should().Be(128);
         color.Blue = 0;
@@ -56,13 +60,15 @@ public class RgbColorTests
         color.Blue.Should().Be(255);
         color.Blue = 500;
         color.Blue.Should().Be(255);
+        color.Blue = double.NaN;
+        color.Blue.Should().Be(0);
     }
 
     [TestMethod]
     public void SetAlpha_Works()
     {
         var color = new RgbColor();
-        
+
         color.Alpha = 128;
         color.Alpha.Should().Be(128);
         color.Alpha = 0;
@@ -73,6 +79,8 @@ public class RgbColorTests
         color.Alpha.Should().Be(255);
         color.Alpha = 500;
         color.Alpha.Should().Be(255);
+        color.Alpha = double.NaN;
+        color.Alpha.Should().Be(0);
     }
 
     [TestMethod]
@@ -93,7 +101,7 @@ public class RgbColorTests
 
         color = RgbColor.FromHex("");
         color.Should().BeNull();
-        
+
         color = RgbColor.FromHex("FC2");
         color.Should().NotBeNull();
         color!.Red.Should().Be(0xFF);
@@ -176,11 +184,11 @@ public class RgbColorTests
     public void MixIn_Works()
     {
         var color = new RgbColor(Color.Blue);
-        var red   = new RgbColor(255, 0, 0);
+        var red = new RgbColor(255, 0, 0);
         var green = new RgbColor(0, 255, 0);
-        var blue  = new RgbColor(0, 0, 255);
+        var blue = new RgbColor(0, 0, 255);
         var white = new RgbColor(255, 255, 255);
-        
+
         color.Clone().MixIn(red, 0.5).ToHex().Should().Be("#800080");
         color.Clone().MixIn(green, 0.5).ToHex().Should().Be("#008080");
         color.Clone().MixIn(blue, 0.5).ToHex().Should().Be("#0000FF");
@@ -190,13 +198,13 @@ public class RgbColorTests
         color.Clone().MixIn(green, 0.75).ToHex().Should().Be("#00BF40");
         color.Clone().MixIn(blue, 0.75).ToHex().Should().Be("#0000FF");
         color.Clone().MixIn(white, 0.75).ToHex().Should().Be("#BFBFFF");
-        
+
         color.Clone().MixIn(red).ToHex().Should().Be("#FF0000");
         color.Clone().MixIn(green).ToHex().Should().Be("#00FF00");
         color.Clone().MixIn(blue).ToHex().Should().Be("#0000FF");
         color.Clone().MixIn(white).ToHex().Should().Be("#FFFFFF");
     }
-    
+
     [TestMethod]
     public void ToColor_Works()
     {

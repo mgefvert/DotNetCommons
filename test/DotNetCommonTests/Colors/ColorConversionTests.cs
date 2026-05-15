@@ -14,6 +14,7 @@ public class ColorConversionTests
     private readonly RgbColor _cyan = new(0, 255, 255);
     private readonly RgbColor _white = new(255, 255, 255);
     private readonly RgbColor _lime = new(48, 205, 49);
+    private readonly RgbColor _pastelBlue = new(128, 192, 255, 128);
 
     [TestMethod]
     public void GrayscaleToHsb()
@@ -82,6 +83,8 @@ public class ColorConversionTests
         Check(_black.ToHsb().ToRgb()).Should().BeEquivalentTo(Check(_black));
         Check(_white.ToHsb().ToRgb()).Should().BeEquivalentTo(Check(_white));
         Check(_lime.ToHsb().ToRgb()).Should().BeEquivalentTo(Check(_lime));
+        Check(_pastelBlue.ToHsb().ToRgb()).Should().BeEquivalentTo(Check(_pastelBlue));
+        _pastelBlue.ToHsb().ToRgb().Alpha.Should().BeApproximately(128, 0.000001);
     }
 
     [TestMethod]
@@ -95,6 +98,23 @@ public class ColorConversionTests
         Check(_black.ToHsl().ToRgb()).Should().BeEquivalentTo(Check(_black));
         Check(_white.ToHsl().ToRgb()).Should().BeEquivalentTo(Check(_white));
         Check(_lime.ToHsl().ToRgb()).Should().BeEquivalentTo(Check(_lime));
+        Check(_pastelBlue.ToHsl().ToRgb()).Should().BeEquivalentTo(Check(_pastelBlue));
+        _pastelBlue.ToHsl().ToRgb().Alpha.Should().BeApproximately(128, 0.000001);
+    }
+
+    [TestMethod]
+    public void OklabToRgb()
+    {
+        Check(_red.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_red));
+        Check(_green.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_green));
+        Check(_blue.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_blue));
+        Check(_yellow.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_yellow));
+        Check(_cyan.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_cyan));
+        Check(_black.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_black));
+        Check(_white.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_white));
+        Check(_lime.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_lime));
+        Check(_pastelBlue.ToOklab().ToRgb()).Should().BeEquivalentTo(Check(_pastelBlue));
+        _pastelBlue.ToOklab().ToRgb().Alpha.Should().BeApproximately(128, 0.000001);
     }
 
     [TestMethod]
@@ -134,6 +154,8 @@ public class ColorConversionTests
         Check(_black.ToHsb()).Should().BeEquivalentTo([0, 0, 0]);
         Check(_white.ToHsb()).Should().BeEquivalentTo([0, 0, 100]);
         Check(_lime.ToHsb()).Should().BeEquivalentTo([120, 77, 80]);
+        Check(_pastelBlue.ToHsb()).Should().BeEquivalentTo([210, 50, 100]);
+        _pastelBlue.ToHsb().Alpha.Should().BeApproximately(128, 0.000001);
     }
 
     [TestMethod]
@@ -147,11 +169,25 @@ public class ColorConversionTests
         Check(_black.ToHsl()).Should().BeEquivalentTo([0, 0, 0]);
         Check(_white.ToHsl()).Should().BeEquivalentTo([0, 0, 100]);
         Check(_lime.ToHsl()).Should().BeEquivalentTo([120, 62, 50]);
+        Check(_pastelBlue.ToHsl()).Should().BeEquivalentTo([210, 100, 75]);
+        _pastelBlue.ToHsl().Alpha.Should().BeApproximately(128, 0.000001);
+    }
+
+    [TestMethod]
+    public void RgbToOklab()
+    {
+        Check(_black.ToOklab()).Should().BeEquivalentTo([0, 0, 0]);
+        Check(_white.ToOklab()).Should().BeEquivalentTo([1, 0, 0]);
+        Check(_red.ToOklab()).Should().BeEquivalentTo([0.627955, 0.224863, 0.125846]);
+        Check(_green.ToOklab()).Should().BeEquivalentTo([0.866440, -0.233888, 0.179498]);
+        Check(_blue.ToOklab()).Should().BeEquivalentTo([0.452014, -0.032457, -0.311528]);
+        _pastelBlue.ToOklab().Alpha.Should().BeApproximately(128, 0.000001);
     }
 
     private int Check(GrayscaleColor color) => (int)Math.Round(color.Value);
     private int[] Check(HsbColor color) => [(int)Math.Round(color.Hue), (int)Math.Round(color.Saturation), (int)Math.Round(color.Brightness)];
     private int[] Check(HslColor color) => [(int)Math.Round(color.Hue), (int)Math.Round(color.Saturation), (int)Math.Round(color.Lightness)];
+    private double[] Check(OklabColor color) => [Math.Round(color.Lightness, 6), Math.Round(color.A, 6), Math.Round(color.B, 6)];
     private int[] Check(RgbColor color) => [(int)Math.Round(color.Red), (int)Math.Round(color.Green), (int)Math.Round(color.Blue)];
     private int[] CheckA(RgbColor color) => [(int)Math.Round(color.Red), (int)Math.Round(color.Green), (int)Math.Round(color.Blue), (int)Math.Round(color.Alpha)];
 }

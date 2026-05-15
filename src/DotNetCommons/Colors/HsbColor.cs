@@ -10,30 +10,25 @@ public class HsbColor
     public double Hue
     {
         get => _hue;
-        set
-        {
-            while (value < 0) value += 360;
-            while (value >= 360) value -= 360;
-            _hue = value;
-        }
+        set => _hue = NormalizeHue(value);
     }
 
     public double Saturation
     {
         get => _saturation;
-        set => _saturation = Math.Clamp(value, 0, 100);
+        set => _saturation = Clamp(value, 0, 100);
     }
 
     public double Brightness
     {
         get => _brightness;
-        set => _brightness = Math.Clamp(value, 0, 100);
+        set => _brightness = Clamp(value, 0, 100);
     }
 
     public double Alpha
     {
         get => _alpha;
-        set => _alpha = Math.Clamp(value, 0, 255);
+        set => _alpha = Clamp(value, 0, 255);
     }
 
     public HsbColor()
@@ -42,11 +37,25 @@ public class HsbColor
 
     public HsbColor(double hue, double saturation, double brightness, double alpha = 255)
     {
-        Hue        = hue;
+        Hue = hue;
         Saturation = saturation;
         Brightness = brightness;
-        Alpha      = alpha;
+        Alpha = alpha;
     }
 
     public RgbColor ToRgb() => ColorConversion.HsbToRgb(this);
+
+    private static double NormalizeHue(double value)
+    {
+        if (!double.IsFinite(value))
+            return 0;
+
+        value %= 360;
+        return value < 0 ? value + 360 : value;
+    }
+
+    private static double Clamp(double value, double min, double max)
+    {
+        return double.IsNaN(value) ? min : Math.Clamp(value, min, max);
+    }
 }
