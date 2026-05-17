@@ -1,4 +1,5 @@
 ﻿using System.Net.Mail;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Email;
@@ -12,7 +13,8 @@ public class DebugEmailIntegration : AbstractEmailIntegration, IEmailIntegration
 {
     public List<MailMessageResult> Messages { get; } = new();
 
-    public DebugEmailIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
+    public DebugEmailIntegration(IOptions<IntegrationConfiguration> configuration, ILogger<DebugEmailIntegration> logger)
+        : base(configuration, logger)
     {
     }
 

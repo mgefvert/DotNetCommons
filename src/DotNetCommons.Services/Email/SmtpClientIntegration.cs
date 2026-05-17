@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Email;
@@ -13,7 +14,8 @@ public class SmtpClientIntegration : AbstractEmailIntegration, IEmailIntegration
 {
     private readonly SmtpClient _smtpClient;
 
-    public SmtpClientIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
+    public SmtpClientIntegration(IOptions<IntegrationConfiguration> configuration, ILogger<SmtpClientIntegration> logger)
+        : base(configuration, logger)
     {
         Configuration.Require(c => c.EmailConfiguration.Smtp?.Host, "EmailConfiguration.Smtp.Host");
 
@@ -23,6 +25,7 @@ public class SmtpClientIntegration : AbstractEmailIntegration, IEmailIntegration
             smtpConfig.Host,
             smtpConfig.Port ?? (smtpConfig.UseTls ? 587 : 25)
         );
+        _smtpClient.EnableSsl = smtpConfig.UseTls;
 
         if (smtpConfig.Username.IsSet() || smtpConfig.Password.IsSet())
             _smtpClient.Credentials = new NetworkCredential(smtpConfig.Username, smtpConfig.Password);
@@ -58,27 +61,32 @@ public class SmtpClientIntegration : AbstractEmailIntegration, IEmailIntegration
             await _smtpClient.SendMailAsync(message, cancellationToken);
             item.Result    = Result.Success;
             item.Completed = DateTime.UtcNow;
+            Logger.LogInformation("Message sent to {Recipient}: {Subject}", message.To, message.Subject);
         }
         catch (OperationCanceledException ex)
         {
             item.Result    = Result.Cancelled;
             item.Exception = ex;
+            Logger.LogInformation("Message sending cancelled for {Recipient}: {ExceptionMessage}", message.To, ex.Message);
         }
         catch (SmtpFailedRecipientsException ex)
         {
             item.Result    = Result.RecipientNotFound;
             item.Exception = ex;
+            Logger.LogInformation("Message sending failed for {Recipient}: {ExceptionMessage}", message.To, ex.Message);
         }
         catch (SmtpException ex)
             when (ex.StatusCode is SmtpStatusCode.MailboxBusy or SmtpStatusCode.MailboxUnavailable or SmtpStatusCode.TransactionFailed)
         {
             item.Result    = Result.RetriableFailure;
             item.Exception = ex;
+            Logger.LogInformation("Message sending failed for {Recipient}, retriable failure: {ExceptionMessage}", message.To, ex.Message);
         }
         catch (Exception ex)
         {
             item.Result    = Result.HardFailure;
             item.Exception = ex;
+            Logger.LogInformation("Message sending failed for {Recipient}, hard failure: {ExceptionMessage}", message.To, ex.Message);
         }
     }
 }

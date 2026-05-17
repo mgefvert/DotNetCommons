@@ -43,6 +43,7 @@ public static class HTags
     public static HElement H2(params HNode?[] content) => New("h2", content);
     public static HElement H3(string title) => New("h3", [HText.Escape(title)]);
     public static HElement H3(params HNode?[] content) => New("h3", content);
+    public static HElement H4(params HNode?[] content) => New("h4", content);
     public static HElement Label(string label) => New("label", [HText.Escape(label)]);
     public static HElement Label(params HNode?[] content) => New("label", content);
     public static HElement Li(params HNode?[] content) => New("li", content);

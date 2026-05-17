@@ -1,14 +1,17 @@
 ﻿using System.Net.Mail;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Email;
 
 public abstract class AbstractEmailIntegration
 {
+    protected readonly ILogger Logger;
     protected readonly IntegrationConfiguration Configuration;
 
-    protected AbstractEmailIntegration(IOptions<IntegrationConfiguration> configuration)
+    protected AbstractEmailIntegration(IOptions<IntegrationConfiguration> configuration, ILogger logger)
     {
+        Logger        = logger;
         Configuration = configuration.Value;
     }
 
@@ -25,9 +28,17 @@ public abstract class AbstractEmailIntegration
         if (message.From == null && fromEmail.IsSet())
             message.From = new MailAddress(fromEmail);
 
-        if (message.From == null || message.To.IsEmpty())
+        if (message.From == null)
         {
-            result.Result = Result.MissingProperties;
+            result.Result = Result.MissingFromAddress;
+            Logger.LogInformation("Message preprocessing failed: Missing From address; subject={Subject}", message.Subject);
+            return result;
+        }
+
+        if (message.To.IsEmpty())
+        {
+            result.Result = Result.MissingToAddress;
+            Logger.LogInformation("Message preprocessing failed: Missing To address; subject={Subject}", message.Subject);
             return result;
         }
 
@@ -63,6 +74,6 @@ public abstract class AbstractEmailIntegration
         foreach (var email in adminEmails)
             message.To.Add(new MailAddress(email));
 
-        return (await SendAsync([message], null, cancellationToken)).First();
+        return (await SendAsync([message], fromEmailOrKey, cancellationToken)).First();
     }
 }
