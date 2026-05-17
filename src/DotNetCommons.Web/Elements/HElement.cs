@@ -186,15 +186,4 @@ public class HElement : HNode
     {
         return Render();
     }
-
-    public void WriteTo(TagHelperOutput output)
-    {
-        output.TagName = Name;
-        output.TagMode = IsVoidElement ? TagMode.StartTagOnly : TagMode.StartTagAndEndTag;
-
-        foreach (var attr in Attributes)
-            output.Attributes.SetAttribute(attr.Name, attr.Value);
-
-        output.Content.SetHtmlContent(RenderChildren());
-    }
 }

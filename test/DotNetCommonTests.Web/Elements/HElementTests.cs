@@ -1,6 +1,5 @@
 using DotNetCommons.Web.Elements;
 using FluentAssertions;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace DotNetCommonTests.Web.Elements;
 
@@ -154,46 +153,5 @@ public class HElementTests
 
         element.ToString().Should().Be("<hr>");
         element.ToHtmlString().ToString().Should().Be("<hr>");
-    }
-
-    [TestMethod]
-    public void WriteTo_SetsTagNameTagModeAndAttributes()
-    {
-        var output = CreateTagHelperOutput();
-        var element = new HElement("section")
-            .Attr("id", "hero")
-            .Attr("data-kind", "banner");
-
-        element.WriteTo(output);
-
-        output.TagName.Should().Be("section");
-        output.TagMode.Should().Be(TagMode.StartTagAndEndTag);
-        output.Attributes["id"].Value.Should().Be("hero");
-        output.Attributes["data-kind"].Value.Should().Be("banner");
-    }
-
-    [TestMethod]
-    public void WriteTo_WritesRenderedChildrenIntoContent()
-    {
-        var output = CreateTagHelperOutput();
-        var element = new HElement("section")
-            .AddNode(HText.Escape("safe <b>text</b>"))
-            .AddNode(HText.Raw("<em>raw</em>"));
-
-        element.WriteTo(output);
-
-        output.Content.GetContent().Should().Be("safe &lt;b&gt;text&lt;/b&gt;<em>raw</em>");
-    }
-
-    private static TagHelperOutput CreateTagHelperOutput()
-    {
-        return new TagHelperOutput(
-            "ignored",
-            new TagHelperAttributeList(),
-            (_, _) =>
-            {
-                TagHelperContent content = new DefaultTagHelperContent();
-                return Task.FromResult(content);
-            });
     }
 }
