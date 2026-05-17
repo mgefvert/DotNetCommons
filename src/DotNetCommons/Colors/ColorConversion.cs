@@ -6,12 +6,17 @@ internal static class ColorConversion
 {
     public static HsbColor GrayscaleToHsb(GrayscaleColor color)
     {
-        return new HsbColor(0, 0, color.Value / 2.55, color.Alpha);
+        return new HsbColor(0, 0, color.Value / 255.0 * 100.0, color.Alpha);
     }
 
     public static HslColor GrayscaleToHsl(GrayscaleColor color)
     {
-        return new HslColor(0, 0, color.Value / 2.55, color.Alpha);
+        return new HslColor(0, 0, color.Value / 255.0 * 100.0, color.Alpha);
+    }
+
+    public static OklabColor GrayscaleToOklab(GrayscaleColor color)
+    {
+        return GrayscaleToRgb(color).ToOklab();
     }
 
     public static RgbColor GrayscaleToRgb(GrayscaleColor color)
@@ -77,39 +82,39 @@ internal static class ColorConversion
         switch (sectorNumber)
         {
             case 0:
-                red   = b;
+                red = b;
                 green = t;
-                blue  = p;
+                blue = p;
                 break;
 
             case 1:
-                red   = q;
+                red = q;
                 green = b;
-                blue  = p;
+                blue = p;
                 break;
 
             case 2:
-                red   = p;
+                red = p;
                 green = b;
-                blue  = t;
+                blue = t;
                 break;
 
             case 3:
-                red   = p;
+                red = p;
                 green = q;
-                blue  = b;
+                blue = b;
                 break;
 
             case 4:
-                red   = t;
+                red = t;
                 green = p;
-                blue  = b;
+                blue = b;
                 break;
 
             case 5:
-                red   = b;
+                red = b;
                 green = p;
-                blue  = q;
+                blue = q;
                 break;
         }
 
@@ -157,6 +162,23 @@ internal static class ColorConversion
         }
     }
 
+    public static RgbColor OklabToRgb(OklabColor color)
+    {
+        var lPrime = color.Lightness + 0.3963377774 * color.A + 0.2158037573 * color.B;
+        var mPrime = color.Lightness - 0.1055613458 * color.A - 0.0638541728 * color.B;
+        var sPrime = color.Lightness - 0.0894841775 * color.A - 1.2914855480 * color.B;
+
+        var l = lPrime * lPrime * lPrime;
+        var m = mPrime * mPrime * mPrime;
+        var s = sPrime * sPrime * sPrime;
+
+        var r = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+        var g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+        var b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+
+        return new RgbColor(LinearToSrgb(r) * 255.0, LinearToSrgb(g) * 255.0, LinearToSrgb(b) * 255.0, color.Alpha);
+    }
+
     public static string RgbToHex(RgbColor color)
     {
         var (r, g, b, a) = color.GetByteColors();
@@ -172,38 +194,31 @@ internal static class ColorConversion
 
     public static HsbColor RgbToHsb(RgbColor rgb)
     {
-        var r = rgb.Red / 255;
-        var g = rgb.Green / 255;
-        var b = rgb.Blue / 255;
+        var r = rgb.Red / 255.0;
+        var g = rgb.Green / 255.0;
+        var b = rgb.Blue / 255.0;
 
         var min = Math.Min(Math.Min(r, g), b);
         var max = Math.Max(Math.Max(r, g), b);
         var delta = max - min;
 
         var hue = 0.0;
-        var saturation = 0.0;
+        var saturation = Math.Abs(max - 0.0) < 0.00001 ? 0.0 : delta / max * 100.0;
         var brightness = max * 100;
 
-        if (Math.Abs(max - 0) < 0.00001 || Math.Abs(delta - 0) < 0.00001)
-            hue = 0;
-        else
+        if (Math.Abs(delta - 0.0) >= 0.00001)
         {
-            if (Math.Abs(min - 0) < 0.00001)
-                saturation = 100;
-            else
-                saturation = delta / max * 100;
-
             if (Math.Abs(r - max) < 0.00001)
                 hue = (g - b) / delta;
             else if (Math.Abs(g - max) < 0.00001)
                 hue = 2 + (b - r) / delta;
             else if (Math.Abs(b - max) < 0.00001)
                 hue = 4 + (r - g) / delta;
-        }
 
-        hue *= 60;
-        if (hue < 0)
-            hue += 360;
+            hue *= 60;
+            if (hue < 0)
+                hue += 360;
+        }
 
         return new HsbColor(hue, saturation, brightness, rgb.Alpha);
     }
@@ -246,5 +261,41 @@ internal static class ColorConversion
             h -= 1.0;
 
         return new HslColor(h * 360.0, s * 100.0, l * 100.0, rgb.Alpha);
+    }
+
+    public static OklabColor RgbToOklab(RgbColor rgb)
+    {
+        var r = SrgbToLinear(rgb.Red / 255.0);
+        var g = SrgbToLinear(rgb.Green / 255.0);
+        var b = SrgbToLinear(rgb.Blue / 255.0);
+
+        var l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+        var m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+        var s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+
+        var lPrime = Math.Cbrt(l);
+        var mPrime = Math.Cbrt(m);
+        var sPrime = Math.Cbrt(s);
+
+        return new OklabColor(
+            0.2104542553 * lPrime + 0.7936177850 * mPrime - 0.0040720468 * sPrime,
+            1.9779984951 * lPrime - 2.4285922050 * mPrime + 0.4505937099 * sPrime,
+            0.0259040371 * lPrime + 0.7827717662 * mPrime - 0.8086757660 * sPrime,
+            rgb.Alpha
+        );
+    }
+
+    private static double LinearToSrgb(double value)
+    {
+        return value <= 0.0031308
+            ? 12.92 * value
+            : 1.055 * Math.Pow(value, 1.0 / 2.4) - 0.055;
+    }
+
+    private static double SrgbToLinear(double value)
+    {
+        return value <= 0.04045
+            ? value / 12.92
+            : Math.Pow((value + 0.055) / 1.055, 2.4);
     }
 }

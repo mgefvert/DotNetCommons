@@ -8,7 +8,7 @@ namespace DotNetCommonTests.Colors;
 public class HslColorTests
 {
     private const double Precision = 0.000001;
-    
+
     [TestMethod]
     public void SetHue_Works()
     {
@@ -27,10 +27,23 @@ public class HslColorTests
     }
 
     [TestMethod]
+    public void SetHue_WithNonFiniteValue_ResetsToZero()
+    {
+        var color = new HslColor();
+
+        color.Hue = double.NaN;
+        color.Hue.Should().BeApproximately(0, Precision);
+        color.Hue = double.PositiveInfinity;
+        color.Hue.Should().BeApproximately(0, Precision);
+        color.Hue = double.NegativeInfinity;
+        color.Hue.Should().BeApproximately(0, Precision);
+    }
+
+    [TestMethod]
     public void SetSaturation_Works()
     {
         var color = new HslColor();
-        
+
         color.Saturation = 50;
         color.Saturation.Should().BeApproximately(50, Precision);
         color.Saturation = 0;
@@ -41,13 +54,15 @@ public class HslColorTests
         color.Saturation.Should().BeApproximately(100, Precision);
         color.Saturation = 150;
         color.Saturation.Should().BeApproximately(100, Precision);
+        color.Saturation = double.NaN;
+        color.Saturation.Should().BeApproximately(0, Precision);
     }
 
     [TestMethod]
     public void SetLightness_Works()
     {
         var color = new HslColor();
-        
+
         color.Lightness = 50;
         color.Lightness.Should().BeApproximately(50, Precision);
         color.Lightness = 0;
@@ -58,13 +73,15 @@ public class HslColorTests
         color.Lightness.Should().BeApproximately(100, Precision);
         color.Lightness = 150;
         color.Lightness.Should().BeApproximately(100, Precision);
+        color.Lightness = double.NaN;
+        color.Lightness.Should().BeApproximately(0, Precision);
     }
 
     [TestMethod]
     public void SetAlpha_Works()
     {
         var color = new HslColor();
-        
+
         color.Alpha = 50;
         color.Alpha.Should().BeApproximately(50, Precision);
         color.Alpha = 0;
@@ -75,6 +92,8 @@ public class HslColorTests
         color.Alpha.Should().BeApproximately(255, Precision);
         color.Alpha = 500;
         color.Alpha.Should().BeApproximately(255, Precision);
+        color.Alpha = double.NaN;
+        color.Alpha.Should().BeApproximately(0, Precision);
     }
 
     [TestMethod]

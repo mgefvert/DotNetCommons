@@ -7,7 +7,7 @@ namespace DotNetCommonTests.Colors;
 public class GrayscaleColorTests
 {
     private const double Precision = 0.000001;
-    
+
     [TestMethod]
     public void SetValue_Works()
     {
@@ -28,8 +28,8 @@ public class GrayscaleColorTests
     [TestMethod]
     public void SetAlpha_Works()
     {
-        var color = new HslColor();
-        
+        var color = new GrayscaleColor();
+
         color.Alpha = 50;
         color.Alpha.Should().BeApproximately(50, Precision);
         color.Alpha = 0;
@@ -40,6 +40,8 @@ public class GrayscaleColorTests
         color.Alpha.Should().BeApproximately(255, Precision);
         color.Alpha = 500;
         color.Alpha.Should().BeApproximately(255, Precision);
+        color.Alpha = double.NaN;
+        color.Alpha.Should().BeApproximately(0, Precision);
     }
 
     [TestMethod]
@@ -59,5 +61,20 @@ public class GrayscaleColorTests
         hsl.Hue.Should().BeApproximately(0, Precision);
         hsl.Saturation.Should().BeApproximately(0, Precision);
         hsl.Lightness.Should().BeApproximately(100, Precision);
+    }
+
+    [TestMethod]
+    public void ToOklab_Works()
+    {
+        var oklab = new GrayscaleColor(0, 128).ToOklab();
+        oklab.Lightness.Should().BeApproximately(0, Precision);
+        oklab.A.Should().BeApproximately(0, Precision);
+        oklab.B.Should().BeApproximately(0, Precision);
+        oklab.Alpha.Should().BeApproximately(128, Precision);
+
+        oklab = new GrayscaleColor(255).ToOklab();
+        oklab.Lightness.Should().BeApproximately(1, Precision);
+        oklab.A.Should().BeApproximately(0, Precision);
+        oklab.B.Should().BeApproximately(0, Precision);
     }
 }

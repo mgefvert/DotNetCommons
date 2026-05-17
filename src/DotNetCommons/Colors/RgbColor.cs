@@ -12,25 +12,25 @@ public class RgbColor
     public double Red
     {
         get => _red;
-        set => _red = Math.Clamp(value, 0, 255);
+        set => _red = Clamp(value, 0, 255);
     }
 
     public double Green
     {
         get => _green;
-        set => _green = Math.Clamp(value, 0, 255);
+        set => _green = Clamp(value, 0, 255);
     }
 
     public double Blue
     {
         get => _blue;
-        set => _blue = Math.Clamp(value, 0, 255);
+        set => _blue = Clamp(value, 0, 255);
     }
 
     public double Alpha
     {
         get => _alpha;
-        set => _alpha = Math.Clamp(value, 0, 255);
+        set => _alpha = Clamp(value, 0, 255);
     }
 
     public RgbColor()
@@ -43,9 +43,9 @@ public class RgbColor
 
     public RgbColor(double red, double green, double blue, double alpha = 255)
     {
-        Red   = red;
+        Red = red;
         Green = green;
-        Blue  = blue;
+        Blue = blue;
         Alpha = alpha;
     }
 
@@ -68,9 +68,9 @@ public class RgbColor
 
         var invA = 1.0 - a;
 
-        Red   = invA * Red   + r * a;
+        Red = invA * Red + r * a;
         Green = invA * Green + g * a;
-        Blue  = invA * Blue  + b * a;
+        Blue = invA * Blue + b * a;
 
         return this;
     }
@@ -99,12 +99,19 @@ public class RgbColor
     public static implicit operator Color(RgbColor color) => color.ToColor();
 
     public GrayscaleColor ToGrayscale() => ColorConversion.RgbToGrayscale(this);
-    
+
     public string ToHex() => ColorConversion.RgbToHex(this);
 
     public HsbColor ToHsb() => ColorConversion.RgbToHsb(this);
-    
+
     public HslColor ToHsl() => ColorConversion.RgbToHsl(this);
 
+    public OklabColor ToOklab() => ColorConversion.RgbToOklab(this);
+
     public static RgbColor? FromHex(string hex) => ColorConversion.HexToRgb(hex);
+
+    private static double Clamp(double value, double min, double max)
+    {
+        return double.IsNaN(value) ? min : Math.Clamp(value, min, max);
+    }
 }
