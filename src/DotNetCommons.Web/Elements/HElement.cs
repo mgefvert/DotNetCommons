@@ -1,6 +1,6 @@
 ﻿using System.Text;
+using DotNetCommons.Text;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace DotNetCommons.Web.Elements;
 
@@ -69,7 +69,7 @@ public class HElement : HNode
     {
         if (string.IsNullOrWhiteSpace(className))
             return this;
-
+        
         var classAttribute = GetClassAttribute(false);
         if (classAttribute == null)
             return this;
@@ -78,7 +78,17 @@ public class HElement : HNode
         var classList     = new SortedSet<string>(classAttribute.Value?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? []);
 
         foreach (var c in removeClasses)
-            classList.Remove(c);
+        {
+            if (c.EndsWith('*'))
+            {
+                var regex = Wildcards.ToRegex(className);
+                classList.RemoveWhere(regex.IsMatch);
+            }
+            else
+            {
+                classList.Remove(c);
+            }
+        }
 
         classAttribute.Value = string.Join(" ", classList);
         return this;

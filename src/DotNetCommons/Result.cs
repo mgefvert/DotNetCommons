@@ -30,12 +30,16 @@ public record Result<T> : Result
     /// Access the result value. If unsuccessful, throws a <see cref="AppException"/>.
     public T? Value => IsSuccess ? field : throw Error!.ToAppException();
 
-    private Result(T value) : base(true, null) => Value = value;
-    private Result(Error error) : base(false, error) { }
+    private Result(bool isSuccess, Error? error, T? value) : base(isSuccess, error)
+    {
+        Value = value;
+    }
+
+    public static Result<T> Success(T? value) => new(true, null, value);
 
     /// Implicit conversion that wraps a return value into a Result object.
-    public static implicit operator Result<T>(T value) => new(value);
+    public static implicit operator Result<T>(T value) => new(true, null, value);
 
     /// Implicit conversion that wraps an <see cref="Error"/> into a Result object.
-    public static implicit operator Result<T>(Error error) => new(error);
+    public static implicit operator Result<T>(Error error) => new(false, error, default);
 }
