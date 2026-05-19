@@ -53,7 +53,7 @@ public class CustomLoggingFormatter : ConsoleFormatter, IDisposable
             textWriter.Write($"\n{logEntry.Exception}");
 
         if (color != null)
-            textWriter.Write("\e[0m");
+            textWriter.Write("\x1b[0m");
 
         textWriter.WriteLine();
     }
@@ -63,10 +63,10 @@ public class CustomLoggingFormatter : ConsoleFormatter, IDisposable
         return logLevel switch
         {
             LogLevel.Trace or
-            LogLevel.Debug    => "\e[37m",   // dark gray
-            LogLevel.Warning  => "\e[1m\e[33m",
-            LogLevel.Error    => "\e[1m\e[31m",
-            LogLevel.Critical => "\e[1m\e[31m\e[41m",
+            LogLevel.Debug    => "\x1b[37m",   // dark gray
+            LogLevel.Warning  => "\x1b[1m\x1b[33m",
+            LogLevel.Error    => "\x1b[1m\x1b[31m",
+            LogLevel.Critical => "\x1b[1m\x1b[31m\x1b[41m",
             _                 => null
         };
     }

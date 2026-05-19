@@ -27,12 +27,14 @@ public record Result
 
 public record Result<T> : Result
 {
+     private readonly T? _value;
+
     /// Access the result value. If unsuccessful, throws a <see cref="AppException"/>.
-    public T? Value => IsSuccess ? field : throw Error!.ToAppException();
+    public T? Value => IsSuccess ? _value : throw Error!.ToAppException();
 
     private Result(bool isSuccess, Error? error, T? value) : base(isSuccess, error)
     {
-        Value = value;
+        _value = value;
     }
 
     public static Result<T> Success(T? value) => new(true, null, value);
