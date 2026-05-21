@@ -25,10 +25,9 @@ public class DebugIntegrationTests
             }
         };
 
-        _integration = new DebugSmsIntegration(Options.Create(_config));
+        _integration = new DebugSmsIntegration(Options.Create(_config), null);
     }
 
-    
     [TestMethod]
     public async Task SendAsync_WithAllowedNumber_Works()
     {
@@ -104,6 +103,6 @@ public class DebugIntegrationTests
         result[0].SmsMessage.Should().Be(message);
         result[0].Completed.Should().BeNull();
         result[0].Exception.Should().BeNull();
-        result[0].Result.Should().Be(Result.MissingProperties);
+        result[0].Result.Should().Be(Result.MissingRecipientNumber);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Sms;
 
@@ -11,7 +12,8 @@ public class DebugSmsIntegration : AbstractSmsIntegration, ISmsIntegration
 {
     public List<SmsMessageResult> Messages { get; } = new();
 
-    public DebugSmsIntegration(IOptions<IntegrationConfiguration> configuration) : base(configuration)
+    public DebugSmsIntegration(IOptions<IntegrationConfiguration> configuration, ILogger? logger)
+        : base(configuration, logger)
     {
     }
 
@@ -27,11 +29,15 @@ public class DebugSmsIntegration : AbstractSmsIntegration, ISmsIntegration
     {
         var result = PreprocessMessage(message);
         if (result.Result != Result.None)
+        {
+            Logger?.LogInformation("SMS preprocessing failed: {Result}", result.Result);
             return result;
+        }
 
         result.Completed = DateTime.UtcNow;
         result.Result    = Result.Success;
 
+        Logger?.LogInformation("SMS sent successfully to {Recipient}", message.Recipient);
         return result;
     }
 }

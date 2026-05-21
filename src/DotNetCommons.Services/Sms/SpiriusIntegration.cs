@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Services.Sms;
 
@@ -30,8 +31,8 @@ public class SpiriusIntegration : AbstractSmsIntegration, ISmsIntegration
     /// Alphanumeric data, max length = 11 characters
     public const string FromTypeAlphanumeric = "A";
 
-    public SpiriusIntegration(IOptions<IntegrationConfiguration> configuration, HttpClient httpClient)
-        : base(configuration)
+    public SpiriusIntegration(IOptions<IntegrationConfiguration> configuration, HttpClient httpClient, ILogger? logger)
+        : base(configuration, logger)
     {
         Configuration.Require(c => c.SmsConfiguration.DefaultCountryCode, "SmsConfiguration.DefaultCountryCode");
         Configuration.Require(c => c.SmsConfiguration.Username, "SmsConfiguration.Username");
@@ -46,10 +47,17 @@ public class SpiriusIntegration : AbstractSmsIntegration, ISmsIntegration
     public async Task<List<SmsMessageResult>> SendAsync(List<SmsMessage> messages, CancellationToken cancellationToken = default)
     {
         var results = messages.Select(PreprocessMessage).ToList();
+
+        foreach (var item in results.Where(m => m.Result != Result.None))
+            Logger?.LogWarning("SMS preprocessing failed: {Result}", item.Result);
+
         foreach (var item in results.Where(x => x.Result == Result.None))
         {
             if (cancellationToken.IsCancellationRequested)
+            {
+                Logger?.LogWarning("SMS sending cancelled for {Recipient}", item.SmsMessage.Recipient);
                 item.Result = Result.Cancelled;
+            }
             else
                 await SendMessage(item, cancellationToken);
         }
@@ -91,16 +99,19 @@ public class SpiriusIntegration : AbstractSmsIntegration, ISmsIntegration
                 if (status == 409)
                 {
                     // Rate limit exceeded
+                    Logger?.LogWarning("Rate limit exceeded for {Recipient}, waiting...", sms.Recipient);
                     await Task.Delay(1000, cancellationToken);
                 }
                 else if (statusgroup == 2)
                 {
                     item.Result = Result.Success;
                     item.Completed = DateTime.UtcNow;
+                    Logger?.LogInformation("SMS sent successfully to {Recipient}", sms.Recipient);
                     return;
                 }
                 else
                 {
+                    Logger?.LogError("Message sending failed for {Recipient}: {StatusCode}", sms.Recipient, status);
                     item.Result = Result.HardFailure;
                     return;
                 }
@@ -110,11 +121,13 @@ public class SpiriusIntegration : AbstractSmsIntegration, ISmsIntegration
         {
             item.Result    = Result.Cancelled;
             item.Exception = ex;
+            Logger?.LogWarning("Message sending cancelled for {Recipient}: {ExceptionMessage}", sms.Recipient, ex.Message);
         }
         catch (Exception ex)
         {
             item.Result    = Result.HardFailure;
             item.Exception = ex;
+            Logger?.LogError("Message sending failed for {Recipient}: {ExceptionMessage}", sms.Recipient, ex.Message);
         }
     }
 }

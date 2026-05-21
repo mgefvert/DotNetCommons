@@ -5,7 +5,9 @@ public enum Result
     None,
     Success,
     Cancelled,
-    MissingProperties,
+    MissingFromNumber,
+    MissingRecipientNumber,
+    MissingContent,
     RecipientNumberNotAllowed,
     HardFailure,
     RetriableFailure

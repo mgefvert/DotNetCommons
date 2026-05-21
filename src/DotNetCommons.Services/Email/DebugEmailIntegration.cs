@@ -13,7 +13,7 @@ public class DebugEmailIntegration : AbstractEmailIntegration, IEmailIntegration
 {
     public List<MailMessageResult> Messages { get; } = new();
 
-    public DebugEmailIntegration(IOptions<IntegrationConfiguration> configuration, ILogger<DebugEmailIntegration> logger)
+    public DebugEmailIntegration(IOptions<IntegrationConfiguration> configuration, ILogger<DebugEmailIntegration>? logger)
         : base(configuration, logger)
     {
     }

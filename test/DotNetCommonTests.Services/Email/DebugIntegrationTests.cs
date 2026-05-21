@@ -27,7 +27,7 @@ public class DebugIntegrationTests
             }
         };
 
-        _integration = new DebugEmailIntegration(Options.Create(_config));
+        _integration = new DebugEmailIntegration(Options.Create(_config), null);
     }
 
     [TestMethod]
@@ -96,7 +96,7 @@ public class DebugIntegrationTests
         };
 
         var result = await _integration.SendAsync([message]);
-        result[0].Result.Should().Be(Result.MissingProperties);
+        result[0].Result.Should().Be(Result.MissingFromAddress);
         result[0].MailMessage.Should().Be(message);
         result[0].Completed.Should().BeNull();
         result[0].Exception.Should().BeNull();

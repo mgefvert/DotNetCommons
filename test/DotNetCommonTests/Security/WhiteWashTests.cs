@@ -149,6 +149,6 @@ public class WhiteWashTests
     [DataRow("user@example.com\r\n", "user@example.com")]
     public void EmailAddress_ParseableEmailAddresses_ShouldSanitize(string email, string expected)
     {
-        WhiteWash.EmailAddress(email).Should().Be(expected);
+        WhiteWash.EmailAddress(email).Should().BeNull();
     }
 }

@@ -6,10 +6,10 @@ namespace DotNetCommons.Services.Email;
 
 public abstract class AbstractEmailIntegration
 {
-    protected readonly ILogger Logger;
+    protected readonly ILogger? Logger;
     protected readonly IntegrationConfiguration Configuration;
 
-    protected AbstractEmailIntegration(IOptions<IntegrationConfiguration> configuration, ILogger logger)
+    protected AbstractEmailIntegration(IOptions<IntegrationConfiguration> configuration, ILogger? logger)
     {
         Logger        = logger;
         Configuration = configuration.Value;
@@ -31,14 +31,14 @@ public abstract class AbstractEmailIntegration
         if (message.From == null)
         {
             result.Result = Result.MissingFromAddress;
-            Logger.LogInformation("Message preprocessing failed: Missing From address; subject={Subject}", message.Subject);
+            Logger?.LogInformation("Message preprocessing failed: Missing From address; subject={Subject}", message.Subject);
             return result;
         }
 
         if (message.To.IsEmpty())
         {
             result.Result = Result.MissingToAddress;
-            Logger.LogInformation("Message preprocessing failed: Missing To address; subject={Subject}", message.Subject);
+            Logger?.LogInformation("Message preprocessing failed: Missing To address; subject={Subject}", message.Subject);
             return result;
         }
 
