@@ -46,6 +46,7 @@ public class CommandActionRegistry
     private Action<AfterHelpArgs>? _afterHelpCallback;
     private Action<BeforeActionArgs>? _beforeActionCallback;
     private Action<BeforeHelpArgs>? _beforeHelpCallback;
+    private Type? _defaultCommand;
     private readonly ConcurrentDictionary<string, Type> _commandRegistry = [];
     private readonly IServiceProvider _serviceProvider;
     private readonly ICommandLineParser _commandLineParser;
@@ -239,7 +240,7 @@ public class CommandActionRegistry
         }
         catch (Exception e)
         {
-            LogError(e, "An exception of type {e.GetType().Name} was thrown.");
+            LogError(e, $"An exception of type {e.GetType().Name} was thrown.");
             return ExitCodeFatalError;
         }
         finally
@@ -404,7 +405,7 @@ public class CommandActionRegistry
 
         var route     = args.TakeWhile(x => !x.StartsWith('/') && !x.StartsWith('-')).ToList();
         var remaining = args.Skip(route.Count).ToArray();
-        var help      = route.IsEmpty();
+        var help      = route.IsEmpty() && _defaultCommand == null;
 
         if (route.IsAtLeastOne() && route.First() == "help")
         {
@@ -417,6 +418,9 @@ public class CommandActionRegistry
             route.ExtractLast();
             help = true;
         }
+
+        if (route.IsEmpty() && _defaultCommand != null)
+            return ([_defaultCommand], false, false, remaining);
 
         var search = GetRoutePath(route);
         var types = _commandRegistry
@@ -525,6 +529,18 @@ public class CommandActionRegistry
         where TArgs : class, new()
     {
         _invocationQueue.Enqueue(new Invocation(typeof(TCommand), args, continueOnError), priority);
+        return this;
+    }
+
+    public CommandActionRegistry SetDefaultCommand(Type? defaultCommand)
+    {
+        if (defaultCommand == null)
+            return this;
+
+        if (!defaultCommand.IsAssignableTo(typeof(CommandAction)))
+            throw new CommandActionInitializationException(defaultCommand, "Type must inherit from CommandAction.");
+
+        _defaultCommand = defaultCommand;
         return this;
     }
 

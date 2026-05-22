@@ -569,7 +569,7 @@ public static class CommonCollectionExtensions
     /// <summary>
     /// Exclude all null items
     /// </summary>
-    public static IEnumerable<T> NotNulls<T>(this IEnumerable<T?> items) where T : class
+    public static IEnumerable<T> NotNulls<T>(this IEnumerable<T?> items)
     {
         foreach (var item in items)
             if (item != null)

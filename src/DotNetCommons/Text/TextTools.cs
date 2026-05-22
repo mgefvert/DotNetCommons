@@ -134,6 +134,32 @@ public static class TextTools
     }
 
     /// <summary>
+    /// Join strings together with a space while trimming spaces away from elements and getting rid of empty elements. Excellent for joining
+    /// firstName and lastName together and ending up with a single, correctly formatted text.
+    /// </summary>
+    public static string JoinTrimmed(params string?[]? elements)
+    {
+        return JoinTrimmed(' ', elements);
+    }
+
+    /// <summary>
+    /// Join strings together while trimming spaces away from elements and getting rid of empty elements. Excellent for joining
+    /// firstName and lastName together and ending up with a single, correctly formatted text.
+    /// </summary>
+    public static string JoinTrimmed(char separator, params string?[]? elements)
+    {
+        if (elements is not { Length: > 0 })
+            return "";
+
+        var items = elements
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x!.Trim())
+            .ToList();
+
+        return string.Join(separator, items).Trim();
+    }
+
+    /// <summary>
     /// Determine the levenshtein distance between two strings.
     /// From http://michalis.site/2013/12/levenshtein/
     /// </summary>

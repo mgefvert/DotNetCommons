@@ -22,9 +22,9 @@ public class NaturalSortComparer : IComparer<string>
         if (a == null) return -1;
         if (b == null) return 1;
 
-        int ia = 0,        
+        int ia = 0,
             ib = 0,
-            na = a.Length, 
+            na = a.Length,
             nb = b.Length;
 
         while (ia < na && ib < nb)
