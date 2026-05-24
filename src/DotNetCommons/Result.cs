@@ -1,22 +1,13 @@
-﻿namespace DotNetCommons;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public record Result
+namespace DotNetCommons;
+
+public abstract record ResultBase
 {
-    public bool IsFailure => !IsSuccess;
-    public bool IsSuccess { get; }
-    public Error? Error { get; }
+    public Error? Error { get; protected init; }
 
-    protected Result(bool isSuccess, Error? error)
-    {
-        IsSuccess = isSuccess;
-        Error     = error;
-    }
-
-    public static Result Success() => new(true, null);
-    public static Result Failure(Error error) => new(false, error ?? throw new ArgumentNullException(nameof(error)));
-
-    /// Implicit conversion that wraps an <see cref="Error"/> into a Result object.
-    public static implicit operator Result(Error error) => Failure(error);
+    public bool IsFailure => Error != null;
+    public bool IsSuccess => Error == null;
 
     public void ThrowOnFailure()
     {
@@ -25,23 +16,26 @@ public record Result
     }
 }
 
-public record Result<T> : Result
+public record Result : ResultBase
 {
-     private readonly T? _value;
+    private static readonly Result DefaultSuccess = new();
+
+    public static Result Ok() => DefaultSuccess;
+    public static Result Fail(Error error) => new() { Error = error ?? throw new ArgumentNullException(nameof(error)) };
+
+    public static implicit operator Result(Error error) => Fail(error);
+}
+
+public record Result<T> : ResultBase
+{
+    private T? InternalValue { get; init; }
 
     /// Access the result value. If unsuccessful, throws a <see cref="AppException"/>.
-    public T? Value => IsSuccess ? _value : throw Error!.ToAppException();
+    public T? Value => IsSuccess ? InternalValue : throw Error!.ToAppException();
 
-    private Result(bool isSuccess, Error? error, T? value) : base(isSuccess, error)
-    {
-        _value = value;
-    }
+    public static Result<T> Ok(T? value) => new() { InternalValue = value };
+    public static Result<T> Fail(Error error) => new() { Error = error ?? throw new ArgumentNullException(nameof(error)) };
 
-    public static Result<T> Success(T? value) => new(true, null, value);
-
-    /// Implicit conversion that wraps a return value into a Result object.
-    public static implicit operator Result<T>(T value) => new(true, null, value);
-
-    /// Implicit conversion that wraps an <see cref="Error"/> into a Result object.
-    public static implicit operator Result<T>(Error error) => new(false, error, default);
+    public static implicit operator Result<T>(T error) => Ok(error);
+    public static implicit operator Result<T>(Error error) => Fail(error);
 }

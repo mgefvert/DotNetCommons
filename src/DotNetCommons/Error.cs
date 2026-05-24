@@ -11,8 +11,7 @@ public class Error(
     public string Description { get; } = description;
     public HttpStatusCode? Code { get; } = code;
 
-    public AppException ToAppException()
-    {
-        return new AppException(Code ?? HttpStatusCode.InternalServerError, $"{Type}: {Description}");
-    }
+    public AppException ToAppException() => new(Code ?? HttpStatusCode.InternalServerError, ToString());
+
+    public override string ToString() => $"{Type}: {Description}";
 }
