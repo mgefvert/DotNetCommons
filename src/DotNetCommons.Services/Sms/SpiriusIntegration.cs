@@ -31,7 +31,7 @@ public class SpiriusIntegration : AbstractSmsIntegration, ISmsIntegration
     /// Alphanumeric data, max length = 11 characters
     public const string FromTypeAlphanumeric = "A";
 
-    public SpiriusIntegration(IOptions<IntegrationConfiguration> configuration, HttpClient httpClient, ILogger? logger)
+    public SpiriusIntegration(IOptions<IntegrationConfiguration> configuration, HttpClient httpClient, ILogger<SpiriusIntegration>? logger)
         : base(configuration, logger)
     {
         Configuration.Require(c => c.SmsConfiguration.DefaultCountryCode, "SmsConfiguration.DefaultCountryCode");

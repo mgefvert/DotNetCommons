@@ -11,6 +11,7 @@ public abstract class AbstractSmsIntegration
 
     protected AbstractSmsIntegration(IOptions<IntegrationConfiguration> configuration, ILogger? logger)
     {
+        Logger        = logger;
         Configuration = configuration.Value;
     }
 
