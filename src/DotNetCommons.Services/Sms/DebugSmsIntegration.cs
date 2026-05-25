@@ -12,7 +12,7 @@ public class DebugSmsIntegration : AbstractSmsIntegration, ISmsIntegration
 {
     public List<SmsMessageResult> Messages { get; } = new();
 
-    public DebugSmsIntegration(IOptions<IntegrationConfiguration> configuration, ILogger? logger)
+    public DebugSmsIntegration(IOptions<IntegrationConfiguration> configuration, ILogger<DebugSmsIntegration>? logger)
         : base(configuration, logger)
     {
     }

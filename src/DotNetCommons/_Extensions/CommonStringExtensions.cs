@@ -21,6 +21,21 @@ public enum Spacing
 public static partial class CommonStringExtensions
 {
     /// <summary>
+    /// Break up a string in chunks of a given length.
+    /// </summary>
+    public static IEnumerable<string> BreakUp(this string? value, int length)
+    {
+        if (string.IsNullOrEmpty(value))
+            yield break;
+
+        if (length <= 0)
+            throw new ArgumentOutOfRangeException(nameof(length), "Length must be positive.");
+
+        for (var pos = 0; pos < value.Length; pos += length)
+            yield return value.Mid(pos, length);
+    }
+
+    /// <summary>
     /// Chomp off the first word from a string. Quoted substring are regarded as a single word.
     /// </summary>
     /// <param name="remaining">The new string lacking the first word</param>

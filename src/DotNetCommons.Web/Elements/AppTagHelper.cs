@@ -6,6 +6,9 @@ public abstract class AppTagHelper : TagHelper
 {
     private TagHelperOutput? _output;
 
+    /// In case we're rendering a direct TagHelper with a new() call, we may need to override the content to be rendered.
+    public HText? ContentOverride { get; set; }
+
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
         _output = output;
@@ -25,6 +28,9 @@ public abstract class AppTagHelper : TagHelper
 
     protected async Task<HText?> ReadTagContents()
     {
+        if (ContentOverride != null)
+            return ContentOverride;
+
         if (_output == null)
             return null;
 
