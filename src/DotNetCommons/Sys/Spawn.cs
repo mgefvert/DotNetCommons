@@ -203,7 +203,7 @@ public class Spawn : IDisposable
         {
             StartInfo = new ProcessStartInfo(Command, Parameters ?? "")
             {
-                CreateNoWindow = true,
+                CreateNoWindow = false,
                 RedirectStandardError = RedirectOutput,
                 RedirectStandardOutput = RedirectOutput,
                 RedirectStandardInput = RedirectInput,
