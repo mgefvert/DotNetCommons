@@ -13,8 +13,8 @@ public class CommonCollectionExtensionsTest
     [TestInitialize]
     public void Setup()
     {
-        _list = new List<string> { "A", "AB", "C", "D" };
-        _dictI = new Dictionary<string, int> { ["A"] = 1, ["B"] = 0 };
+        _list  = ["A", "AB", "C", "D"];
+        _dictI = new Dictionary<string, int> { ["A"]     = 1, ["B"] = 0 };
         _dictD = new Dictionary<string, decimal> { ["A"] = 1, ["B"] = 0 };
     }
 
@@ -41,7 +41,7 @@ public class CommonCollectionExtensionsTest
         ((List<string>?)null).AddRangeIfNotNull(list);
 
         list.AddRangeIfNotNull(null);
-        list.AddRangeIfNotNull(new[] { "hello", "", null });
+        list.AddRangeIfNotNull(["hello", "", null]);
 
         Assert.AreEqual(2, list.Count);
     }
@@ -85,7 +85,7 @@ public class CommonCollectionExtensionsTest
     {
         var item = _list.ExtractAt(1);
 
-        Assert.AreEqual(item, "AB");
+        Assert.AreEqual("AB", item);
         Assert.AreEqual("A,C,D", string.Join(",", _list));
     }
 
@@ -94,7 +94,7 @@ public class CommonCollectionExtensionsTest
     {
         var item = _list.ExtractAtOrDefault(1);
 
-        Assert.AreEqual(item, "AB");
+        Assert.AreEqual("AB", item);
         Assert.AreEqual("A,C,D", string.Join(",", _list));
 
         item = _list.ExtractAtOrDefault(99);
@@ -202,16 +202,16 @@ public class CommonCollectionExtensionsTest
         CollectionAssert.AreEqual(new[] { (4, 4), (5, 5) }, intersect.Both);
         CollectionAssert.AreEqual(new[] { 6, 7 }, intersect.Right);
 
-        list1 = new[] { 1, 2, 3, 4, 5 };
-        list2 = new[] { 4, 5 };
+        list1 = [1, 2, 3, 4, 5];
+        list2 = [4, 5];
 
         intersect = list1.IntersectCollection(list2);
         CollectionAssert.AreEqual(new[] { 1, 2, 3 }, intersect.Left);
         CollectionAssert.AreEqual(new[] { (4, 4), (5, 5) }, intersect.Both);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Right);
 
-        list1 = Array.Empty<int>();
-        list2 = new[] { 4, 5 };
+        list1 = [];
+        list2 = [4, 5];
 
         intersect = list1.IntersectCollection(list2);
         CollectionAssert.AreEqual(Array.Empty<int>(), intersect.Left);
@@ -361,7 +361,7 @@ public class CommonCollectionExtensionsTest
         Assert.AreEqual(2, min);
         Assert.AreEqual(99, max);
 
-        list = new[] { 4 };
+        list = [4];
 
         (min, max) = list.MinMax();
         Assert.AreEqual(4, min);
@@ -387,13 +387,13 @@ public class CommonCollectionExtensionsTest
         Assert.AreEqual("123", string.Join("", list.Repeat(1)));
         Assert.AreEqual("", string.Join("", list.Repeat(0)));
 
-        list = new[] { 1 };
+        list = [1];
 
         Assert.AreEqual("111", string.Join("", list.Repeat(3)));
         Assert.AreEqual("1", string.Join("", list.Repeat(1)));
         Assert.AreEqual("", string.Join("", list.Repeat(0)));
 
-        list = Array.Empty<int>();
+        list = [];
 
         Assert.AreEqual("", string.Join("", list.Repeat(3)));
         Assert.AreEqual("", string.Join("", list.Repeat(1)));
@@ -407,23 +407,23 @@ public class CommonCollectionExtensionsTest
         Assert.IsTrue(list.Swap(0, 1));
         Assert.AreEqual("2,1,3,4,5", string.Join(",", list));
 
-        list = new[] { 1, 2, 3, 4, 5 };
+        list = [1, 2, 3, 4, 5];
         Assert.IsTrue(list.Swap(1, 2));
         Assert.AreEqual("1,3,2,4,5", string.Join(",", list));
 
-        list = new[] { 1, 2, 3, 4, 5 };
+        list = [1, 2, 3, 4, 5];
         Assert.IsTrue(list.Swap(0, 4));
         Assert.AreEqual("5,2,3,4,1", string.Join(",", list));
 
-        list = new[] { 1, 2, 3, 4, 5 };
+        list = [1, 2, 3, 4, 5];
         Assert.IsTrue(list.Swap(3, 4));
         Assert.AreEqual("1,2,3,5,4", string.Join(",", list));
 
-        list = new[] { 1, 2, 3, 4, 5 };
+        list = [1, 2, 3, 4, 5];
         Assert.IsFalse(list.Swap(-1, 0));
         Assert.AreEqual("1,2,3,4,5", string.Join(",", list));
 
-        list = new[] { 1, 2, 3, 4, 5 };
+        list = [1, 2, 3, 4, 5];
         Assert.IsFalse(list.Swap(0, 5));
         Assert.AreEqual("1,2,3,4,5", string.Join(",", list));
     }
@@ -431,7 +431,7 @@ public class CommonCollectionExtensionsTest
     public class TreeNode
     {
         public string Name { get; }
-        public List<TreeNode> Children { get; } = new List<TreeNode>();
+        public List<TreeNode> Children { get; } = [];
 
         public TreeNode(string name, params TreeNode[] children)
         {
@@ -442,12 +442,13 @@ public class CommonCollectionExtensionsTest
 
     private static List<TreeNode> MakeTreeNodes()
     {
-        return new List<TreeNode>
-        {
+        return
+        [
             new TreeNode("Top",
                 new TreeNode("TopLeft"),
                 new TreeNode("TopRight")
             ),
+
             new TreeNode("Middle"),
             new TreeNode("Bottom",
                 new TreeNode("BottomLeft",
@@ -457,7 +458,7 @@ public class CommonCollectionExtensionsTest
                     new TreeNode("BottomRightDeep")
                 )
             )
-        };
+        ];
     }
 
     [TestMethod]

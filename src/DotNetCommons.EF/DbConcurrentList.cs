@@ -79,7 +79,7 @@ public class DbConcurrentList<TContext, TEntity>
             {
                 return await CreateNewEntity(context, dataset, name);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // This likely means that we have hit a unique index, and someone created it just before us.
             }

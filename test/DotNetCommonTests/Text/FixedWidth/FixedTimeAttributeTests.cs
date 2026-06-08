@@ -27,9 +27,10 @@ public class FixedTimeAttributeTests
     public void Parse_DateTime()
     {
         var attr = new FixedTimeAttribute(1, 6);
-        var result = (DateTime)attr.Parse("235958", _culture);
-        Assert.AreEqual(23, result.Hour);
-        Assert.AreEqual(59, result.Minute);
-        Assert.AreEqual(58, result.Second);
+        var result = (DateTime?)attr.Parse("235958", _culture);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(23, result.Value.Hour);
+        Assert.AreEqual(59, result.Value.Minute);
+        Assert.AreEqual(58, result.Value.Second);
     }
 }

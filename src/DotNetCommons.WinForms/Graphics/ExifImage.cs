@@ -2,6 +2,8 @@
 using System.Runtime.Serialization;
 using System.Text;
 
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace DotNetCommons.WinForms.Graphics;
 
 public static class ExifTags
@@ -14,155 +16,122 @@ public static class ExifTags
     public const int Rating = 0x4746;
 }
 
-public class ExifImage : IDisposable
+public class ExifImage
 {
-    private MemoryStream _data;
-    private Stream _source;
-    private Image _image;
+    public Image Image { get; }
 
-    public string Comments
+    public string? Comments
     {
         get => ReadString(ExifTags.XpComment, Encoding.Unicode);
-        set => Write(ExifTags.XpComment, value, Encoding.Unicode);
+        set
+        {
+            if (value == null)
+                Remove(ExifTags.XpComment);
+            else
+                Write(ExifTags.XpComment, value, Encoding.Unicode);
+        }
     }
 
     public short? Rating
     {
         get => ReadInt16(ExifTags.Rating);
-        set => Write(ExifTags.Rating, value);
+        set
+        {
+            if (value == null)
+                Remove(ExifTags.Rating);
+            else
+                Write(ExifTags.Rating, value.Value);
+        }
     }
 
-    public string Subject
+    public string? Subject
     {
         get => ReadString(ExifTags.XpSubject, Encoding.Unicode);
-        set => Write(ExifTags.XpSubject, value, Encoding.Unicode);
+        set
+        {
+            if (value == null)
+                Remove(ExifTags.XpSubject);
+            else
+                Write(ExifTags.XpSubject, value, Encoding.Unicode);
+        }
     }
 
     public string[] Tags
     {
         get => ReadStrings(ExifTags.XpKeywords, Encoding.Unicode);
-        set => Write(ExifTags.XpKeywords, value, Encoding.Unicode);
+        set
+        {
+            if (value.Length == 0)
+                Remove(ExifTags.XpKeywords);
+            else
+                Write(ExifTags.XpKeywords, value, Encoding.Unicode);
+        }
     }
 
     public string TagAsText => string.Join("; ", Tags);
 
-    public string Title
+    public string? Title
     {
         get => ReadString(ExifTags.XpTitle, Encoding.Unicode);
-        set => Write(ExifTags.XpTitle, value, Encoding.Unicode);
-    }
-
-    public ExifImage(string filename) : this(new FileStream(filename, FileMode.Open, FileAccess.ReadWrite))
-    {
+        set
+        {
+            if (value == null)
+                Remove(ExifTags.XpTitle);
+            else
+                Write(ExifTags.XpTitle, value, Encoding.Unicode);
+        }
     }
 
     public ExifImage(Stream stream)
     {
-        _source = stream;
-        LoadExifData();
+        Image = Image.FromStream(stream);
     }
 
-    ~ExifImage()
+    public void AdjustForOrientation()
     {
-        Dispose();
-    }
-
-    public void Dispose()
-    {
-        _source?.Dispose();
-        _source = null;
-    }
-
-    private void LoadExifData()
-    {
-        _data = new MemoryStream();
-        _source.CopyTo(_data);
-
-        _data.Position = 0;
-        _image = Image.FromStream(_data);
-    }
-
-    public Image GetImage(bool adjustForOrientation)
-    {
-        _data.Position = 0;
-        var img = Image.FromStream(_data);
-
-        if (adjustForOrientation && img.PropertyIdList.Contains(ExifTags.Orientation))
+        var orientation = ReadUInt8(ExifTags.Orientation);
+        switch (orientation)
         {
-            var orientation = (int)img.GetPropertyItem(ExifTags.Orientation).Value[0];
-            switch (orientation)
-            {
-                case 2: img.RotateFlip(RotateFlipType.RotateNoneFlipX); break;
-                case 3: img.RotateFlip(RotateFlipType.Rotate180FlipNone); break;
-                case 4: img.RotateFlip(RotateFlipType.Rotate180FlipX); break;
-                case 5: img.RotateFlip(RotateFlipType.Rotate90FlipX); break;
-                case 6: img.RotateFlip(RotateFlipType.Rotate90FlipNone); break;
-                case 7: img.RotateFlip(RotateFlipType.Rotate270FlipX); break;
-                case 8: img.RotateFlip(RotateFlipType.Rotate270FlipNone); break;
-            }
-
-            img.RemovePropertyItem(ExifTags.Orientation);
+            case 2: Image.RotateFlip(RotateFlipType.RotateNoneFlipX); break;
+            case 3: Image.RotateFlip(RotateFlipType.Rotate180FlipNone); break;
+            case 4: Image.RotateFlip(RotateFlipType.Rotate180FlipX); break;
+            case 5: Image.RotateFlip(RotateFlipType.Rotate90FlipX); break;
+            case 6: Image.RotateFlip(RotateFlipType.Rotate90FlipNone); break;
+            case 7: Image.RotateFlip(RotateFlipType.Rotate270FlipX); break;
+            case 8: Image.RotateFlip(RotateFlipType.Rotate270FlipNone); break;
         }
 
-        return img;
+        Image.RemovePropertyItem(ExifTags.Orientation);
     }
 
     public bool Exists(int id)
     {
-        return _image.PropertyIdList.Contains(id);
+        return Image.PropertyIdList.Contains(id);
     }
 
-    public byte[] Read(int id)
+    public bool TryRead(int id, out byte[] value)
     {
-        return _image.GetPropertyItem(id).Value;
+        value = null!;
+        if (!Image.PropertyIdList.Contains(id))
+            return false;
+
+        var item = Image.GetPropertyItem(id);
+        if (item == null)
+            return false;
+
+        value = item.Value!;
+        return true;
     }
 
-    public sbyte? ReadInt8(int id)
-    {
-        return Exists(id) ? (sbyte)Read(id)[0] : null;
-    }
-
-    public short? ReadInt16(int id)
-    {
-        return Exists(id) ? BitConverter.ToInt16(Read(id), 0) : null;
-    }
-
-    public int? ReadInt32(int id)
-    {
-        return Exists(id) ? BitConverter.ToInt32(Read(id), 0) : null;
-    }
-
-    public long? ReadInt64(int id)
-    {
-        return Exists(id) ? BitConverter.ToInt64(Read(id), 0) : null;
-    }
-
-    public byte? ReadUInt8(int id)
-    {
-        return Exists(id) ? Read(id)[0] : null;
-    }
-
-    public ushort? ReadUInt16(int id)
-    {
-        return Exists(id) ? BitConverter.ToUInt16(Read(id), 0) : null;
-    }
-
-    public uint? ReadUInt32(int id)
-    {
-        return Exists(id) ? BitConverter.ToUInt32(Read(id), 0) : null;
-    }
-
-    public ulong? ReadUInt64(int id)
-    {
-        return Exists(id) ? BitConverter.ToUInt64(Read(id), 0) : null;
-    }
-
-    public string ReadString(int id, Encoding encoding)
-    {
-        return Exists(id)
-            ? encoding.GetString(_image.GetPropertyItem(id).Value).TrimEnd('\0')
-            : null;
-    }
+    public sbyte? ReadInt8(int id) => TryRead(id, out var value) ? (sbyte?)value[0] : null;
+    public short? ReadInt16(int id) => TryRead(id, out var value) ? BitConverter.ToInt16(value, 0) : null;
+    public int? ReadInt32(int id) => TryRead(id, out var value) ? BitConverter.ToInt32(value, 0) : null;
+    public long? ReadInt64(int id) => TryRead(id, out var value) ? BitConverter.ToInt64(value, 0) : null;
+    public byte? ReadUInt8(int id) => TryRead(id, out var value) ? value[0] : null;
+    public ushort? ReadUInt16(int id) => TryRead(id, out var value) ? BitConverter.ToUInt16(value, 0) : null;
+    public uint? ReadUInt32(int id) => TryRead(id, out var value) ? BitConverter.ToUInt32(value, 0) : null;
+    public ulong? ReadUInt64(int id) => TryRead(id, out var value) ? BitConverter.ToUInt64(value, 0) : null;
+    public string? ReadString(int id, Encoding encoding) => TryRead(id, out var value) ? encoding.GetString(value).TrimEnd('\0') : null;
 
     public string[] ReadStrings(int id, Encoding encoding)
     {
@@ -173,44 +142,23 @@ public class ExifImage : IDisposable
             .ToArray();
     }
 
-    public void Save()
-    {
-        // Verify file sizes - must be at least 80% of original
-        if (_data.Length < _source.Length * 0.8)
-            throw new Exception($"File save resulted in an unexpectedly small file ({_data.Length} bytes compared to original {_source.Length} bytes)");
-
-        _source.Position = 0;
-        _source.SetLength(0);
-        Save(_source);
-    }
-
-    public void Save(string filename)
-    {
-        using var fs = new FileStream(filename, FileMode.Create);
-        Save(fs);
-    }
-
     public void Save(Stream target)
     {
-        _image.Save(target, ImageFormat.Jpeg);
+        Image.Save(target, ImageFormat.Jpeg);
+    }
+
+    public void Remove(int id)
+    {
+        Image.RemovePropertyItem(id);
     }
 
     public void Write(int id, byte[] data)
     {
-        var exists = _image.PropertyIdList.Contains(id);
-
-        if (data == null)
-        {
-            if (exists)
-                _image.RemovePropertyItem(id);
-            return;
-        }
-
-        // Disable warning for use of FormatterServices... yes, I know what I'm doing
+        // Because PropertyItem doesn't have a public constructor, we need to use FormatterServices.GetUninitializedObject
         #pragma warning disable SYSLIB0050
-        
-        var prop = exists
-            ? _image.GetPropertyItem(id)
+
+        var prop = Image.PropertyIdList.Contains(id)
+            ? Image.GetPropertyItem(id)
             : (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
         
         #pragma warning restore SYSLIB0050
@@ -220,56 +168,17 @@ public class ExifImage : IDisposable
         prop.Value = data;
         prop.Len = data.Length;
 
-        _image.SetPropertyItem(prop);
+        Image.SetPropertyItem(prop);
     }
 
-    public void Write(int id, sbyte? value)
-    {
-        Write(id, value != null ? new[] { (byte)value.Value } : null);
-    }
-
-    public void Write(int id, byte? value)
-    {
-        Write(id, value != null ? new[] { value.Value } : null);
-    }
-
-    public void Write(int id, ushort? value)
-    {
-        Write(id, value != null ? BitConverter.GetBytes(value.Value) : null);
-    }
-
-    public void Write(int id, short? value)
-    {
-        Write(id, value != null ? BitConverter.GetBytes(value.Value) : null);
-    }
-
-    public void Write(int id, int? value)
-    {
-        Write(id, value != null ? BitConverter.GetBytes(value.Value) : null);
-    }
-
-    public void Write(int id, uint? value)
-    {
-        Write(id, value != null ? BitConverter.GetBytes(value.Value) : null);
-    }
-
-    public void Write(int id, ulong? value)
-    {
-        Write(id, value != null ? BitConverter.GetBytes(value.Value) : null);
-    }
-
-    public void Write(int id, long? value)
-    {
-        Write(id, value != null ? BitConverter.GetBytes(value.Value) : null);
-    }
-
-    public void Write(int id, string value, Encoding encoding)
-    {
-        Write(id, value == null ? null : encoding.GetBytes(value + "\0"));
-    }
-
-    public void Write(int id, IEnumerable<string> values, Encoding encoding)
-    {
-        Write(id, string.Join(";", values), encoding);
-    }
+    public void Write(int id, sbyte value) => Write(id, [(byte)value]);
+    public void Write(int id, byte value) => Write(id, [value]);
+    public void Write(int id, ushort value) => Write(id, BitConverter.GetBytes(value));
+    public void Write(int id, short value) => Write(id, BitConverter.GetBytes(value));
+    public void Write(int id, int value) => Write(id, BitConverter.GetBytes(value));
+    public void Write(int id, uint value) => Write(id, BitConverter.GetBytes(value));
+    public void Write(int id, ulong value) => Write(id, BitConverter.GetBytes(value));
+    public void Write(int id, long value) => Write(id, BitConverter.GetBytes(value));
+    public void Write(int id, string value, Encoding encoding) => Write(id, encoding.GetBytes(value + "\0"));
+    public void Write(int id, IEnumerable<string> values, Encoding encoding) => Write(id, string.Join(";", values), encoding);
 }

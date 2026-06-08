@@ -238,7 +238,7 @@ public class CsvConverter<T>
     public async IAsyncEnumerable<T> Read(StreamReader reader, [EnumeratorCancellation] CancellationToken ct = default)
     {
         await ReadHeader(reader, ct);
-        while (!reader.EndOfStream)
+        for(;;)
         {
             var item = await ReadOne(reader, ct);
             if (item != null)
@@ -250,7 +250,7 @@ public class CsvConverter<T>
 
     public async Task ReadHeader(StreamReader reader, CancellationToken ct = default)
     {
-        while (!reader.EndOfStream)
+        for(;;)
         {
             var line = await reader.ReadLineAsync(ct);
             if (line == null)

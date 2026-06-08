@@ -4,6 +4,7 @@ using FluentAssertions;
 namespace DotNetCommonTests.Security.CryptV1;
 
 [TestClass]
+[Obsolete("Obsolete")]
 public class CryptKeyTests
 {
     private static readonly byte[] EmptyKey = new byte[32];

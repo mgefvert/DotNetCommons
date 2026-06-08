@@ -11,7 +11,7 @@ public class ExifImageTest
     [TestInitialize]
     public void Setup()
     {
-        var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(GetType(), "test.jpg");
+        var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(GetType(), "test.jpg") ?? throw new Exception("Image not found.");
         _img = new ExifImage(resource);
     }
 

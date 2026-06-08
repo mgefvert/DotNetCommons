@@ -85,7 +85,7 @@ public static class Passwords
     private static string ComputeHash(string plaintext, byte[] salt, int complexity)
     {
         using var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity, HashAlgorithmName.SHA1);
-        using var mem = new MemoryStream();
+        using var mem    = new MemoryStream();
         using var writer = new BinaryWriter(mem);
 
         writer.Write((byte)complexity);
