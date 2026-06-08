@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
+// ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
 
 namespace DotNetCommons.WinForms;
@@ -7,7 +8,7 @@ namespace DotNetCommons.WinForms;
 public class AppBarForm : Form
 {
     protected WinApi.ABEdge AppBarPosition { get; set; } = WinApi.ABEdge.ABE_TOP;
-    protected Screen AppBarMonitor { get; set; }
+    protected Screen? AppBarMonitor { get; set; }
     private int uCallBack;
     private bool _inSetPos;
 
@@ -86,49 +87,42 @@ public class AppBarForm : Form
         }
     }
 
-    private void CalculateCoordinates(ref WinApi.APPBARDATA result, Screen screen)
+    private void CalculateCoordinates(ref WinApi.APPBARDATA result, Screen? screen)
     {
+        screen ??= Screen.PrimaryScreen;
         if (screen == null)
-            screen = Screen.PrimaryScreen;
+            return;
 
         if (result.uEdge == (int)WinApi.ABEdge.ABE_LEFT || result.uEdge == (int)WinApi.ABEdge.ABE_RIGHT)
         {
-            result.rc.top = screen.WorkingArea.Top;
+            result.rc.top    = screen.WorkingArea.Top;
             result.rc.bottom = screen.WorkingArea.Bottom;
             if (result.uEdge == (int)WinApi.ABEdge.ABE_LEFT)
             {
-                result.rc.left = screen.WorkingArea.Left;
+                result.rc.left  = screen.WorkingArea.Left;
                 result.rc.right = Size.Width;
             }
             else
             {
                 result.rc.right = screen.WorkingArea.Right;
-                result.rc.left = result.rc.right - Size.Width;
+                result.rc.left  = result.rc.right - Size.Width;
             }
         }
         else
         {
-            result.rc.left = screen.WorkingArea.Left;
+            result.rc.left  = screen.WorkingArea.Left;
             result.rc.right = screen.WorkingArea.Right;
             if (result.uEdge == (int)WinApi.ABEdge.ABE_TOP)
             {
-                result.rc.top = screen.WorkingArea.Top;
+                result.rc.top    = screen.WorkingArea.Top;
                 result.rc.bottom = Size.Height;
             }
             else
             {
                 result.rc.bottom = screen.WorkingArea.Height;
-                result.rc.top = result.rc.bottom - Size.Height;
+                result.rc.top    = result.rc.bottom - Size.Height;
             }
         }
-    }
-
-    protected override void WndProc(ref Message m)
-    {
-        //if (m.Msg == uCallBack && m.WParam.ToInt32() == (int)WinApi.ABNotify.ABN_POSCHANGED)
-        //    ABSetPos();
-
-        base.WndProc(ref m);
     }
 
     protected override CreateParams CreateParams

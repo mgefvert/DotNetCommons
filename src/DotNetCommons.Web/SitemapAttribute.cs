@@ -1,4 +1,6 @@
-﻿namespace DotNetCommons.Web;
+﻿// ReSharper disable UnusedAutoPropertyAccessor.Global
+
+namespace DotNetCommons.Web;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class SiteMapAttribute : Attribute
