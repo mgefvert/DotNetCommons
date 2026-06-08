@@ -82,16 +82,15 @@ public static class Passwords
     /// <summary>
     /// Compute a PBKDF2 hash from a given plain text, complexity and salt.
     /// </summary>
-    private static string ComputeHash(string plaintext, byte[] salt, int complexity)
+    internal static string ComputeHash(string plaintext, byte[] salt, int complexity)
     {
-        using var pbkdf2 = new Rfc2898DeriveBytes(plaintext, salt, 2 << complexity, HashAlgorithmName.SHA1);
         using var mem    = new MemoryStream();
         using var writer = new BinaryWriter(mem);
 
         writer.Write((byte)complexity);
         writer.Write(salt);
 
-        var data = pbkdf2.GetBytes(64);
+        var data = Rfc2898DeriveBytes.Pbkdf2(plaintext, salt, 2 << complexity, HashAlgorithmName.SHA1, 64);
         writer.Write(data.Length);
         writer.Write(data);
 
