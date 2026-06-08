@@ -5,7 +5,30 @@ namespace DotNetCommons.Sys;
 
 /// Represents the context for a job execution, providing necessary dependencies
 /// and configurations such as service provider, logging interface, and cancellation token.
-public record JobContext(string Name, IServiceProvider ServiceProvider, ILogger Logger, CancellationToken CancellationToken);
+public record JobContext
+{
+    /// Represents the context for a job execution, providing necessary dependencies
+    /// and configurations such as service provider, logging interface, and cancellation token.
+    public JobContext(string name, IServiceProvider serviceProvider, ILogger logger, CancellationToken cancellationToken)
+    {
+        Name              = name;
+        ServiceProvider   = serviceProvider;
+        Logger            = logger;
+        CancellationToken = cancellationToken;
+    }
+
+    /// The name of the job being executed.
+    public string Name { get; init; }
+
+    /// The service provider used to resolve dependencies for the job. This is always scoped for the job's execution.
+    public IServiceProvider ServiceProvider { get; init; }
+
+    /// The logger used for logging events during job execution.
+    public ILogger Logger { get; init; }
+
+    /// The cancellation token associated with the job's execution.
+    public CancellationToken CancellationToken { get; init; }
+}
 
 /// Represents an individual job definition within the ClockJobRunner, encapsulating
 /// the job's execution details, its schedule, and its current state.
