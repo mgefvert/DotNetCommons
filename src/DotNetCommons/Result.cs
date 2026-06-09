@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace DotNetCommons;
+﻿namespace DotNetCommons;
 
 public abstract record ResultBase
 {
