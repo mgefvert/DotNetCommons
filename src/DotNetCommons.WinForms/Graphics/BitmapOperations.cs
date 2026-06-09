@@ -196,7 +196,7 @@ public static class BitmapOperations
     /// <param name="stream">The stream to which the bitmap will be written.</param>
     /// <param name="imageFormat">The format in which the bitmap will be saved.</param>
     /// <param name="encoderParams">Optional encoder parameters to customize the image saving process.</param>
-    public static void WriteToStream(this Bitmap bitmap, Stream stream, ImageFormat imageFormat, EncoderParameters encoderParams = null)
+    public static void WriteToStream(this Bitmap bitmap, Stream stream, ImageFormat imageFormat, EncoderParameters? encoderParams = null)
     {
         var codec = ImageCodecInfo.GetImageEncoders().First(x => x.FormatID == imageFormat.Guid);
         bitmap.Save(stream, codec, encoderParams);

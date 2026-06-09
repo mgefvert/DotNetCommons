@@ -26,9 +26,9 @@ public static partial class WinApi
     public static extern IntPtr CreateCompatibleDC(IntPtr hDC);
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    public static extern IntPtr CreateService(IntPtr hSCManager, string lpServiceName, string lpDisplayName,
+    public static extern IntPtr CreateService(IntPtr hSCManager, string? lpServiceName, string? lpDisplayName,
         ServiceAccessRights dwDesiredAccess, int dwServiceType, ServiceBootFlag dwStartType, ServiceError dwErrorControl,
-        string lpBinaryPathName, string lpLoadOrderGroup, IntPtr lpdwTagId, string lpDependencies, string lp, string lpPassword);
+        string? lpBinaryPathName, string? lpLoadOrderGroup, IntPtr lpdwTagId, string? lpDependencies, string? lp, string? lpPassword);
 
     [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
     public static extern bool DeleteDC(IntPtr hdc);
@@ -70,7 +70,7 @@ public static partial class WinApi
     public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, bool repaint);
 
     [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerW", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern IntPtr OpenSCManager(string machineName, string databaseName, ScmAccessRights dwDesiredAccess);
+    public static extern IntPtr OpenSCManager(string? machineName, string? databaseName, ScmAccessRights dwDesiredAccess);
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     public static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, ServiceAccessRights dwDesiredAccess);

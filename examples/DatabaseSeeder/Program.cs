@@ -11,7 +11,7 @@ var connectionString = configuration.GetConnectionString("Default")
                        ?? throw new InvalidOperationException("Connection string 'Default' not found in appsettings.json");
 
 var dbContext = new MyDbContext(new DbContextOptionsBuilder<MyDbContext>()
-    .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+    .UseMySQL(connectionString)
     .Options);
 
 using (dbContext)

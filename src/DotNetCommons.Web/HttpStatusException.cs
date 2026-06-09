@@ -1,5 +1,7 @@
 ﻿using System.Net;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 namespace DotNetCommons.Web;
 
 public class HttpStatusException : Exception

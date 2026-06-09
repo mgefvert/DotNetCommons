@@ -4,6 +4,7 @@ using FluentAssertions;
 namespace DotNetCommonTests.Security.CryptV1;
 
 [TestClass]
+[Obsolete("Obsolete")]
 public class CryptTests
 {
     [TestMethod]

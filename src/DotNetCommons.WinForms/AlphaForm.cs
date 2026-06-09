@@ -1,4 +1,7 @@
 ﻿using Timer = System.Windows.Forms.Timer;
+using System.ComponentModel;
+
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 // Written by Mats Gefvert
 // Distributed under MIT License: https://opensource.org/licenses/MIT
@@ -10,11 +13,22 @@ public class AlphaForm : Form
     private readonly Timer _timer;
     protected int PreferredScreen { get; set; }
 
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int Alpha { get; set; }
-    public Bitmap CurrentBitmap { get; set; }
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public Bitmap? CurrentBitmap { get; set; }
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int TargetAlpha { get; set; }
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int OffsetX { get; set; }
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int OffsetY { get; set; }
+
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public AnchorStyles AnchorOffset { get; set; } = AnchorStyles.Left | AnchorStyles.Top;
     
     public AlphaForm() : this(false)
@@ -72,7 +86,7 @@ public class AlphaForm : Form
             _timer.Start();
     }
 
-    private void TimerOnTick(object sender, EventArgs eventArgs)
+    private void TimerOnTick(object? sender, EventArgs eventArgs)
     {
         if (Alpha == TargetAlpha)
         {
@@ -108,12 +122,23 @@ public class AlphaForm : Form
         InvokeOnMainThread(() => WinApi.UpdateLayeredWindow(Handle, zero, zero, zero, zero, zero, 0, ref blend, WinApi.ULW_ALPHA));
     }
 
+    /// <summary>
+    /// Updates the form's visual appearance by redrawing the graphics with the current bitmap, transparency,
+    /// and position properties. The method uses Windows API calls to enable layered window rendering with
+    /// transparency effects. Also adjusts the form's dimensions and position based on the specified properties
+    /// and screen area.
+    /// </summary>
+    /// <returns>
+    /// True if the update was successful, false if the current bitmap is null or the operation fails.
+    /// </returns>
     public bool UpdateImage()
     {
         if (CurrentBitmap == null)
             return false;
 
-        var area = (Screen.AllScreens.ElementAtOrDefault(PreferredScreen) ?? Screen.PrimaryScreen).WorkingArea;
+        var area = (Screen.AllScreens.ElementAtOrDefault(PreferredScreen) ?? Screen.PrimaryScreen)?.WorkingArea;
+        if (area == null)
+            return false;
 
         Width = CurrentBitmap.Width;
         Height = CurrentBitmap.Height;
@@ -121,13 +146,13 @@ public class AlphaForm : Form
         int left = 0;
         int top = 0;
         if (AnchorOffset.HasFlag(AnchorStyles.Left))
-            left = area.Left;
+            left = area.Value.Left;
         else if (AnchorOffset.HasFlag(AnchorStyles.Right))
-            left = area.Right - Width;
+            left = area.Value.Right - Width;
         if (AnchorOffset.HasFlag(AnchorStyles.Top))
-            top = area.Top;
+            top = area.Value.Top;
         else if (AnchorOffset.HasFlag(AnchorStyles.Right))
-            top = area.Bottom - Height;
+            top = area.Value.Bottom - Height;
         Left = left + OffsetX;
         Top = top + OffsetY;
         

@@ -49,11 +49,11 @@ public class HotKeys
         if (msg.Msg != (int)WinApi.WM.HOTKEY)
             return;
 
-        int hotkey = (int)msg.WParam;
-        if (!_hotkeys.ContainsKey(hotkey))
+        var hotkey = (int)msg.WParam;
+        if (!_hotkeys.TryGetValue(hotkey, out var callback))
             return;
 
-        _hotkeys[hotkey]();
-        msg.Result = (IntPtr)1;
+        callback();
+        msg.Result = 1;
     }
 }
