@@ -8,16 +8,20 @@ public static class SwedishHolidays
     public static Holiday NewYearsDay { get; }
     public static Holiday Epiphany { get; }
     public static Holiday GoodFriday { get; }
+    public static Holiday EasterEve { get; }
     public static Holiday Easter { get; }
     public static Holiday EasterMonday { get; }
     public static Holiday MayFirst { get; }
     public static Holiday AscensionDay { get; }
     public static Holiday Pentecost { get; }
     public static Holiday NationalDayOfSweden { get; }
+    public static Holiday MidsummerEve { get; }
     public static Holiday Midsummer { get; }
     public static Holiday AllSaintsDay { get; }
+    public static Holiday ChristmasEve { get; }
     public static Holiday ChristmasDay { get; }
     public static Holiday BoxingDay { get; }
+    public static Holiday NewYearsEve { get; }
 
     public static Holiday[] All { get; }
 
@@ -29,15 +33,19 @@ public static class SwedishHolidays
             Epiphany            = new DateBasedHoliday("Trettondedag jul", HolidayType.Holiday, 1, 6),
             GoodFriday          = new EasterHoliday("Långfredag", HolidayType.Holiday, -2),
             Easter              = new EasterHoliday("Påskdagen", HolidayType.Holiday),
+            EasterEve           = new RelativeHoliday("Påskafton", HolidayType.Holiday, Easter, -1),
             EasterMonday        = new EasterHoliday("Annandag påsk", HolidayType.Holiday, 1),
             MayFirst            = new DateBasedHoliday("Första maj", HolidayType.Holiday, 5, 1),
             AscensionDay        = new EasterHoliday("Kristi himmelfärdsdag", HolidayType.Holiday, 39),
             Pentecost           = new EasterHoliday("Pingstdagen", HolidayType.Holiday, 49),
             NationalDayOfSweden = new DateBasedHoliday("Sveriges nationaldag", HolidayType.Holiday, 6, 6),
             Midsummer           = new BetweenDaysHoliday("Midsommar", HolidayType.Holiday, 6, 20, 6, 26, DayOfWeek.Saturday),
+            MidsummerEve        = new RelativeHoliday("Midsommarafton", HolidayType.Unofficial, Midsummer, -1),
             AllSaintsDay        = new BetweenDaysHoliday("Alla helgons dag", HolidayType.Holiday, 10, 31, 11, 6, DayOfWeek.Saturday),
+            ChristmasEve        = new DateBasedHoliday("Julafton", HolidayType.Unofficial, 12, 24),
             ChristmasDay        = new DateBasedHoliday("Juldagen", HolidayType.Holiday, 12, 25),
-            BoxingDay           = new DateBasedHoliday("Annandag jul", HolidayType.Holiday, 12, 26)
+            BoxingDay           = new DateBasedHoliday("Annandag jul", HolidayType.Holiday, 12, 26),
+            NewYearsEve         = new DateBasedHoliday("Nyårsafton", HolidayType.Unofficial, 12, 31),
         ];
     }
 }

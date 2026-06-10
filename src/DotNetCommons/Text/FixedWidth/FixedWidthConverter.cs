@@ -212,7 +212,7 @@ public class FixedWidthConverter
     public async IAsyncEnumerable<T> Read<T>(StreamReader reader, [EnumeratorCancellation] CancellationToken ct = default)
         where T : class, new()
     {
-        while (!reader.EndOfStream)
+        for(;;)
         {
             var item = await ReadOne<T>(reader, ct);
             if (item != null)

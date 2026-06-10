@@ -6,6 +6,17 @@ namespace DotNetCommonTests.Security;
 public class PasswordsTest
 {
     [TestMethod]
+    public void ComputeHash_Works()
+    {
+        var salt   = Enumerable.Range(0, 16).Select(x => (byte)x).ToArray();
+        var result = Passwords.ComputeHash("abcABC123", salt, 10);
+
+        Assert.AreEqual(
+            "CgABAgMEBQYHCAkKCwwNDg9AAAAAUcjUY18dzxHEYZHI6+pLzL9VQ9GIiZDF7XkSO2MQ0dlplMRCJYAJF2N843/iSgHSYUoL3yB/yAwc2L3h4l2q6A==",
+            result);
+    }
+
+    [TestMethod]
     public void GeneratePasswordTest()
     {
         var pw = Passwords.GeneratePassword("A3-N2-A1");
