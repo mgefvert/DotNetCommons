@@ -51,6 +51,12 @@ public static class HTags
     public static HElement Script(string script) => New("script", [HText.Script(script)]);
     public static HElement Span(params HNode?[] content) => New("span", content);
     public static HElement Style(string style) => New("style", [HText.Style(style)]);
+    public static HElement Table(params HNode?[] content) => New("table", content);
+    public static HElement TBody(params HNode?[] content) => New("tbody", content);
+    public static HElement THead(params HNode?[] content) => New("thead", content);
+    public static HElement TD(params HNode?[] content) => New("td", content);
+    public static HElement TH(params HNode?[] content) => New("th", content);
+    public static HElement TR(params HNode?[] content) => New("tr", content);
     public static HElement Ul(params HNode?[] content) => New("ul", content);
 
     private static HElement New(string tag, HNode?[]? content = null)
