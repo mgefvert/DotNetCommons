@@ -28,7 +28,7 @@ public class HText : HNode
 
     public override string Render()
     {
-        return Type == TextType.RawHtml
+        return Type != TextType.Escape
             ? Content ?? ""
             : HttpUtility.HtmlEncode(Content ?? "");
     }
