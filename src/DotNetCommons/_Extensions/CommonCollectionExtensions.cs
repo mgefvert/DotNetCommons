@@ -725,11 +725,30 @@ public static class CommonCollectionExtensions
             yield return subNode;
     }
 
-    /// <summary>
-    /// Iterate through an enumerable and bring along an index counter
-    /// </summary>
-    public static IEnumerable<(T Item, int Index)> WithIndex<T>(this IEnumerable<T> source)
+    public readonly record struct LoopItem<T>(T Value, bool IsFirst, bool IsLast, int Index);
+
+    /// Iterate through an IEnumerable and bring along an index counter and first and last markers
+    public static IEnumerable<LoopItem<T>> WithPosition<T>(this IEnumerable<T> source)
     {
-        return source.Select((item, index) => (item, index));
+        ArgumentNullException.ThrowIfNull(source);
+
+        using var e = source.GetEnumerator();
+
+        if (!e.MoveNext())
+            yield break;
+
+        var index   = 0;
+        var current = e.Current;
+
+        while (true)
+        {
+            var hasNext = e.MoveNext();
+            yield return new LoopItem<T>(current, index == 0, !hasNext, index);
+            if (!hasNext)
+                yield break;
+
+            current = e.Current;
+            index++;
+        }
     }
 }
