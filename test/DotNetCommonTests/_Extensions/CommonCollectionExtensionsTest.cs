@@ -511,22 +511,22 @@ public class CommonCollectionExtensionsTest
     public void TestWithPosition()
     {
         var list = new[] { "a", "b", "c", "d", "e" };
-        var result = list.WithPosition().ToList();
+        var result = list.WithIndex().ToList();
 
         result.Count.Should().Be(5);
 
         result[0].Index.Should().Be(0);
-        result[0].Value.Should().Be("a");
+        result[0].Item.Should().Be("a");
         result[0].IsFirst.Should().BeTrue();
         result[0].IsLast.Should().BeFalse();
 
         result[2].Index.Should().Be(2);
-        result[2].Value.Should().Be("c");
+        result[2].Item.Should().Be("c");
         result[2].IsFirst.Should().BeFalse();
         result[2].IsLast.Should().BeFalse();
 
         result[4].Index.Should().Be(4);
-        result[4].Value.Should().Be("e");
+        result[4].Item.Should().Be("e");
         result[4].IsFirst.Should().BeFalse();
         result[4].IsLast.Should().BeTrue();
     }
@@ -535,7 +535,7 @@ public class CommonCollectionExtensionsTest
     public void TestWithPosition_Empty()
     {
         var list = Array.Empty<string>();
-        var result = list.WithPosition().ToList();
+        var result = list.WithIndex().ToList();
 
         result.Count.Should().Be(0);
     }
@@ -544,11 +544,11 @@ public class CommonCollectionExtensionsTest
     public void TestWithPosition_Single()
     {
         var list = new[] { "only" };
-        var result = list.WithPosition().ToList();
+        var result = list.WithIndex().ToList();
 
         result.Count.Should().Be(1);
         result[0].Index.Should().Be(0);
-        result[0].Value.Should().Be("only");
+        result[0].Item.Should().Be("only");
         result[0].IsFirst.Should().BeTrue();
         result[0].IsLast.Should().BeTrue();
     }
@@ -564,7 +564,7 @@ public class CommonCollectionExtensionsTest
         var firstPos = -1;
         var lastPos = -1;
 
-        foreach (var item in largeList.WithPosition())
+        foreach (var item in largeList.WithIndex())
         {
             count++;
             if (item.IsFirst)
@@ -573,7 +573,7 @@ public class CommonCollectionExtensionsTest
                 lastPos = item.Index;
 
             item.Index.Should().Be(count - 1);
-            item.Value.Should().Be(count);
+            item.Item.Should().Be(count);
         }
 
         count.Should().Be(totalCount);
