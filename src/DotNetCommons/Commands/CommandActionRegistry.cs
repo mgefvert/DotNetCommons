@@ -146,8 +146,8 @@ public class CommandActionRegistry
 
         if (attr.HelpText.IsAtLeastOne())
         {
-            foreach (var (paragraph, index) in attr.HelpText.WithIndex())
-            foreach (var line in TextTools.WordWrap(paragraph, Console.WindowWidth, index == 0 ? 0 : -2))
+            foreach (var p in attr.HelpText.WithPosition())
+            foreach (var line in TextTools.WordWrap(p.Value, Console.WindowWidth, p.IsFirst ? 0 : -2))
                 Console.WriteLine(line);
         }
 
