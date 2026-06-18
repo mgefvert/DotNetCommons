@@ -725,10 +725,10 @@ public static class CommonCollectionExtensions
             yield return subNode;
     }
 
-    public readonly record struct LoopItem<T>(T Value, bool IsFirst, bool IsLast, int Index);
+    public readonly record struct LoopItem<T>(T Item, bool IsFirst, bool IsLast, int Index);
 
     /// Iterate through an IEnumerable and bring along an index counter and first and last markers
-    public static IEnumerable<LoopItem<T>> WithPosition<T>(this IEnumerable<T> source)
+    public static IEnumerable<LoopItem<T>> WithIndex<T>(this IEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);
 

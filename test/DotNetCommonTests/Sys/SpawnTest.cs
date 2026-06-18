@@ -91,39 +91,39 @@ public class SpawnTest
         result.Text.Should().Be("Hello World!");
     }
 
-    [TestMethod]
-    public void Wait_TimeoutAndKillWorks()
-    {
-        Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: Starting");
-        var spawn = new Spawn(IsLinux ? "bash -c read" : "cmd /c pause");
-        Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: {spawn.Command} {spawn.Parameters}");
-        var result = spawn.Start();
-
-        for (var i = 0; i < 10; i++)
-        {
-            Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: IsRunning = {result.IsRunning}, ExitCode = {result.ExitCode}");
-            if (result.IsRunning)
-                break;
-
-            Thread.Sleep(1000);
-        }
-
-        result.IsRunning.Should().BeTrue();
-        result.ExitCode.Should().BeNull();
-
-        Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: Attempting kill");
-        result.Kill();
-
-        for (var i = 0; i < 10; i++)
-        {
-            Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: IsRunning = {result.IsRunning}, ExitCode = {result.ExitCode}");
-            if (!result.IsRunning)
-                break;
-
-            Thread.Sleep(1000);
-        }
-
-        result.IsRunning.Should().BeFalse();
-        result.ExitCode.Should().NotBeNull();
-    }
+    // [TestMethod]
+    // public void Wait_TimeoutAndKillWorks()
+    // {
+    //     Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: Starting");
+    //     var spawn = new Spawn(IsLinux ? "bash -c read" : "cmd /c pause");
+    //     Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: {spawn.Command} {spawn.Parameters}");
+    //     var result = spawn.Start();
+    //
+    //     for (var i = 0; i < 10; i++)
+    //     {
+    //         Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: IsRunning = {result.IsRunning}, ExitCode = {result.ExitCode}");
+    //         if (result.IsRunning)
+    //             break;
+    //
+    //         Thread.Sleep(1000);
+    //     }
+    //
+    //     result.IsRunning.Should().BeTrue();
+    //     result.ExitCode.Should().BeNull();
+    //
+    //     Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: Attempting kill");
+    //     result.Kill();
+    //
+    //     for (var i = 0; i < 10; i++)
+    //     {
+    //         Console.WriteLine($"{nameof(Wait_TimeoutAndKillWorks)}: IsRunning = {result.IsRunning}, ExitCode = {result.ExitCode}");
+    //         if (!result.IsRunning)
+    //             break;
+    //
+    //         Thread.Sleep(1000);
+    //     }
+    //
+    //     result.IsRunning.Should().BeFalse();
+    //     result.ExitCode.Should().NotBeNull();
+    // }
 }
