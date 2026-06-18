@@ -1,6 +1,6 @@
 ﻿namespace DotNetCommons.Sys;
 
-public record ScreenMenuResult<T>(T Item, ConsoleKey Key);
+public record ScreenMenuResult<T>(ConsoleKey Key, List<T> Items);
 
 public interface IScreenMenuState
 {
@@ -34,6 +34,8 @@ public class ScreenMenu<T>
     public Dictionary<ConsoleKey, string> ExitActions { get; } = new();
     public List<IScreenMenuState> State { get; } = new();
     public string Footer { get; set; } = "[Enter]=Accept [Esc]=Exit";
+    public bool SelectMultiple { get; set; }
+    public HashSet<T> Selected { get; } = [];
 
     public ScreenMenu<T> AddColumn(string header, Func<T, string> value)
     {
@@ -53,13 +55,18 @@ public class ScreenMenu<T>
         return this;
     }
 
-    public ScreenMenuResult<T>? Show(IReadOnlyList<T> items)
+    public ScreenMenuResult<T>? Show(IReadOnlyList<T> items, bool clearSelected = false)
     {
         if (_columns.Count == 0)
             throw new InvalidOperationException("ScreenMenu requires at least one column.");
 
         _items        = items;
         _columnWidths = CalculateColumnWidths();
+
+        if (clearSelected)
+            Selected.Clear();
+        else
+            Selected.IntersectWith(_items);
 
         var selected = 0;
         var top = 0;
@@ -108,12 +115,20 @@ public class ScreenMenu<T>
                         selected = Math.Min(_items.Count - 1, selected + visibleRows);
                         break;
                     case ConsoleKey.Enter:
-                        return new ScreenMenuResult<T>(_items[selected], key.Key);
+                        return new ScreenMenuResult<T>(key.Key, GetResultItems(selected, true));
                     case ConsoleKey.Escape:
                         return null;
+                    case ConsoleKey.Spacebar:
+                        if (SelectMultiple)
+                        {
+                            if (!Selected.Add(_items[selected]))
+                                Selected.Remove(_items[selected]);
+                            DrawItemRow(selected, top, visibleRows, true);
+                        }
+                        break;
                     default:
                         if (ExitActions.ContainsKey(key.Key))
-                            return new ScreenMenuResult<T>(_items[selected], key.Key);
+                            return new ScreenMenuResult<T>(key.Key, GetResultItems(selected, false));
 
                         var stateAction = State.FirstOrDefault(x => x.Key == key.Key);
                         stateAction?.ExecuteAction();
@@ -166,6 +181,14 @@ public class ScreenMenu<T>
         return top;
     }
 
+    private List<T> GetResultItems(int selected, bool selectCurrentIfEmpty)
+    {
+        if (SelectMultiple && Selected.IsEmpty() && selectCurrentIfEmpty)
+            Selected.Add(_items[selected]);
+
+        return !SelectMultiple ? [_items[selected]] : Selected.ToList();
+    }
+
     private void DrawScreen(int selected, int top, int visibleRows)
     {
         Console.ResetColor();
@@ -190,6 +213,9 @@ public class ScreenMenu<T>
         ClearLine(0);
 
         var pos = 0;
+        if (SelectMultiple)
+            pos = 2;
+
         for (var i = 0; i < _columns.Count; i++)
         {
             WriteAt(pos, 0, _columns[i].Header, _columnWidths[i]);
@@ -219,6 +245,12 @@ public class ScreenMenu<T>
 
         var item = _items[itemIndex];
         var pos = 0;
+        if (SelectMultiple)
+        {
+            WriteAt(pos, row, Selected.Contains(item) ? "✓" : "", 1);
+            pos = 2;
+        }
+
         for (var i = 0; i < _columns.Count; i++)
         {
             WriteAt(pos, row, _columns[i].Value(item), _columnWidths[i]);
@@ -233,7 +265,7 @@ public class ScreenMenu<T>
         SetNormalColors();
         var lastVisible = Math.Min(_items.Count, top + visibleRows);
 
-        var leftText = Footer;
+        var leftText = SelectMultiple ? $"{Footer} [Space]=Select" : Footer;
         foreach (var x in ExitActions)
             leftText += $", {x.Value}";
 
