@@ -71,7 +71,7 @@ public abstract class AbstractEmailIntegration
         CancellationToken cancellationToken = default)
     {
         var adminEmails = Configuration.EmailConfiguration.AdminEmails;
-        foreach (var email in adminEmails)
+        foreach (var email in adminEmails?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [])
             message.To.Add(new MailAddress(email));
 
         return (await SendAsync([message], fromEmailOrKey, cancellationToken)).First();
