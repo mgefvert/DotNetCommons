@@ -110,18 +110,18 @@ internal class ClockJobRunnerItem
     {
         LastRun = DateTime.Now;
         var t0  = DateTime.UtcNow;
-        logger.LogInformation("Starting job {name}", Name);
+        logger.LogDebug("Starting job {name}", Name);
         try
         {
             await using var scope = services.CreateAsyncScope();
 
             var context = new JobContext(Name, scope.ServiceProvider, logger, _cancellationTokenSource!.Token);
             await _jobAction(context);
-            logger.LogInformation("Job {name} finished in {time}", Name, DateTime.UtcNow - t0);
+            logger.LogDebug("Job {name} finished in {time}", Name, DateTime.UtcNow - t0);
         }
         catch (TaskCanceledException)
         {
-            logger.LogInformation("Job {name} canceled after {time}", Name, DateTime.UtcNow - t0);
+            logger.LogWarning("Job {name} canceled after {time}", Name, DateTime.UtcNow - t0);
         }
         catch (Exception e)
         {
