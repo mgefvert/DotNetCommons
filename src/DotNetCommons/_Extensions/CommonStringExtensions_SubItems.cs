@@ -99,7 +99,7 @@ public static partial class CommonStringExtensions
             return new string(delimiter, index) + value;
         
         if (index == 0)
-            return value + "|" + source;
+            return value + delimiter + source;
 
         var count = GetSubItemCount(source, delimiter);
         if (index >= count)
