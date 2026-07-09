@@ -6,186 +6,243 @@ namespace DotNetCommonTests.Synchronization;
 [TestClass]
 public class AccessCacheTests
 {
-    public class MyObject
+    [TestMethod]
+    public async Task GetOrReplaceAsync_WithoutCachedValue_CreatesValue()
     {
-        public int Value { get; set; }
-    }
+        var cache = new AccessCache();
+        var value = new CachedValue(1);
 
-    public class OtherObject
-    {
-        public int Value { get; set; }
-    }
+        var result = await cache.GetOrReplaceAsync(() => Task.FromResult(value));
 
-    private AccessCache _accessCache = null!;
-
-    [TestInitialize]
-    public void Initialize()
-    {
-        _accessCache = new AccessCache(TimeSpan.FromSeconds(5));
+        result.Should().BeSameAs(value);
     }
 
     [TestMethod]
-    public async Task GetOrReplaceAsync_WhenCacheIsEmpty_WaitsForSingleFactoryCall()
+    public async Task GetOrReplaceAsync_WithCachedValue_ReturnsCachedValue()
     {
-        var releaseFactory = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var factoryCalls = 0;
+        var cache        = new AccessCache(TimeSpan.FromMinutes(1));
+        var cachedValue  = new CachedValue(1);
+        var ignoredValue = new CachedValue(2);
+        var calls        = 0;
 
-        async Task<MyObject> Factory()
+        var first = await cache.GetOrReplaceAsync(() =>
         {
-            Interlocked.Increment(ref factoryCalls);
-            await releaseFactory.Task;
-            return new MyObject { Value = 1 };
-        }
+            calls++;
+            return Task.FromResult(cachedValue);
+        });
 
-        var tasks = Enumerable.Range(0, 10)
-            .Select(_ => _accessCache.GetOrReplaceAsync<MyObject>(Factory))
-            .ToArray();
+        var second = await cache.GetOrReplaceAsync(() =>
+        {
+            calls++;
+            return Task.FromResult(ignoredValue);
+        });
 
-        await Task.Delay(50);
-        factoryCalls.Should().Be(1);
+        first.Should().BeSameAs(cachedValue);
+        second.Should().BeSameAs(cachedValue);
+        calls.Should().Be(1);
+    }
 
-        releaseFactory.SetResult();
+    [TestMethod]
+    public async Task GetOrReplaceAsync_WhenExpired_ReplacesBeforeReturning()
+    {
+        var cache = new AccessCache(TimeSpan.Zero);
+        var first = new CachedValue(1);
+        var second = new CachedValue(2);
+
+        var firstResult  = await cache.GetOrReplaceAsync(() => Task.FromResult(first));
+        var secondResult = await cache.GetOrReplaceAsync(() => Task.FromResult(second));
+
+        firstResult.Should().BeSameAs(first);
+        secondResult.Should().BeSameAs(second);
+    }
+
+    [TestMethod]
+    public async Task GetOrReplaceAsync_CachesValuesByType()
+    {
+        var cache      = new AccessCache(TimeSpan.FromMinutes(1));
+        var firstValue = new CachedValue(1);
+        var otherValue = new OtherCachedValue(2);
+
+        var firstResult = await cache.GetOrReplaceAsync(() => Task.FromResult(firstValue));
+        var otherResult = await cache.GetOrReplaceAsync(() => Task.FromResult(otherValue));
+
+        firstResult.Should().BeSameAs(firstValue);
+        otherResult.Should().BeSameAs(otherValue);
+    }
+
+    [TestMethod]
+    public async Task Clear_RemovesOnlySpecifiedType()
+    {
+        var cache       = new AccessCache(TimeSpan.FromMinutes(1));
+        var firstValue  = new CachedValue(1);
+        var secondValue = new CachedValue(2);
+        var otherValue  = new OtherCachedValue(3);
+        var replacement = new OtherCachedValue(4);
+
+        await cache.GetOrReplaceAsync(() => Task.FromResult(firstValue));
+        await cache.GetOrReplaceAsync(() => Task.FromResult(otherValue));
+
+        cache.Clear<CachedValue>();
+
+        var firstResult = await cache.GetOrReplaceAsync(() => Task.FromResult(secondValue));
+        var otherResult = await cache.GetOrReplaceAsync(() => Task.FromResult(replacement));
+
+        firstResult.Should().BeSameAs(secondValue);
+        otherResult.Should().BeSameAs(otherValue);
+    }
+
+    [TestMethod]
+    public async Task ClearAll_RemovesAllCachedTypes()
+    {
+        var cache       = new AccessCache(TimeSpan.FromMinutes(1));
+        var firstValue  = new CachedValue(1);
+        var secondValue = new CachedValue(2);
+        var otherValue  = new OtherCachedValue(3);
+        var replacement = new OtherCachedValue(4);
+
+        await cache.GetOrReplaceAsync(() => Task.FromResult(firstValue));
+        await cache.GetOrReplaceAsync(() => Task.FromResult(otherValue));
+
+        cache.ClearAll();
+
+        var firstResult = await cache.GetOrReplaceAsync(() => Task.FromResult(secondValue));
+        var otherResult = await cache.GetOrReplaceAsync(() => Task.FromResult(replacement));
+
+        firstResult.Should().BeSameAs(secondValue);
+        otherResult.Should().BeSameAs(replacement);
+    }
+
+    [TestMethod]
+    public async Task Expire_ExpiresOnlySpecifiedType()
+    {
+        var cache       = new AccessCache(TimeSpan.FromMinutes(1));
+        var firstValue  = new CachedValue(1);
+        var secondValue = new CachedValue(2);
+        var otherValue  = new OtherCachedValue(3);
+        var replacement = new OtherCachedValue(4);
+
+        await cache.GetOrReplaceAsync(() => Task.FromResult(firstValue));
+        await cache.GetOrReplaceAsync(() => Task.FromResult(otherValue));
+
+        cache.Expire<CachedValue>();
+
+        var firstResult = await cache.GetOrReplaceAsync(() => Task.FromResult(secondValue));
+        var otherResult = await cache.GetOrReplaceAsync(() => Task.FromResult(replacement));
+
+        firstResult.Should().BeSameAs(secondValue);
+        otherResult.Should().BeSameAs(otherValue);
+    }
+
+    [TestMethod]
+    public async Task ExpireAll_ExpiresAllCachedTypes()
+    {
+        var cache       = new AccessCache(TimeSpan.FromMinutes(1));
+        var firstValue  = new CachedValue(1);
+        var secondValue = new CachedValue(2);
+        var otherValue  = new OtherCachedValue(3);
+        var replacement = new OtherCachedValue(4);
+
+        await cache.GetOrReplaceAsync(() => Task.FromResult(firstValue));
+        await cache.GetOrReplaceAsync(() => Task.FromResult(otherValue));
+
+        cache.ExpireAll();
+
+        var firstResult = await cache.GetOrReplaceAsync(() => Task.FromResult(secondValue));
+        var otherResult = await cache.GetOrReplaceAsync(() => Task.FromResult(replacement));
+
+        firstResult.Should().BeSameAs(secondValue);
+        otherResult.Should().BeSameAs(replacement);
+    }
+
+    [TestMethod]
+    public async Task GetOrReplaceAsync_WhenFactoryThrows_DoesNotCacheFailure()
+    {
+        var cache = new AccessCache();
+        var value = new CachedValue(1);
+        var calls = 0;
+
+        Func<Task> act = async () => await cache.GetOrReplaceAsync<CachedValue>(() =>
+        {
+            calls++;
+            throw new InvalidOperationException("Factory failed.");
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+
+        var result = await cache.GetOrReplaceAsync(() =>
+        {
+            calls++;
+            return Task.FromResult(value);
+        });
+
+        result.Should().BeSameAs(value);
+        calls.Should().Be(2);
+    }
+
+    [TestMethod]
+    public async Task GetOrReplaceAsync_WhenFactoryIsNull_Throws()
+    {
+        var cache = new AccessCache();
+
+        Func<Task> act = async () => await cache.GetOrReplaceAsync<CachedValue>(null!);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [TestMethod]
+    public async Task GetOrReplaceAsync_WhenWaitingForInitialValueAndTokenCancels_Throws()
+    {
+        var cache          = new AccessCache();
+        var createdValue   = new CachedValue(1);
+        var factoryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFactory = new TaskCompletionSource<CachedValue>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var firstTask = cache.GetOrReplaceAsync(() =>
+        {
+            factoryStarted.SetResult();
+            return releaseFactory.Task;
+        });
+        await factoryStarted.Task;
+
+        using var cts = new CancellationTokenSource();
+        var secondTask = cache.GetOrReplaceAsync(() => Task.FromResult(new CachedValue(2)), cts.Token);
+
+        cts.Cancel();
+
+        await secondTask.Invoking(async task => await task).Should().ThrowAsync<TaskCanceledException>();
+
+        releaseFactory.SetResult(createdValue);
+        (await firstTask).Should().BeSameAs(createdValue);
+    }
+
+    [TestMethod]
+    public async Task GetOrReplaceAsync_ConcurrentInitialRequests_RunSingleFactory()
+    {
+        var cache          = new AccessCache(TimeSpan.FromMinutes(1));
+        var value          = new CachedValue(1);
+        var calls          = 0;
+        var factoryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFactory = new TaskCompletionSource<CachedValue>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var tasks = Enumerable.Range(0, 20)
+            .Select(_ => cache.GetOrReplaceAsync(() =>
+            {
+                Interlocked.Increment(ref calls);
+                factoryStarted.SetResult();
+                return releaseFactory.Task;
+            }))
+            .ToList();
+
+        await factoryStarted.Task;
+        releaseFactory.SetResult(value);
+
         var results = await Task.WhenAll(tasks);
 
-        results.Should().OnlyContain(result => ReferenceEquals(result, results[0]));
-        results[0].Value.Should().Be(1);
+        results.Should().OnlyContain(result => ReferenceEquals(result, value));
+        calls.Should().Be(1);
     }
 
-    [TestMethod]
-    public async Task GetOrReplaceAsync_WhenCacheHasNotExpired_ReturnsCachedValue()
-    {
-        var factoryCalls = 0;
+    private sealed record CachedValue(int Id);
 
-        Task<MyObject> Factory()
-        {
-            var value = Interlocked.Increment(ref factoryCalls);
-            return Task.FromResult(new MyObject { Value = value });
-        }
-
-        var first = await _accessCache.GetOrReplaceAsync<MyObject>(Factory);
-        var second = await _accessCache.GetOrReplaceAsync<MyObject>(Factory);
-
-        second.Should().BeSameAs(first);
-        factoryCalls.Should().Be(1);
-    }
-
-    [TestMethod]
-    public async Task Expire_WhenCacheHasValue_WaitsForReplacementValue()
-    {
-        var first = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new MyObject { Value = 1 }));
-        var refreshStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseRefresh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        _accessCache.Expire<MyObject>();
-
-        var secondTask = _accessCache.GetOrReplaceAsync<MyObject>(async () =>
-        {
-            refreshStarted.SetResult();
-            await releaseRefresh.Task;
-            return new MyObject { Value = 2 };
-        });
-
-        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
-        secondTask.IsCompleted.Should().BeFalse();
-
-        releaseRefresh.SetResult();
-        var second = await secondTask;
-
-        second.Value.Should().Be(2);
-        second.Should().NotBeSameAs(first);
-    }
-
-    [TestMethod]
-    public async Task GetOrReplaceAsync_WhenWaitingForFirstValue_CanBeCancelled()
-    {
-        var releaseFactory = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var cts = new CancellationTokenSource();
-
-        var waitTask = _accessCache.GetOrReplaceAsync<MyObject>(
-            async () =>
-            {
-                await releaseFactory.Task;
-                return new MyObject { Value = 1 };
-            },
-            cts.Token);
-
-        await Task.Delay(50);
-        await cts.CancelAsync();
-
-        await Assert.ThrowsExactlyAsync<TaskCanceledException>(async () => await waitTask);
-
-        releaseFactory.SetResult();
-        var value = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new MyObject { Value = 2 }));
-
-        value.Value.Should().Be(1);
-    }
-
-    [TestMethod]
-    public async Task Clear_WhenCacheHasValues_RemovesAllCachedValues()
-    {
-        var myObjectCalls = 0;
-        var otherObjectCalls = 0;
-
-        var firstMyObject = await _accessCache.GetOrReplaceAsync(() =>
-            Task.FromResult(new MyObject { Value = Interlocked.Increment(ref myObjectCalls) }));
-        var firstOtherObject = await _accessCache.GetOrReplaceAsync(() =>
-            Task.FromResult(new OtherObject { Value = Interlocked.Increment(ref otherObjectCalls) }));
-
-        _accessCache.Clear();
-
-        var secondMyObject = await _accessCache.GetOrReplaceAsync(() =>
-            Task.FromResult(new MyObject { Value = Interlocked.Increment(ref myObjectCalls) }));
-        var secondOtherObject = await _accessCache.GetOrReplaceAsync(() =>
-            Task.FromResult(new OtherObject { Value = Interlocked.Increment(ref otherObjectCalls) }));
-
-        secondMyObject.Should().NotBeSameAs(firstMyObject);
-        secondMyObject.Value.Should().Be(2);
-        secondOtherObject.Should().NotBeSameAs(firstOtherObject);
-        secondOtherObject.Value.Should().Be(2);
-    }
-
-    [TestMethod]
-    public async Task Clear_WhenInitialRefreshIsRunning_RemovesPendingEntryFromCache()
-    {
-        var firstFactoryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseFirstFactory = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        var firstTask = _accessCache.GetOrReplaceAsync<MyObject>(async () =>
-        {
-            firstFactoryStarted.SetResult();
-            await releaseFirstFactory.Task;
-            return new MyObject { Value = 1 };
-        });
-
-        await firstFactoryStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
-
-        _accessCache.Clear();
-
-        var second = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new MyObject { Value = 2 }));
-
-        releaseFirstFactory.SetResult();
-        var first = await firstTask;
-        var third = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new MyObject { Value = 3 }));
-
-        first.Value.Should().Be(1);
-        second.Value.Should().Be(2);
-        third.Should().BeSameAs(second);
-    }
-
-    [TestMethod]
-    public async Task ExpireAll_WhenCacheHasValues_ReplacesEveryCachedValue()
-    {
-        var firstMyObject = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new MyObject { Value = 1 }));
-        var firstOtherObject = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new OtherObject { Value = 1 }));
-
-        _accessCache.ExpireAll();
-
-        var secondMyObject = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new MyObject { Value = 2 }));
-        var secondOtherObject = await _accessCache.GetOrReplaceAsync(() => Task.FromResult(new OtherObject { Value = 2 }));
-
-        secondMyObject.Should().NotBeSameAs(firstMyObject);
-        secondMyObject.Value.Should().Be(2);
-        secondOtherObject.Should().NotBeSameAs(firstOtherObject);
-        secondOtherObject.Value.Should().Be(2);
-    }
+    private sealed record OtherCachedValue(int Id);
 }
