@@ -330,4 +330,14 @@ public class Spawn : IDisposable
 
         action(this);
     }
+
+    /// Executes a command-line process asynchronously, returning the standard output as a string.
+    public static async Task<(int ExitCode, string Output)> Eval(string command, params string[] args)
+    {
+        var spawn = new Spawn(command, args);
+        spawn.RedirectOutput = true;
+        await spawn.RunAsync();
+
+        return (spawn.ExitCode.GetValueOrDefault(), spawn.Text);
+    }
 }
