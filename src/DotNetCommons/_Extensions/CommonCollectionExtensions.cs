@@ -12,6 +12,9 @@ public enum WalkTreeMode
 
 public static class CommonCollectionExtensions
 {
+    private const int StackAllocThreshold = 256;
+    private static readonly string HexChars = "0123456789ABCDEF";
+
     public class Intersection<T1, T2>
     {
         /// <summary>
@@ -606,6 +609,25 @@ public static class CommonCollectionExtensions
 
         (list[pos1], list[pos2]) = (list[pos2], list[pos1]);
         return true;
+    }
+
+    public static string ToHex(this byte[]? bytes)
+    {
+        if (bytes == null || bytes.Length == 0)
+            return string.Empty;
+
+        var chars = bytes.Length <= StackAllocThreshold
+            ? stackalloc char[bytes.Length * 2]
+            : new char[bytes.Length * 2];
+
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            var b = bytes[i];
+            chars[i * 2] = HexChars[b >> 4];
+            chars[i * 2 + 1] = HexChars[b & 0x0F];
+        }
+
+        return new string(chars);
     }
 
     /// <summary>
