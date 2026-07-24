@@ -45,6 +45,7 @@ public class CommandActionRegistry
     private Action<AfterActionArgs>? _afterActionCallback;
     private Action<AfterHelpArgs>? _afterHelpCallback;
     private Action<BeforeActionArgs>? _beforeActionCallback;
+    private Action<Invocation>? _beforeInvocation;
     private Action<BeforeHelpArgs>? _beforeHelpCallback;
     private Type? _defaultCommand;
     private readonly ConcurrentDictionary<string, Type> _commandRegistry = [];
@@ -98,6 +99,17 @@ public class CommandActionRegistry
     public CommandActionRegistry BeforeAction(Action<BeforeActionArgs> action)
     {
         _beforeActionCallback = action;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a callback to be executed before a command action is created, providing meta-information about the action.
+    /// This is useful for keeping track of which action is currently executed and the arguments given to it.
+    /// </summary>
+    /// <param name="action">The callback function to be executed before a command action is created.</param>
+    public CommandActionRegistry BeforeInvocation(Action<Invocation> action)
+    {
+        _beforeInvocation = action;
         return this;
     }
 
@@ -272,6 +284,9 @@ public class CommandActionRegistry
         CommandAction command;
         try
         {
+            // Call the before action creation handler
+            _beforeInvocation?.Invoke(invocation);
+
             // Create the command objects and initialize it
             command = (CommandAction)ActivatorUtilities.CreateInstance(currentScope.ServiceProvider, invocation.Action);
             command.Registry = this;
@@ -279,7 +294,7 @@ public class CommandActionRegistry
             command.JobScope = currentScope.ServiceProvider;
 
             // Set the optional argument object
-            var prop = invocation.Action.GetProperty(nameof(CommandAction<object>.Args));
+            var prop = invocation.Action.GetProperty(nameof(CommandAction<>.Args));
             prop?.SetValue(command, invocation.Options);
 
             // Ready for custom wiring up

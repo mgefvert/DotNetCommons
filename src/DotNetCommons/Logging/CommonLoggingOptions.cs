@@ -2,9 +2,9 @@
 
 namespace DotNetCommons.Logging;
 
-public class CustomLoggingOptions : ConsoleFormatterOptions
+public class CommonLoggingOptions : ConsoleFormatterOptions
 {
-    public CustomLoggingOptions()
+    public CommonLoggingOptions()
     {
         TimestampFormat = "yyyy-MM-dd HH:mm:ss";
         UseUtcTimestamp = false;

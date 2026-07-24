@@ -6,13 +6,13 @@ using Microsoft.Extensions.Options;
 
 namespace DotNetCommons.Logging;
 
-public class CustomLoggingFormatter : ConsoleFormatter, IDisposable
+public class CommonLoggingFormatter : ConsoleFormatter, IDisposable
 {
     private readonly IDisposable? _optionsReloadToken;
-    private CustomLoggingOptions _formatterOptions;
+    private CommonLoggingOptions _formatterOptions;
 
-    public CustomLoggingFormatter(IOptionsMonitor<CustomLoggingOptions> options)
-        : base(nameof(CustomLoggingFormatter))
+    public CommonLoggingFormatter(IOptionsMonitor<CommonLoggingOptions> options)
+        : base(nameof(CommonLoggingFormatter))
     {
         _formatterOptions = options.CurrentValue;
         _optionsReloadToken = options.OnChange(opt => _formatterOptions = opt);
