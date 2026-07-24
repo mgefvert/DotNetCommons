@@ -2,7 +2,14 @@
 
 public static class CommonTimeProviderExtensions
 {
-    public static DateTime Now(this TimeProvider clock) => clock.GetLocalNow().DateTime;
-    public static DateTime UtcNow(this TimeProvider clock) => clock.GetUtcNow().DateTime;
-    public static DateTime Today(this TimeProvider clock) => clock.GetLocalNow().Date;
+    extension(TimeProvider clock)
+    {
+        public DateTime Now => clock.GetLocalNow().DateTime;
+        public TimeSpan TimeOfDay => clock.GetLocalNow().TimeOfDay;
+        public DateTime Today => clock.GetLocalNow().Date;
+        public DateTime Yesterday => clock.GetLocalNow().Date.AddDays(-1);
+        public DateTime Tomorrow => clock.GetLocalNow().Date.AddDays(1);
+        public DateTime UtcNow => clock.GetUtcNow().DateTime;
+        public DayOfWeek DayOfWeek => clock.GetUtcNow().DateTime.DayOfWeek;
+    }
 }

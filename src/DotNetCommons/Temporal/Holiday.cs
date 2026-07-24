@@ -105,7 +105,7 @@ public abstract class Holiday
         clock ??= TimeProvider.System;
 
         var result = 0;
-        var dt = clock.Today();
+        var dt = clock.Today;
         var next = NextDate(clock);
 
         while (dt < next)
@@ -144,7 +144,7 @@ public abstract class Holiday
     {
         clock ??= TimeProvider.System;
 
-        return (int)(NextDate(clock) - clock.Today()).TotalDays;
+        return (int)(NextDate(clock) - clock.Today).TotalDays;
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public abstract class Holiday
     /// </summary>
     public DateTime NextDate(TimeProvider? clock = null)
     {
-        var today = (clock ?? TimeProvider.System).Today();
+        var today = (clock ?? TimeProvider.System).Today;
 
         var result = CalculateDate(today.Year, true);
         return result >= today ? result : CalculateDate(today.Year + 1, true);

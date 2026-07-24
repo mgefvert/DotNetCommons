@@ -116,6 +116,69 @@ public static class CommonCollectionExtensions
             yield return batch.ToArray();
     }
 
+    public static void Deconstruct<T>(this T[] array, out T v0, out T v1)
+    {
+        v0 = array[0];
+        v1 = array[1];
+    }
+
+    public static void Deconstruct<T>(this T[] array, out T v0, out T v1, out T v2)
+    {
+        v0 = array[0];
+        v1 = array[1];
+        v2 = array[2];
+    }
+
+    public static void Deconstruct<T>(this T[] array, out T v0, out T v1, out T v2, out T v3)
+    {
+        v0 = array[0];
+        v1 = array[1];
+        v2 = array[2];
+        v3 = array[3];
+    }
+
+    public static void Deconstruct<T>(this T[] array, out T v0, out T v1, out T v2, out T v3, out T v4)
+    {
+        v0 = array[0];
+        v1 = array[1];
+        v2 = array[2];
+        v3 = array[3];
+        v4 = array[4];
+    }
+
+    public static void Deconstruct<T>(this T[] array, out T v0, out T v1, out T v2, out T v3, out T v4, out T v5)
+    {
+        v0 = array[0];
+        v1 = array[1];
+        v2 = array[2];
+        v3 = array[3];
+        v4 = array[4];
+        v5 = array[5];
+    }
+
+    public static void Deconstruct<T>(this T[] array, out T v0, out T v1, out T v2, out T v3, out T v4, out T v5, out T v6)
+    {
+        v0 = array[0];
+        v1 = array[1];
+        v2 = array[2];
+        v3 = array[3];
+        v4 = array[4];
+        v5 = array[5];
+        v6 = array[6];
+    }
+
+    public static void Deconstruct<T>(this T[] array, out T v0, out T v1, out T v2, out T v3, out T v4, out T v5, out T v6, out T v7)
+    {
+        v0 = array[0];
+        v1 = array[1];
+        v2 = array[2];
+        v3 = array[3];
+        v4 = array[4];
+        v5 = array[5];
+        v6 = array[6];
+        v7 = array[7];
+    }
+
     /// <summary>
     /// Extract an item from a list at a given position.
     /// </summary>

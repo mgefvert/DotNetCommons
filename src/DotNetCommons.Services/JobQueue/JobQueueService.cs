@@ -37,7 +37,7 @@ public class JobQueueService : IJobQueueService
 
         var worker = new DbJobWorker
         {
-            LastSeenZ  = _clock.UtcNow(),
+            LastSeenZ  = _clock.UtcNow,
             Address    = address.ToString(),
             Name       = name,
             EvictAfter = evictAfter
@@ -56,7 +56,7 @@ public class JobQueueService : IJobQueueService
         if (worker == null)
             return Errors.WorkerNotFound;
 
-        worker.LastSeenZ = _clock.UtcNow();
+        worker.LastSeenZ = _clock.UtcNow;
         await _context.SaveChangesAsync();
         return Result.Ok();
     }
@@ -95,9 +95,9 @@ public class JobQueueService : IJobQueueService
             JobId = jobId,
             Priority = priority ?? type.DefaultPriority,
             Attempts = 0,
-            CreatedZ = _clock.UtcNow(),
-            AvailableZ = available?.UtcDateTime ?? _clock.UtcNow(),
-            JobExpiresZ = expires?.UtcDateTime ?? (type.DefaultExpiration != null ? _clock.UtcNow().Add(type.DefaultExpiration.Value) : null),
+            CreatedZ = _clock.UtcNow,
+            AvailableZ = available?.UtcDateTime ?? _clock.UtcNow,
+            JobExpiresZ = expires?.UtcDateTime ?? (type.DefaultExpiration != null ? _clock.UtcNow.Add(type.DefaultExpiration.Value) : null),
             Payload = payload
         };
 
@@ -116,7 +116,7 @@ public class JobQueueService : IJobQueueService
 
         var n = await _context.JobQueue.Where(x => x.JobId == jobId && x.StartedZ == null && x.ClosedZ == null)
             .ExecuteUpdateAsync(setter => setter
-                .SetProperty(x => x.ClosedZ, _clock.UtcNow())
+                .SetProperty(x => x.ClosedZ, _clock.UtcNow)
                 .SetProperty(x => x.Success, false)
                 .SetProperty(x => x.Error, "Job canceled")
             );
@@ -141,7 +141,7 @@ public class JobQueueService : IJobQueueService
         if (result.IsFailure)
             return result.Error!;
 
-        var now = _clock.UtcNow();
+        var now = _clock.UtcNow;
         var n = await _context.JobQueue
             .Where(j => j.JobTypeId == type.Id && j.WorkerId == null && j.AvailableZ <= now && j.ClosedZ == null)
             .Where(j => j.JobExpiresZ == null || j.JobExpiresZ > now)
@@ -175,7 +175,7 @@ public class JobQueueService : IJobQueueService
         if (job.WorkerId != workerId)
             return Errors.JobIsNotOwnedByWorker;
 
-        job.ClosedZ = _clock.UtcNow();
+        job.ClosedZ = _clock.UtcNow;
         job.Success = true;
         job.Result = resultJson;
         await _context.SaveChangesAsync();
@@ -202,7 +202,7 @@ public class JobQueueService : IJobQueueService
         if (jobType == null)
             return Errors.JobTypeNotFound;
 
-        var now = _clock.UtcNow();
+        var now = _clock.UtcNow;
 
         // Check if job has expired
         if (job.JobExpiresZ != null && now >= job.JobExpiresZ.Value)
@@ -237,7 +237,7 @@ public class JobQueueService : IJobQueueService
         if (job.WorkerId != workerId)
             return Errors.JobIsNotOwnedByWorker;
 
-        job.ClosedZ = _clock.UtcNow();
+        job.ClosedZ = _clock.UtcNow;
         job.Success = false;
         job.Error   = error;
         await _context.SaveChangesAsync();
@@ -333,7 +333,7 @@ public class JobQueueService : IJobQueueService
 
     public async Task ArchiveOldJobs(TimeSpan olderThan)
     {
-        var cutoff = _clock.UtcNow().Subtract(olderThan);
+        var cutoff = _clock.UtcNow.Subtract(olderThan);
 
         var jobs = await _context.JobQueue.Where(j => j.ClosedZ < cutoff).ToArrayAsync();
         _context.JobQueue.RemoveRange(jobs);
@@ -343,7 +343,7 @@ public class JobQueueService : IJobQueueService
 
     public async Task RunMaintenance()
     {
-        var now = _clock.UtcNow();
+        var now = _clock.UtcNow;
 
         // Evict stale workers (where lastSeenZ + evictAfter < now)
 

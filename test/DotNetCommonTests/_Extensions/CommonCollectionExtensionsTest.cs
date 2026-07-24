@@ -81,6 +81,34 @@ public class CommonCollectionExtensionsTest
     }
 
     [TestMethod]
+    public void TestDeconstruct()
+    {
+        var arr = new[] { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+        int n1, n2, n3, n4, n5, n6, n7, n8;
+
+        (n1, n2) = arr;
+        Assert.AreEqual(3, n1+n2);
+
+        (n1, n2, n3) = arr;
+        Assert.AreEqual(7, n1+n2+n3);
+
+        (n1, n2, n3, n4) = arr;
+        Assert.AreEqual(15, n1+n2+n3+n4);
+
+        (n1, n2, n3, n4, n5) = arr;
+        Assert.AreEqual(31, n1+n2+n3+n4+n5);
+
+        (n1, n2, n3, n4, n5, n6) = arr;
+        Assert.AreEqual(63, n1+n2+n3+n4+n5+n6);
+
+        (n1, n2, n3, n4, n5, n6, n7) = arr;
+        Assert.AreEqual(127, n1+n2+n3+n4+n5+n6+n7);
+
+        (n1, n2, n3, n4, n5, n6, n7, n8) = arr;
+        Assert.AreEqual(255, n1+n2+n3+n4+n5+n6+n7+n8);
+    }
+
+    [TestMethod]
     public void TestExtractAt()
     {
         var item = _list.ExtractAt(1);
