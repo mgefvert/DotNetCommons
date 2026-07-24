@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\DotNetCommons\DotNetCommons.csproj" />
+      <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj" />
     </ItemGroup>
 
 </Project>

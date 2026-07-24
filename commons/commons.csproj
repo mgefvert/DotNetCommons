@@ -14,8 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DotNetCommons.SqlData\DotNetCommons.SqlData.csproj" />
       <ProjectReference Include="..\src\DotNetCommons.Services\DotNetCommons.Services.csproj" />
+      <ProjectReference Include="..\src\DotNetCommons.SqlData\DotNetCommons.SqlData.csproj" />
       <ProjectReference Include="..\src\DotNetCommons\DotNetCommons.csproj" />
     </ItemGroup>
 
