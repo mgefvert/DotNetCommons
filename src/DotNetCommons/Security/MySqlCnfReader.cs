@@ -13,6 +13,7 @@ public class MySqlCnfReader
     }
 
     public Dictionary<string, Parameters> Entries { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public bool Loaded { get; private set; }
 
     public bool Load()
     {
@@ -59,20 +60,32 @@ public class MySqlCnfReader
             }
         }
 
+        Loaded = true;
         return true;
     }
 
-    public string? GetConnectionString(string loginPath, string? databaseName = null)
+    public string? GetConnectionString(string? loginPath, string? databaseName = null)
     {
-        var p = Entries.GetValueOrDefault(loginPath);
+        if (loginPath.IsEmpty())
+            throw new Exception("No login-path was specified.");
+
+        if (!Loaded)
+            Load();
+
+        var p = Entries.GetValueOrDefault(loginPath!);
         if (p == null)
             return null;
 
         var result = $"Server={p.Host}; User={p.User}; Password={p.Password}";
         if (databaseName != null)
-            result +=  $"; Database={databaseName}";
+            result += $"; Database={databaseName}";
 
         return result;
+    }
+
+    public string RequireConnectionString(string? loginPath, string? databaseName = null)
+    {
+        return GetConnectionString(loginPath, databaseName) ?? throw new Exception("Unable to find MySQL connection string");
     }
 
     private static IEnumerable<string> ReadEncryptedLines(FileStream fs)
