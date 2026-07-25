@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CsvHelper" Version="33.1.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
       <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7" />
@@ -17,6 +18,13 @@
       <ProjectReference Include="..\src\DotNetCommons.Services\DotNetCommons.Services.csproj" />
       <ProjectReference Include="..\src\DotNetCommons.SqlData\DotNetCommons.SqlData.csproj" />
       <ProjectReference Include="..\src\DotNetCommons\DotNetCommons.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="appsettings.json" />
+      <Content Include="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

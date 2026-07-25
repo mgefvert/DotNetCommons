@@ -33,21 +33,23 @@ public class ImportIpCommand : CommandAction<ConnectionArgs>
     public override async Task<int> ExecuteAsync(CancellationToken ct)
     {
         Console.WriteLine("Downloading databases...");
-        var countryIpV4 = await Download(IpV4CountryDatabase, false, ct);
-        var countryIpV6 = await Download(IpV6CountryDatabase, false, ct);
-        var cityIpV4    = await Download(IpV4CityDatabase, true, ct);
-        var cityIpV6    = await Download(IpV6CityDatabase, true, ct);
+        var countryIpV4B = Helper.DownloadOrCache("ipv4-country", IpV4CountryDatabase);
+        var countryIpV6B = Helper.DownloadOrCache("ipv6-country", IpV6CountryDatabase);
+        var cityIpV4Z    = Helper.DownloadOrCache("ipv4-city", IpV4CityDatabase);
+        var cityIpV6Z    = Helper.DownloadOrCache("ipv6-city", IpV6CityDatabase);
+
+        Console.WriteLine("Loading data...");
+        var countryIpV4 = Encoding.ASCII.GetString(countryIpV4B);
+        var countryIpV6 = Encoding.ASCII.GetString(countryIpV6B);
+        var cityIpV4    = Encoding.ASCII.GetString(Compression.Decompress(cityIpV4Z, CompressionMethod.GZip));
+        var cityIpV6    = Encoding.ASCII.GetString(Compression.Decompress(cityIpV6Z, CompressionMethod.GZip));
 
         Console.WriteLine("Parsing...");
-        var countries = ParseCountry(countryIpV4)
-            .Concat(ParseCountry(countryIpV6))
-            .ToArray();
-        var cities = ParseCity(cityIpV4)
-            .Concat(ParseCity(cityIpV6))
-            .ToArray();
+        var countries = ParseCountry(countryIpV4).Concat(ParseCountry(countryIpV6)).ToArray();
+        var cities    = ParseCity(cityIpV4).Concat(ParseCity(cityIpV6)).ToArray();
 
         var connectionString = _mysqlCnfReader.RequireConnectionString(Args.Connection, "sqldata");
-        var connection = new MySqlConnection(connectionString);
+        var connection       = new MySqlConnection(connectionString);
 
         Console.WriteLine("Removing previous entries");
         await connection.ExecuteAsync("TRUNCATE ip_city");
@@ -132,29 +134,6 @@ public class ImportIpCommand : CommandAction<ConnectionArgs>
         }
 
         return result.ToString();
-    }
-
-    private async Task<string> Download(Uri uri, bool decompress, CancellationToken ct)
-    {
-        var filename = uri.AbsolutePath.Split('/').Last();
-        var cachedFileName = filename + "." + DateTime.Today.ToString("yyyyMMdd");
-        if (File.Exists(cachedFileName))
-        {
-            Console.WriteLine(" - loading " + cachedFileName);
-            return await File.ReadAllTextAsync(cachedFileName, ct);
-        }
-
-        Console.WriteLine(" - fetching " + uri);
-        var response = await _client.GetAsync(uri, ct);
-        var data = await response.Content.ReadAsByteArrayAsync(ct);
-
-        if (decompress)
-            data = Compression.Decompress(data, CompressionMethod.GZip);
-
-        var result = Encoding.UTF8.GetString(data);
-        await File.WriteAllTextAsync(cachedFileName, result, ct);
-
-        return result;
     }
 
     private IEnumerable<DbIpCity> ParseCity(string data)

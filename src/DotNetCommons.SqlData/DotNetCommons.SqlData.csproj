@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DotNetCommons.EF\DotNetCommons.EF.csproj" />
       <ProjectReference Include="..\DotNetCommons\DotNetCommons.csproj" />
     </ItemGroup>
 

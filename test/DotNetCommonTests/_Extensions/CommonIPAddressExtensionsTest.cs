@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using DotNetCommons;
 using FluentAssertions;
 

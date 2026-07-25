@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace DotNetCommons.EF;
 
@@ -35,6 +36,7 @@ public enum PatchMode
 public class Patch
 {
     private readonly bool _allowAnyField;
+    private readonly DbContext? _context;
 
     /// <summary>
     /// Gets or sets the threshold for allowable removals in the patch operation as a fraction (0 to 1).
@@ -53,9 +55,11 @@ public class Patch
     /// </summary>
     /// <param name="allowAnyField">Disables using the Patch attribute and allows operations on any field. Use only when you
     ///     have full control of the incoming data.</param>
-    public Patch(bool allowAnyField = false)
+    /// <param name="context">DbContext to operate on, calling Add, Update, and Remove methods.</param>
+    public Patch(bool allowAnyField = false, DbContext? context = null)
     {
         _allowAnyField = allowAnyField;
+        _context       = context;
     }
 
     private class UpdateableProperty(PropertyInfo propertyInfo, PatchAttribute attribute)
@@ -119,7 +123,11 @@ public class Patch
         {
             var sourceValue = prop.PropertyInfo.GetValue(load);
             var existingValue = prop.PropertyInfo.GetValue(existing);
-            if (sourceValue == existingValue)
+
+            // Check for equality using null-safe Equals comparison
+            if (sourceValue == null && existingValue == null)
+                continue;
+            if (sourceValue != null && sourceValue.Equals(existingValue))
                 continue;
 
             if (sourceValue != null)
@@ -156,6 +164,7 @@ public class Patch
         where TItem : class, new()
         where TKey : notnull
     {
+        var dbSet   = _context?.Set<TItem>();
         var diff    = existing.IntersectCollection(load, keySelector);
         var changes = 0;
 
@@ -169,6 +178,7 @@ public class Patch
             if (existing.Count > 1 && ratio > RemoveThreshold)
                 throw new InvalidOperationException($"Patch tried to remove {ratio:P} of objects which exceeds the removal threshold ({RemoveThreshold:P}).");
 
+            dbSet?.RemoveRange(removals);
             changes += existing.RemoveAll(x => removals.Contains(x));
         }
 
@@ -182,6 +192,7 @@ public class Patch
                 UpdateObject(newItem, loadItem);
                 onCreated?.Invoke(newItem);
                 existing.Add(newItem);
+                dbSet?.Add(newItem);
                 changes++;
             }
         }
@@ -192,6 +203,7 @@ public class Patch
             if (UpdateObject(existingItem, loadItem))
             {
                 onChanged?.Invoke(existingItem);
+                dbSet?.Update(existingItem);
                 changes++;
             }
         }

@@ -8,13 +8,22 @@ using DotNetCommons.SqlData;
 using DotNetCommons.Synchronization;
 using DotNetCommons.Sys;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 try
 {
+    var config = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json")
+        .Build();
+
     var services = new ServiceCollection()
-        .AddLogging(options => options.AddCommonConsole())
+        .AddLogging(options => options
+            .AddConfiguration(config.GetSection("Logging"))
+            .AddCommonConsole())
         .AddSingleton<Accessor<Invocation>>()
+        .AddSingleton<IConfiguration>(config)
         .AddSingleton<IpifyIntegration>()
         .AddSingleton<MySqlCnfReader>()
         .AddSingleton<ISqlDataService, SqlDataService>()

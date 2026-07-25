@@ -7,7 +7,7 @@ public static class CommonLogging
     public static ILoggingBuilder AddCommonConsole(this ILoggingBuilder builder)
     {
         builder
-            .AddConsole()
+            .AddConsole(x => x.FormatterName = nameof(CommonLoggingFormatter))
             .AddConsoleFormatter<CommonLoggingFormatter, CommonLoggingOptions>();
         
         return builder;

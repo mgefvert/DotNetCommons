@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using DotNetCommons.EF;
 
 namespace DatabaseSeeder.Entities;
 

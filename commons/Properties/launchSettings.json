@@ -1,6 +1,10 @@
 ﻿{
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
+    "import geo": {
+      "commandName": "Project",
+      "commandLineArgs": "import geo -c root.local"
+    },
     "import ip": {
       "commandName": "Project",
       "commandLineArgs": "import ip -c root.local"
