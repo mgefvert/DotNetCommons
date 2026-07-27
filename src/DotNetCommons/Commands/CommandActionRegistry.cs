@@ -27,6 +27,9 @@ public class CommandActionRegistry
     /// Represents the exit code indicating that an operation was canceled before completion.
     public const int ExitCodeOperationCanceled = -3;
 
+    /// Represents the exit code indicating that one or more operations failed during the scheduler run.
+    public const int ExitCodeOneOrMoreFailed = -4;
+
     /// Specifies the priority level for the first command scheduled with the Execute method.
     public const int FirstPriority = 10;
 
@@ -341,15 +344,22 @@ public class CommandActionRegistry
     {
         using var schedulerScope = _serviceProvider.CreateScope();
 
-        var result = ExitCodeNoJobsScheduled;
+        var result    = ExitCodeNoJobsScheduled;
+        var anyFailed = false;
         while (_invocationQueue.Count > 0 && !ct.IsCancellationRequested)
         {
             var invocation = _invocationQueue.Dequeue();
             result = await ExecuteCommand(invocation, ct, schedulerScope.ServiceProvider);
+            if (result == ExitCodeSuccess)
+                continue;
 
-            if (result != 0 && !invocation.ContinueOnError)
+            anyFailed = true;
+            if (!invocation.ContinueOnError)
                 break;
         }
+
+        if (result == ExitCodeSuccess && anyFailed)
+            return ExitCodeOneOrMoreFailed;
 
         return result;
     }

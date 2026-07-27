@@ -130,7 +130,18 @@ public class CommandActionRegistryTests
         _registry.Schedule<CommandTwo, ReturnValueArgs>(60, true, new ReturnValueArgs(1));
 
         var result = await _registry.ExecuteScheduler();
-        result.Should().Be(0);
+        result.Should().Be(CommandActionRegistry.ExitCodeOneOrMoreFailed);
         _testReporter.Text.Should().Be("CommandTest;CommandTwo:1;CommandOne");
+    }
+
+    [TestMethod]
+    public async Task Execute_MultipleScheduled_OneOrMoreFailed()
+    {
+        _registry.Schedule<CommandTwo, ReturnValueArgs>(10, true, new ReturnValueArgs(1));
+        _registry.Schedule<CommandOne>(20, true);
+        _registry.Schedule<CommandTest>(30, true);
+
+        var result = await _registry.ExecuteScheduler();
+        result.Should().Be(CommandActionRegistry.ExitCodeOneOrMoreFailed);
     }
 }

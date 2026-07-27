@@ -15,11 +15,12 @@ public readonly struct SetConsoleColor : IDisposable
     private readonly ConsoleColor _fg;
     private readonly ConsoleColor _bg;
 
-    public SetConsoleColor(ConsoleColor fg, ConsoleColor? bg = null)
+    public SetConsoleColor(ConsoleColor? fg = null, ConsoleColor? bg = null)
     {
         _fg = Console.ForegroundColor;
         _bg = Console.BackgroundColor;
-        Console.ForegroundColor = fg;
+        if (fg != null)
+            Console.ForegroundColor = fg.Value;
         if (bg != null)
             Console.BackgroundColor = bg.Value;
     }
