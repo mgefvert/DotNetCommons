@@ -19,7 +19,7 @@ public class CommandActionRegistryTests
         _serviceProvider = services.BuildServiceProvider();
 
         _registry = new CommandActionRegistry(_serviceProvider);
-        _registry.RegisterThis();
+        _registry.RegisterCommand(typeof(CommandOne), typeof(CommandTwo), typeof(CommandTest));
 
         _testReporter = _serviceProvider.GetRequiredService<TestReporter>();
     }

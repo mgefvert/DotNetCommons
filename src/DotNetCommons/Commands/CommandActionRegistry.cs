@@ -487,7 +487,26 @@ public class CommandActionRegistry
             }
         }
 
+        ValidateRoutes();
+
         return this;
+    }
+
+    public void RegisterCommand(params Type[] types)
+    {
+        foreach (var type in types)
+        {
+            if (!type.IsClass || !type.IsAssignableTo(typeof(CommandAction)))
+                throw new ArgumentException($"Class {type.Name} must be a class and implement CommandAction");
+
+            var attr = type.GetCustomAttribute<CommandActionAttribute>();
+            if (attr == null)
+                throw new ArgumentException($"Class {type.Name} must be decorated with [CommandAction]");
+
+            Register(type, attr.Route);
+        }
+
+        ValidateRoutes();
     }
 
     /// Registers all command actions from the calling assembly by scanning for classes that implement CommandAction and are decorated
@@ -621,5 +640,38 @@ public class CommandActionRegistry
 
         Schedule<TCommand, TArgs>(priority, continueOnError, args);
         return true;
+    }
+
+    private void ValidateRoutes()
+    {
+        foreach (var (route, command) in _commandRegistry)
+        {
+            foreach (var parentRoute in GetParentRoutePaths(route))
+            {
+                if (!_commandRegistry.TryGetValue(parentRoute, out var parentCommand))
+                    continue;
+
+                throw new CommandActionResolveException(
+                    $"Route conflict detected: Command '{parentCommand.Name}' with route '{GetRouteName(GetRouteFromPath(parentRoute))}' " +
+                    $"conflicts with command '{command.Name}' with route '{GetRouteName(GetRouteFromPath(route))}'. " +
+                    $"One route cannot be a prefix of another route.");
+            }
+        }
+
+        return;
+
+        static IEnumerable<string> GetParentRoutePaths(string routePath)
+        {
+            for (var index = 1; index < routePath.Length - 1; index++)
+            {
+                if (routePath[index] == '|')
+                    yield return routePath[..(index + 1)];
+            }
+        }
+
+        static string[] GetRouteFromPath(string path)
+        {
+            return path.Split('|', StringSplitOptions.RemoveEmptyEntries);
+        }
     }
 }
