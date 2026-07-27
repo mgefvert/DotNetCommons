@@ -10,10 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="Graphics\test.jpg" />
-    </ItemGroup>
-
-    <ItemGroup>
         <EmbeddedResource Include="Graphics\test.jpg" />
     </ItemGroup>
 

@@ -12,6 +12,10 @@
     "test ip": {
       "commandName": "Project",
       "commandLineArgs": "test ip -c root.local"
+    },
+    "dev clean": {
+      "commandName": "Project",
+      "commandLineArgs": "dev clean -d ..\\..\\..\\..\\examples"
     }
   }
 }
