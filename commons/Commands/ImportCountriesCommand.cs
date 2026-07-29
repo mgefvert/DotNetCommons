@@ -46,9 +46,9 @@ public class ImportCountriesCommand : CommandAction<ConnectionArgs>
         var records = csv.GetRecords<DbGeoCountry>().Where(x => x.IsValid).ToList();
         var existing = _context.GeoCountries.ToList();
 
-        new Patch().Update(PatchMode.AllowAll, x => x.Iso2!, existing, records);
+        new Patch(context: _context).Update(PatchMode.AllowAll, x => x.Iso2!, existing, records);
         var n = _context.SaveChanges();
-        Console.WriteLine($"Saved {n} updated rows for 'countries' import");
+        Console.WriteLine($"countrycodes: saved {n} updated rows");
 
         return 0;
     }

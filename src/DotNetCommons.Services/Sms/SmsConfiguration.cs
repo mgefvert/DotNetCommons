@@ -46,7 +46,7 @@ public class SmsConfiguration
     /// <returns>True if the number is allowed or if no allowed numbers are configured; otherwise, false.</returns>
     public bool IsAllowedNumber(string? phoneNumber)
     {
-        var ituNumber = WhiteWash.PhoneNumberToItuNumber(phoneNumber, DefaultCountryCode);
+        var ituNumber = Sanitizer.PhoneNumberToItuNumber(phoneNumber, DefaultCountryCode);
 
         // The minimum length for ITU E.164 is 8 digits plus the +
         if (ituNumber.IsEmpty() || ituNumber.Length < 9)

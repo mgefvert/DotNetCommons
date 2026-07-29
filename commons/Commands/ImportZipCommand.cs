@@ -51,9 +51,9 @@ public class ImportZipCommand : CommandAction<ConnectionArgs>
         var records = csv.GetRecords<DbGeoZipCode>().Where(x => x.IsValid).ToList();
         var existing = _context.GeoZipCodes.ToList();
 
-        new Patch().Update(PatchMode.AllowAll, x => x.Code!, existing, records);
+        new Patch(context: _context).Update(PatchMode.AllowAll, x => x.Code!, existing, records);
         var n = _context.SaveChanges();
-        Console.WriteLine($"Saved {n} updated rows for 'zip' import");
+        Console.WriteLine($"zipcodes: saved {n} updated rows");
 
         return 0;
     }

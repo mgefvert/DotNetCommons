@@ -1,10 +1,9 @@
-﻿drop table if exists airports;
-drop table if exists country_codes;
-drop table if exists iana_ports;
-drop table if exists nanp_area_codes;
-drop table if exists zip_codes;
+﻿drop table if exists geo_airports;
+drop table if exists geo_area_codes;
+drop table if exists geo_countries;
+drop table if exists geo_zip_codes;
 
-create table airports
+create table geo_airports
 (
     id           integer     not null primary key auto_increment,
     ident        varchar(10) not null,
@@ -29,7 +28,16 @@ create table airports
     key (region)
 );
 
-create table country_codes
+create table geo_area_codes
+(
+    id      integer     not null primary key auto_increment,
+    code    varchar(3)  not null,
+    country varchar(30) not null,
+    state   varchar(50) null,
+    key (code)
+);
+
+create table geo_countries
 (
     id        integer     not null primary key auto_increment,
     iso2      char(2)     not null,
@@ -46,28 +54,7 @@ create table country_codes
     key (telcode)
 );
 
-create table iana_ports
-(
-    id           integer     not null primary key auto_increment,
-    port         integer     not null,
-    protocol     varchar(10) not null,
-    name         varchar(50) not null,
-    description  varchar(255),
-    rfc          varchar(80),
-    key (port),
-    key (name)
-);
-
-create table nanp_area_codes
-(
-    id      integer     not null primary key auto_increment,
-    code    varchar(3)  not null,
-    country varchar(30) not null,
-    state   varchar(50) null,
-    key (code)
-);
-
-create table zip_codes
+create table geo_zip_codes
 (
     id         integer     not null primary key auto_increment,
     code       varchar(5)  not null,
@@ -76,7 +63,28 @@ create table zip_codes
     county     varchar(80) null,
     latitude   double      null,
     longitude  double      null,
-    population int         null,
     key (code),
     key (state)
+);
+
+create table ip_city (
+    ip      binary(16) not null,
+    country int        null,
+    state   int        null,
+    city    int        null,
+    primary key (ip)
+)
+    row_format=compressed;
+
+create table ip_country (
+    ip      binary(16) not null,
+    country int        null,
+    primary key (ip)
+)
+    row_format=compressed;
+
+create table ip_lookup (
+    id   int          not null auto_increment,
+    name varchar(255) not null,
+    primary key (id)
 );

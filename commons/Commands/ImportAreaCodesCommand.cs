@@ -50,7 +50,7 @@ public class ImportAreaCodesCommand : CommandAction<ConnectionArgs>
 
         new Patch(context: _context).Update(PatchMode.AllowAll, x => x.Code!, existing, records);
         var n = _context.SaveChanges();
-        Console.WriteLine($"Saved {n} updated rows for 'areacodes' import");
+        Console.WriteLine($"areacodes: saved {n} updated rows");
 
         return 0;
     }

@@ -17,7 +17,7 @@ public abstract class AbstractSmsIntegration
 
     public string? FormatPhoneNumber(string? phoneNumber, string? defaultNumber = null)
     {
-        return WhiteWash.PhoneNumberToItuNumber(phoneNumber.NullIfEmpty() ?? defaultNumber,
+        return Sanitizer.PhoneNumberToItuNumber(phoneNumber.NullIfEmpty() ?? defaultNumber,
             Configuration.SmsConfiguration.DefaultCountryCode);
     }
 

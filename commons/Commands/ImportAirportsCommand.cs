@@ -48,9 +48,9 @@ public class ImportAirportsCommand : CommandAction<ConnectionArgs>
         var records = csv.GetRecords<DbGeoAirport>().Where(x => x.IsValid).ToList();
         var existing = _context.GeoAirports.ToList();
 
-        new Patch().Update(PatchMode.AllowAll, x => x.Ident!, existing, records, x => _context.GeoAirports.Add(x));
+        new Patch(context: _context).Update(PatchMode.AllowAll, x => x.Ident!, existing, records, x => _context.GeoAirports.Add(x));
         var n = _context.SaveChanges();
-        Console.WriteLine($"Saved {n} updated rows for 'airports' import");
+        Console.WriteLine($"airports: saved {n} updated rows");
 
         return 0;
     }
