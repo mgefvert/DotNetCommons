@@ -13,7 +13,7 @@ public class ImportAreaCodesCommand : CommandAction<ConnectionArgs>
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://reports.nanpa.com/public/npa_report.csv");
 
-    public class AreaCodeClassMap : ClassMap<DbGeoAreaCode>
+    private sealed class AreaCodeClassMap : ClassMap<DbGeoAreaCode>
     {
         public AreaCodeClassMap()
         {

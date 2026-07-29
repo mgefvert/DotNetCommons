@@ -13,7 +13,7 @@ public class ImportCountriesCommand : CommandAction<ConnectionArgs>
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://datahub.io/core/country-codes/r/country-codes.csv");
 
-    private class CountryCodeClassMap : ClassMap<DbGeoCountry>
+    private sealed class CountryCodeClassMap : ClassMap<DbGeoCountry>
     {
         public CountryCodeClassMap()
         {

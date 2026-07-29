@@ -13,7 +13,7 @@ public class ImportAirportsCommand : CommandAction<ConnectionArgs>
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://davidmegginson.github.io/ourairports-data/airports.csv");
 
-    public class AirportClassMap : ClassMap<DbGeoAirport>
+    private sealed class AirportClassMap : ClassMap<DbGeoAirport>
     {
         public AirportClassMap()
         {

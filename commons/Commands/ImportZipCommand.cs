@@ -15,7 +15,7 @@ public class ImportZipCommand : CommandAction<ConnectionArgs>
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://download.geonames.org/export/zip/US.zip");
 
-    public class ZipCodeClassMap : ClassMap<DbGeoZipCode>
+    private sealed class ZipCodeClassMap : ClassMap<DbGeoZipCode>
     {
         public ZipCodeClassMap()
         {
@@ -51,7 +51,7 @@ public class ImportZipCommand : CommandAction<ConnectionArgs>
         var records = csv.GetRecords<DbGeoZipCode>().Where(x => x.IsValid).ToList();
         var existing = _context.GeoZipCodes.ToList();
 
-        new Patch().Update(PatchMode.AllowAll, x => x.Code, existing, records);
+        new Patch().Update(PatchMode.AllowAll, x => x.Code!, existing, records);
         var n = _context.SaveChanges();
         Console.WriteLine($"Saved {n} updated rows for 'zip' import");
 

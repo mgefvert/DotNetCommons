@@ -1,4 +1,6 @@
-﻿namespace DotNetCommons.Commands;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace DotNetCommons.Commands;
 
 /// Represents an abstract base class for command actions that do not require a specific argument model.
 /// This class derives from CommandAction with a generic argument of <see cref="System.Object"/>

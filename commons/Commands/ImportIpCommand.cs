@@ -15,7 +15,6 @@ namespace commons.Commands;
 public class ImportIpCommand : CommandAction<ConnectionArgs>
 {
     private readonly MySqlCnfReader _mysqlCnfReader;
-    private readonly HttpClient _client = new();
     private static readonly Uri Root = new("https://github.com/sapics/ip-location-db/releases/download/latest/");
     private static readonly Uri IpV4CityDatabase = new(Root, "dbip-city-ipv4.csv.gz");
     private static readonly Uri IpV6CityDatabase = new(Root, "dbip-city-ipv6.csv.gz");
