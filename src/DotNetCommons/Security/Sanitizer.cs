@@ -7,7 +7,7 @@ namespace DotNetCommons.Security;
 /// <summary>
 /// Class that washes input, like "keep only letters and digits" or "clean up this file name".
 /// </summary>
-public static class WhiteWash
+public static class Sanitizer
 {
     private static readonly ImmutableHashSet<char> InvalidFileNameChars = Path.GetInvalidFileNameChars().ToImmutableHashSet();
     private static readonly ImmutableHashSet<string> ReservedFileNames = new[]
@@ -158,8 +158,8 @@ public static class WhiteWash
             number = "+" + number.Mid(2);
         else if (number.StartsWith("0") && defaultCountryCode.IsSet())
             number = defaultCountryCode + number.Mid(1);
-        else if (!number.StartsWith("+"))
-            number = "+" + number;
+        else if (!number.StartsWith("+") && defaultCountryCode.IsSet())
+            number = defaultCountryCode + number;
 
         return number.Length > 1 ? number : null;
     }
