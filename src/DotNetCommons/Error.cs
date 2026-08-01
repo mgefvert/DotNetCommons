@@ -9,9 +9,9 @@ public class Error(
 {
     public string Type { get; } = type;
     public string Description { get; } = description;
-    public HttpStatusCode? Code { get; } = code;
+    public HttpStatusCode Code { get; } = code ?? HttpStatusCode.InternalServerError;
 
-    public AppException ToAppException() => new(Code ?? HttpStatusCode.InternalServerError, ToString());
+    public AppException ToAppException() => new(Code, ToString());
 
     public override string ToString() => $"{Type}: {Description}";
 }
