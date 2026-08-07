@@ -48,18 +48,22 @@ public record Result<T> : ResultBase
     public static implicit operator Result<T>(Error error) => Fail(error);
 }
 
-public class CompoundResult : List<Result>
+public class Results : List<Result>
 {
     public bool IsCompleteSuccess => this.All(r => r.IsSuccess);
     public bool IsCompleteFailure => this.All(r => r.IsFailure);
     public bool HasSuccess => this.Any(r => r.IsSuccess);
     public bool HasFailures => this.Any(r => r.IsFailure);
+
+    public static Results Fail(Error error) => [Result.Fail(error ?? throw new ArgumentNullException(nameof(error)))];
 }
 
-public class CompoundResult<T> : List<Result<T>>
+public class Results<T> : List<Result<T>>
 {
     public bool IsCompleteSuccess => this.All(r => r.IsSuccess);
     public bool IsCompleteFailure => this.All(r => r.IsFailure);
     public bool HasSuccess => this.Any(r => r.IsSuccess);
     public bool HasFailures => this.Any(r => r.IsFailure);
+
+    public static Results<T> Fail(Error error) => [Result<T>.Fail(error ?? throw new ArgumentNullException(nameof(error)))];
 }

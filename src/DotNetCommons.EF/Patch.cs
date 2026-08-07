@@ -13,6 +13,11 @@ namespace DotNetCommons.EF;
 public enum PatchMode
 {
     /// <summary>
+    /// Only updates existing objects during a patch operation.
+    /// </summary>
+    UpdateOnly = 0,
+
+    /// <summary>
     /// Allows the creation of new objects during a patch operation.
     /// When this mode is enabled, objects present in the load list but absent in the existing list
     /// will be created and added to the existing list.

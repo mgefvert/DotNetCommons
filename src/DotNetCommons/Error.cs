@@ -5,6 +5,7 @@ public enum ErrorCategory
     InvalidParameters  = 100,
     NotFound           = 101,
     AlreadyCompleted   = 102,
+    NoOp               = 103,
     AccessDenied       = 200,
     Conflict           = 300,
     RateExceeded       = 400,
