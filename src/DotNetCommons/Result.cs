@@ -1,10 +1,15 @@
-﻿namespace DotNetCommons;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace DotNetCommons;
 
 public abstract record ResultBase
 {
     public Error? Error { get; protected init; }
 
+    [MemberNotNullWhen(true, nameof(Error))]
     public bool IsFailure => Error != null;
+
+    [MemberNotNullWhen(false, nameof(Error))]
     public bool IsSuccess => Error == null;
 
     public void ThrowOnFailure()
