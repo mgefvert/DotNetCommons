@@ -1,4 +1,6 @@
-﻿namespace DotNetCommons;
+﻿using DotNetCommons.Net;
+
+namespace DotNetCommons;
 
 public static class CommonUriExtensions
 {
@@ -30,10 +32,7 @@ public static class CommonUriExtensions
         ArgumentNullException.ThrowIfNull(uri);
         ArgumentNullException.ThrowIfNull(queryParameters);
 
-        var query = string.Join("&", queryParameters
-            .Where(kvp => kvp.Value != null)
-            .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value!)}"));
-
-        return WithQuery(uri, query);
+        var query = new UriQuery(queryParameters);
+        return WithQuery(uri, query.ToString());
     }
 }

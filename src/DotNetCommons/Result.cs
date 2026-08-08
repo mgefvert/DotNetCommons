@@ -4,16 +4,13 @@ namespace DotNetCommons;
 
 public abstract record ResultBase
 {
-    [JsonPropertyName("error")]
+    [JsonPropertyName("error"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Error? Error { get; init; }
 
-    [JsonPropertyName("value")]
+    [JsonPropertyName("value"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Value { get; init; }
 
-    [JsonIgnore]
-    public bool IsFailure => Error != null;
-
-    [JsonPropertyName("success")]
+    [JsonIgnore] public bool IsFailure => Error != null;
     public bool IsSuccess => Error == null;
 
     public void ThrowOnFailure()
@@ -46,24 +43,4 @@ public record Result<T> : ResultBase
 
     public static implicit operator Result<T>(T error) => Ok(error);
     public static implicit operator Result<T>(Error error) => Fail(error);
-}
-
-public class Results : List<Result>
-{
-    public bool IsCompleteSuccess => this.All(r => r.IsSuccess);
-    public bool IsCompleteFailure => this.All(r => r.IsFailure);
-    public bool HasSuccess => this.Any(r => r.IsSuccess);
-    public bool HasFailures => this.Any(r => r.IsFailure);
-
-    public static Results Fail(Error error) => [Result.Fail(error ?? throw new ArgumentNullException(nameof(error)))];
-}
-
-public class Results<T> : List<Result<T>>
-{
-    public bool IsCompleteSuccess => this.All(r => r.IsSuccess);
-    public bool IsCompleteFailure => this.All(r => r.IsFailure);
-    public bool HasSuccess => this.Any(r => r.IsSuccess);
-    public bool HasFailures => this.Any(r => r.IsFailure);
-
-    public static Results<T> Fail(Error error) => [Result<T>.Fail(error ?? throw new ArgumentNullException(nameof(error)))];
 }

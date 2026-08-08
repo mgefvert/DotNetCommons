@@ -2,16 +2,27 @@
 
 public enum ErrorCategory
 {
-    InvalidParameters  = 100,
+    // 100 errors are mostly benign errors that may be ignored.
     NotFound           = 101,
     AlreadyCompleted   = 102,
     NoOp               = 103,
-    AccessDenied       = 200,
-    Conflict           = 300,
+
+    // 200 errors are authentication/authorization errors.
+    Authentication     = 200,
+    Authorization      = 201,
+
+    // 300 represents problems with the data provided.
+    InvalidParameters  = 300,
+    InvalidData        = 301,
+    Conflict           = 302,
+
+    // 400 errors are rate-limiting errors or other transient errors that can be retried.
     RateExceeded       = 400,
+    Unavailable        = 401,
+    Timeout            = 402,
+
+    // 500 errors are hard errors that require investigation.
     InternalError      = 500,
-    Unavailable        = 501,
-    Timeout            = 502,
 }
 
 public class Error(ErrorCategory category, string description)
