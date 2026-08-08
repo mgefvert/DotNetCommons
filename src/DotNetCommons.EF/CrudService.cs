@@ -1,59 +1,12 @@
 ﻿using System.Net;
 using System.Reflection;
+using DotNetCommons.EF.ObjectManagement;
 using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace DotNetCommons.EF;
-
-/// <summary>
-/// Defines the available CRUD operations that can be performed by a service.
-/// This enum is marked with the [Flags] attribute, allowing combinations of operations.
-/// </summary>
-[Flags]
-public enum CrudOperations
-{
-    /// <summary>
-    /// No operations are allowed.
-    /// </summary>
-    None = 0,
-
-    /// <summary>
-    /// Allows retrieving individual items by ID.
-    /// </summary>
-    Get = 1,
-
-    /// <summary>
-    /// Allows listing multiple items with optional filtering.
-    /// </summary>
-    List = 2,
-
-    /// <summary>
-    /// Allows read-only operations (Get and List).
-    /// </summary>
-    ReadOnly = 3,
-
-    /// <summary>
-    /// Allows creation of new items.
-    /// </summary>
-    Create = 4,
-
-    /// <summary>
-    /// Allows updating existing items.
-    /// </summary>
-    Update = 8,
-
-    /// <summary>
-    /// Allows deletion of items.
-    /// </summary>
-    Delete = 16,
-
-    /// <summary>
-    /// Allows all CRUD operations.
-    /// </summary>
-    All = 31,
-}
 
 /// <summary>
 /// Provides a base implementation for CRUD (Create, Read, Update, Delete) operations
@@ -63,6 +16,7 @@ public enum CrudOperations
 /// <typeparam name="TDataObject">The type of data object being managed.</typeparam>
 /// <typeparam name="TDataContext">The type of Entity Framework DbContext.</typeparam>
 /// <typeparam name="TListQuery">The type of query object used for filtering list operations.</typeparam>
+[Obsolete("Use CrudOperations instead.")]
 public abstract class CrudService<TDataKey, TDataObject, TDataContext, TListQuery>
         : ICrudService<TDataKey, TDataObject, TListQuery>
     where TDataKey : notnull
@@ -70,6 +24,54 @@ public abstract class CrudService<TDataKey, TDataObject, TDataContext, TListQuer
     where TDataContext : DbContext
     where TListQuery : class
 {
+    /// <summary>
+    /// Defines the available CRUD operations that can be performed by a service.
+    /// This enum is marked with the [Flags] attribute, allowing combinations of operations.
+    /// </summary>
+    [Flags]
+    public enum CrudOperations
+    {
+        /// <summary>
+        /// No operations are allowed.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Allows retrieving individual items by ID.
+        /// </summary>
+        Get = 1,
+
+        /// <summary>
+        /// Allows listing multiple items with optional filtering.
+        /// </summary>
+        List = 2,
+
+        /// <summary>
+        /// Allows read-only operations (Get and List).
+        /// </summary>
+        ReadOnly = 3,
+
+        /// <summary>
+        /// Allows creation of new items.
+        /// </summary>
+        Create = 4,
+
+        /// <summary>
+        /// Allows updating existing items.
+        /// </summary>
+        Update = 8,
+
+        /// <summary>
+        /// Allows deletion of items.
+        /// </summary>
+        Delete = 16,
+
+        /// <summary>
+        /// Allows all CRUD operations.
+        /// </summary>
+        All = 31,
+    }
+
     // ReSharper disable once StaticMemberInGenericType
     protected static readonly (PropertyInfo, PatchAttribute)[] PropertyMap;
 

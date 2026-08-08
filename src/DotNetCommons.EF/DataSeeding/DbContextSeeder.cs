@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
+using DotNetCommons.EF.ObjectManagement;
 using Microsoft.EntityFrameworkCore;
 
 namespace DotNetCommons.EF.DataSeeding;

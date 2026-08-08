@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
-namespace DotNetCommons.EF;
+namespace DotNetCommons.EF.EfCore;
 
 /// <summary>
 /// Represents a thread-safe, in-memory cache for entities managed by a DbContext. This also allows for a lock-free

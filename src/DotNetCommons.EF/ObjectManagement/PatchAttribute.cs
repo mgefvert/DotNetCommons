@@ -1,4 +1,4 @@
-﻿namespace DotNetCommons.EF;
+﻿namespace DotNetCommons.EF.ObjectManagement;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class PatchAttribute : Attribute

@@ -7,6 +7,7 @@
 /// <typeparam name="TDataKey">The type of the primary key for the data object.</typeparam>
 /// <typeparam name="TDataObject">The type of data object being managed.</typeparam>
 /// <typeparam name="TListQuery">The type of query object used for filtering list operations.</typeparam>
+[Obsolete("Use CrudOperations instead.")]
 public interface ICrudService<TDataKey, TDataObject, in TListQuery>
     where TListQuery : class
 {

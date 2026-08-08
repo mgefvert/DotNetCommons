@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
-namespace DotNetCommons.EF;
+namespace DotNetCommons.EF.ObjectManagement;
 
 /// <summary>
 /// Specifies the modes of operation for the patching functionality, determining the allowed operations
