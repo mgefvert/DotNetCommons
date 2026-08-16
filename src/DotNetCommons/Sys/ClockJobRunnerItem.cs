@@ -34,7 +34,8 @@ public record JobContext
 /// the job's execution details, its schedule, and its current state.
 internal class ClockJobRunnerItem
 {
-    private readonly Func<JobContext, Task> _jobAction;
+    private readonly Func<JobContext, Task>? _jobAction;
+    private readonly Type? _jobType;
 
     private CancellationTokenSource? _cancellationTokenSource;
 
@@ -46,6 +47,14 @@ internal class ClockJobRunnerItem
     public ClockJobRunnerItem(string name, Func<JobContext, Task> jobAction, ClockSchedule schedule, bool runImmediately)
     {
         _jobAction = jobAction;
+        Name       = name;
+        Schedule   = schedule;
+        LastRun    = runImmediately ? DateTime.MinValue : DateTime.Now;
+    }
+
+    public ClockJobRunnerItem(string name, Type jobType, ClockSchedule schedule, bool runImmediately)
+    {
+        _jobType   = jobType;
         Name       = name;
         Schedule   = schedule;
         LastRun    = runImmediately ? DateTime.MinValue : DateTime.Now;
@@ -63,11 +72,13 @@ internal class ClockJobRunnerItem
     {
         var resolution = Schedule switch
         {
-            ClockSchedule.Daily        => TimeSpan.TicksPerDay,
-            ClockSchedule.EveryHour    => TimeSpan.TicksPerHour,
-            ClockSchedule.EveryMinute  => TimeSpan.TicksPerMinute,
-            ClockSchedule.Continuously => 1,
-            _                          => TimeSpan.TicksPerDay
+            ClockSchedule.Daily          => TimeSpan.TicksPerDay,
+            ClockSchedule.EveryHour      => TimeSpan.TicksPerHour,
+            ClockSchedule.Every15Minutes => TimeSpan.TicksPerMinute * 15,
+            ClockSchedule.Every5Minutes  => TimeSpan.TicksPerMinute * 5,
+            ClockSchedule.EveryMinute    => TimeSpan.TicksPerMinute,
+            ClockSchedule.Continuously   => 1,
+            _                            => TimeSpan.TicksPerDay
         };
 
         return !IsRunning() && DateTime.Now.Truncate(resolution) != LastRun.Truncate(resolution);
@@ -116,7 +127,17 @@ internal class ClockJobRunnerItem
             await using var scope = services.CreateAsyncScope();
 
             var context = new JobContext(Name, scope.ServiceProvider, logger, _cancellationTokenSource!.Token);
-            await _jobAction(context);
+
+            if (_jobAction != null)
+                await _jobAction(context);
+            else if (_jobType != null)
+            {
+                if (ActivatorUtilities.CreateInstance(scope.ServiceProvider, _jobType) is IClockJob job)
+                    await job.Run(context);
+                else
+                    logger.LogError("Unable to start job {name}; created type {type} is not an IClockJob", Name, _jobType);
+            }
+
             logger.LogDebug("Job {name} finished in {time}", Name, DateTime.UtcNow - t0);
         }
         catch (TaskCanceledException)
