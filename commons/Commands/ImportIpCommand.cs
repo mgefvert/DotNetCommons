@@ -63,23 +63,29 @@ public class ImportIpCommand : CommandAction<ConnectionArgs>
             await connection.ExecuteAsync(sql);
         }
 
-        Console.Write("Saving countries ");
+        var progressBar = new ProgressBar(ProgressBarType.Braille, 30, true);
+
+        Console.WriteLine("Saving countries");
+        var done = 0;
         foreach (var batch in countries.Batch(30000))
         {
             var sql = BuildScript(batch);
             await connection.ExecuteAsync(sql);
-            Console.Write('.');
+            done += batch.Length;
+            progressBar.Draw((double)done / countries.Length);
         }
-        Console.WriteLine();
+        progressBar.Clear();
 
-        Console.Write("Saving cities ");
+        Console.WriteLine("Saving cities");
+        done = 0;
         foreach (var batch in cities.Batch(30000))
         {
             var sql = BuildScript(batch);
             await connection.ExecuteAsync(sql);
-            Console.Write('.');
+            done += batch.Length;
+            progressBar.Draw((double)done / cities.Length);
         }
-        Console.WriteLine();
+        progressBar.Clear();
 
         Console.WriteLine("Completed");
 

@@ -7,8 +7,8 @@ using DotNetCommons.SqlData.Entities;
 
 namespace commons.Commands;
 
-[CommandAction(["import", "areacodes"], "Download and import NANP area codes", [])]
-public class ImportAreaCodesCommand : CommandAction<ConnectionArgs>
+[CommandAction(["import", "geo", "areacodes"], "Download and import NANP area codes", [])]
+public class ImportGeoAreaCodesCommand : CommandAction<ConnectionArgs>
 {
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://reports.nanpa.com/public/npa_report.csv");
@@ -28,7 +28,7 @@ public class ImportAreaCodesCommand : CommandAction<ConnectionArgs>
         }
     }
 
-    public ImportAreaCodesCommand(SqlDataContext context)
+    public ImportGeoAreaCodesCommand(SqlDataContext context)
     {
         _context = context;
     }

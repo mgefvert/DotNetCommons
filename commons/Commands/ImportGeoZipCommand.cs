@@ -9,8 +9,8 @@ using DotNetCommons.SqlData.Entities;
 
 namespace commons.Commands;
 
-[CommandAction(["import", "zip"], "Download and import zip codes", [])]
-public class ImportZipCommand : CommandAction<ConnectionArgs>
+[CommandAction(["import", "geo", "zip"], "Download and import zip codes", [])]
+public class ImportGeoZipCommand : CommandAction<ConnectionArgs>
 {
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://download.geonames.org/export/zip/US.zip");
@@ -30,7 +30,7 @@ public class ImportZipCommand : CommandAction<ConnectionArgs>
         }
     }
 
-    public ImportZipCommand(SqlDataContext context)
+    public ImportGeoZipCommand(SqlDataContext context)
     {
         _context = context;
     }
