@@ -7,8 +7,8 @@ using DotNetCommons.SqlData.Entities;
 
 namespace commons.Commands;
 
-[CommandAction(["import", "airports"], "Download and import airports", [])]
-public class ImportAirportsCommand : CommandAction<ConnectionArgs>
+[CommandAction(["import", "geo", "airports"], "Download and import airports", [])]
+public class ImportGeoAirportsCommand : CommandAction<ConnectionArgs>
 {
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://davidmegginson.github.io/ourairports-data/airports.csv");
@@ -33,7 +33,7 @@ public class ImportAirportsCommand : CommandAction<ConnectionArgs>
         }
     }
 
-    public ImportAirportsCommand(SqlDataContext context)
+    public ImportGeoAirportsCommand(SqlDataContext context)
     {
         _context = context;
     }
