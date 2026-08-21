@@ -6,6 +6,8 @@ public enum ClockSchedule
 {
     Daily,
     EveryHour,
+    Every15Minutes,
+    Every5Minutes,
     EveryMinute,
     Continuously
 }
@@ -53,6 +55,20 @@ public class ClockJobRunner : IDisposable
     public void AddJob(string name, Func<JobContext, Task> job, ClockSchedule schedule, bool runImmediately)
     {
         _jobs.Add(new ClockJobRunnerItem(name, job, schedule, runImmediately));
+    }
+
+    /// <summary>
+    /// Adds a new job to the ClockJobRunner instance with the specified parameters. The generic Type must be an IClockJob.
+    /// </summary>
+    /// <param name="name">The unique name of the job. Not required to be unique.</param>
+    /// <param name="schedule">The schedule specifying when the job should run. </param>
+    /// <param name="runImmediately">A boolean indicating whether the job should run immediately after being added. If set to true,
+    /// an hourly job will run once immediately, and then at the next hour again. If false, it will wait for the next hour to start
+    /// the job.</param>
+    public void AddJob<T>(string name, ClockSchedule schedule, bool runImmediately)
+        where T : IClockJob
+    {
+        _jobs.Add(new ClockJobRunnerItem(name, typeof(T), schedule, runImmediately));
     }
 
     private List<ClockJobRunnerItem> InternalStartJobs()

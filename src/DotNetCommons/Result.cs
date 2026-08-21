@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace DotNetCommons;
 
@@ -10,7 +11,11 @@ public abstract record ResultBase
     [JsonPropertyName("value"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Value { get; init; }
 
-    [JsonIgnore] public bool IsFailure => Error != null;
+    [JsonIgnore] 
+    [MemberNotNullWhen(true, nameof(Error))]
+	public bool IsFailure => Error != null;
+	
+    [MemberNotNullWhen(false, nameof(Error))]
     public bool IsSuccess => Error == null;
 
     public void ThrowOnFailure()

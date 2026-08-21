@@ -2,18 +2,19 @@
 using CsvHelper.Configuration;
 using DotNetCommons.Commands;
 using DotNetCommons.EF;
+using DotNetCommons.EF.ObjectManagement;
 using DotNetCommons.SqlData;
 using DotNetCommons.SqlData.Entities;
 
 namespace commons.Commands;
 
-[CommandAction(["import", "countries"], "Download and import country data", [])]
-public class ImportCountriesCommand : CommandAction<ConnectionArgs>
+[CommandAction(["import", "geo", "countries"], "Download and import country data", [])]
+public class ImportGeoCountriesCommand : CommandAction<ConnectionArgs>
 {
     private readonly SqlDataContext _context;
     private static readonly Uri Url = new("https://datahub.io/core/country-codes/r/country-codes.csv");
 
-    private sealed class CountryCodeClassMap : ClassMap<DbGeoCountry>
+    private class CountryCodeClassMap : ClassMap<DbGeoCountry>
     {
         public CountryCodeClassMap()
         {
@@ -31,7 +32,7 @@ public class ImportCountriesCommand : CommandAction<ConnectionArgs>
         }
     }
 
-    public ImportCountriesCommand(SqlDataContext context)
+    public ImportGeoCountriesCommand(SqlDataContext context)
     {
         _context = context;
     }
