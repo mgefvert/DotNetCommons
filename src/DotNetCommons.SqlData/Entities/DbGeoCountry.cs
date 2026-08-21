@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using DotNetCommons.EF;
+using DotNetCommons.EF.ObjectManagement;
 
 namespace DotNetCommons.SqlData.Entities;
 

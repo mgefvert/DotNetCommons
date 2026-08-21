@@ -13,7 +13,7 @@ public class IpifyIntegration
     private readonly ILogger<IpifyIntegration> _logger;
     private readonly HttpClient _client;
 
-    private readonly Error _error = new("IpifyError", "Error while looking up IP address on api.ipify.org");
+    private readonly Error _error = new(ErrorCategory.InternalError, "Error while looking up IP address on api.ipify.org");
 
     public IpifyIntegration(ILogger<IpifyIntegration> logger)
     {
