@@ -1,4 +1,4 @@
-using DotNetCommons.EF;
+using DotNetCommons.EF.ObjectManagement;
 using FluentAssertions;
 
 namespace DotNetCommonTests.EF;
