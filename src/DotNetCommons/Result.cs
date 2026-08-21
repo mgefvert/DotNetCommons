@@ -27,6 +27,9 @@ public record Result : ResultBase
     public static Result Ok() => DefaultSuccess;
     public static Result Fail(Error error) => new() { Error = error ?? throw new ArgumentNullException(nameof(error)) };
 
+    public static Result<T> Ok<T>(T? value) => new() { Value = value };
+    public static Result<T> Fail<T>(Error error) => new() { Error = error ?? throw new ArgumentNullException(nameof(error)) };
+
     public static implicit operator Result(Error error) => Fail(error);
 }
 
