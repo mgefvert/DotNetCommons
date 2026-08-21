@@ -3,7 +3,6 @@ using System.IO.Compression;
 using CsvHelper.Configuration;
 using DotNetCommons;
 using DotNetCommons.Commands;
-using DotNetCommons.EF;
 using DotNetCommons.EF.ObjectManagement;
 using DotNetCommons.SqlData;
 using DotNetCommons.SqlData.Entities;

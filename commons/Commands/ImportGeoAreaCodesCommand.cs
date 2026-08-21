@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using CsvHelper.Configuration;
 using DotNetCommons.Commands;
-using DotNetCommons.EF;
 using DotNetCommons.EF.ObjectManagement;
 using DotNetCommons.SqlData;
 using DotNetCommons.SqlData.Entities;
