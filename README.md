@@ -47,7 +47,7 @@ Extensive set of extensions for common .NET types:
 
 ## Getting Started
 
-DotNetCommons is built for .NET 8.0 and later. To use it in your project, add the reference to the specific module you need.
+DotNetCommons is built for .NET 10.0 and later. To use it in your project, add the reference to the specific module you need.
 
 ```powershell
 dotnet add package DotNetCommons
