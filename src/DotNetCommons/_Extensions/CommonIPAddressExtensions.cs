@@ -30,6 +30,29 @@ public static class CommonIPAddressExtensions
             return new IPAddress(bytes);
         }
 
+        public IPAddress ToBroadcastAddress(int prefixLength)
+        {
+            ArgumentOutOfRangeException.ThrowIfNotEqual(address.AddressFamily, AddressFamily.InterNetwork);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(prefixLength, 32);
+            ArgumentOutOfRangeException.ThrowIfLessThan(prefixLength, 0);
+
+            Span<byte> bytes = address.GetAddressBytes();
+
+            var wholeNetworkBytes     = prefixLength / 8;
+            var networkBitsInNextByte = prefixLength % 8;
+            if (networkBitsInNextByte != 0)
+            {
+                bytes[wholeNetworkBytes] |= (byte)(byte.MaxValue >> networkBitsInNextByte);
+                wholeNetworkBytes++;
+            }
+
+            bytes[wholeNetworkBytes..].Fill(byte.MaxValue);
+
+            return address.AddressFamily == AddressFamily.InterNetworkV6
+                ? new IPAddress(bytes, address.ScopeId)
+                : new IPAddress(bytes);
+        }
+
         public bool ToUInt32(out uint a)
         {
             a = 0;

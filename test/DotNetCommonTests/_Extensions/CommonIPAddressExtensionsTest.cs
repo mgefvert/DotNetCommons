@@ -11,6 +11,31 @@ namespace DotNetCommonTests;
 public class CommonIPAddressExtensionsTest
 {
     [TestMethod]
+    [DataRow("192.168.1.42", 24, "192.168.1.255")]
+    [DataRow("192.168.1.42", 20, "192.168.15.255")]
+    [DataRow("192.168.1.42", 23, "192.168.1.255")]
+    [DataRow("192.168.1.42", 32, "192.168.1.42")]
+    [DataRow("192.168.1.42", 0, "255.255.255.255")]
+    public void TestBroadcastAddress_IpV4(string address, int prefixLength, string expected)
+    {
+        IPAddress.Parse(address).ToBroadcastAddress(prefixLength).Should().Be(IPAddress.Parse(expected));
+    }
+
+    [TestMethod]
+    public void TestBroadcastAddress_IpV6()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => IPAddress.IPv6Loopback.ToBroadcastAddress(64));
+    }
+
+    [TestMethod]
+    [DataRow("192.168.1.42", -1)]
+    [DataRow("192.168.1.42", 33)]
+    public void TestBroadcastAddress_InvalidPrefixLength(string address, int prefixLength)
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => IPAddress.Parse(address).ToBroadcastAddress(prefixLength));
+    }
+
+    [TestMethod]
     public void TestUInt32_IpV4()
     {
         var ip = IPAddress.Parse("1.2.128.0");
@@ -25,7 +50,7 @@ public class CommonIPAddressExtensionsTest
     public void TestUInt32_IpV6()
     {
         var ip = IPAddress.Parse("2001:218:4000:6::");
-        ip.ToUInt32(out var a).Should().BeFalse();
+        ip.ToUInt32(out _).Should().BeFalse();
     }
 
     [TestMethod]
