@@ -2,7 +2,7 @@
 
 public class HNode
 {
-    public List<HNode> Children { get; } = [];
+    public List<HNode> Children { get; set; } = [];
     public IEnumerable<HElement> Elements => Children.OfType<HElement>();
     public IEnumerable<HNode> Nodes => Children.Where(x => x is not HAttribute);
 

@@ -18,6 +18,14 @@ public class HElement : HNode
         Name = name;
     }
 
+    public HElement Clone()
+    {
+        return new HElement(Name!)
+        {
+            Children = Children.ToList()
+        };
+    }
+
     // --- Class ---
 
     private HAttribute? GetClassAttribute(bool create)
