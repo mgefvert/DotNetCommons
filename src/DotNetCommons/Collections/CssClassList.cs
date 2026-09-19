@@ -12,6 +12,8 @@ public class CssClassList
         set => Set(value);
     }
 
+    public static string Combine(params string?[] classes) => new CssClassList(classes.NotNulls()).Text;
+
     public CssClassList()
     {
     }
