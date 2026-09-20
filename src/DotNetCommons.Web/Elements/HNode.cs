@@ -8,6 +8,14 @@ public class HNode
 
     public bool HasNodes => Nodes.Any();
 
+    public virtual HNode Clone()
+    {
+        return new HNode
+        {
+            Children = Children.Select(x => x.Clone()).ToList()
+        };
+    }
+
     public virtual string Render()
     {
         return RenderChildren();

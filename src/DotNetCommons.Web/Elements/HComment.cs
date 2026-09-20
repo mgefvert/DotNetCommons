@@ -15,6 +15,15 @@ public class HComment : HNode
         Text = text;
     }
 
+    public override HNode Clone()
+    {
+        return new HComment
+        {
+            Text = Text,
+            Children = Children.Select(x => x.Clone()).ToList()
+        };
+    }
+
     public override string Render()
     {
         return $"<!-- {HttpUtility.HtmlEncode(Text)} -->";

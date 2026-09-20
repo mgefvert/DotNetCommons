@@ -18,11 +18,11 @@ public class HElement : HNode
         Name = name;
     }
 
-    public HElement Clone()
+    public override HNode Clone()
     {
         return new HElement(Name!)
         {
-            Children = Children.ToList()
+            Children = Children.Select(x => x.Clone()).ToList()
         };
     }
 

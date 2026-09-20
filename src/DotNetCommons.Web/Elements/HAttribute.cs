@@ -17,6 +17,15 @@ public class HAttribute : HNode
         Value = value;
     }
 
+    public override HNode Clone()
+    {
+        return new HAttribute(Name)
+        {
+            Value = Value,
+            Children = Children.Select(x => x.Clone()).ToList()
+        };
+    }
+
     public override string Render()
     {
         return Value == null ? Name : $"{Name}=\"{HttpUtility.HtmlAttributeEncode(Value)}\"";

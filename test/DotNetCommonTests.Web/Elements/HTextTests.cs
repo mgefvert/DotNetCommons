@@ -30,4 +30,22 @@ public class HTextTests
         text.Content.Should().Be("<strong>hi & bye</strong>");
         text.Render().Should().Be("<strong>hi & bye</strong>");
     }
+
+    [TestMethod]
+    public void Clone_DeepCopiesContentTypeAndChildren()
+    {
+        var original = HText.Escape("original");
+        original.Children.Add(new HComment("original child"));
+
+        var clone = (HText)original.Clone();
+        clone.Content = "clone";
+        clone.Type = TextType.RawHtml;
+        ((HComment)clone.Children[0]).Text = "clone child";
+
+        clone.Should().NotBeSameAs(original);
+        clone.Children[0].Should().NotBeSameAs(original.Children[0]);
+        original.Content.Should().Be("original");
+        original.Type.Should().Be(TextType.Escape);
+        ((HComment)original.Children[0]).Text.Should().Be("original child");
+    }
 }
