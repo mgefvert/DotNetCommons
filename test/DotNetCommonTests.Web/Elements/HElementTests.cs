@@ -15,6 +15,34 @@ public class HElementTests
     }
 
     [TestMethod]
+    public void Clone_DeepCopiesAttributesAndNestedNodes()
+    {
+        var original = new HElement("div")
+            .Attr("class", "original")
+            .AddNode(new HElement("span").AddNode(HText.Escape("original")))
+            .AddNode(new HComment("original"));
+
+        var clone = (HElement)original.Clone();
+        clone.Name = "section";
+        clone.FindAttr("class")!.Value = "clone";
+        ((HElement)clone.Nodes.First()).Name = "strong";
+        ((HText)((HElement)clone.Nodes.First()).Children[0]).Content = "clone";
+        ((HComment)clone.Nodes.Last()).Text = "clone";
+        clone.Children.Add(HText.Raw("new"));
+
+        clone.Should().NotBeSameAs(original);
+        clone.FindAttr("class").Should().NotBeSameAs(original.FindAttr("class"));
+        clone.Nodes.First().Should().NotBeSameAs(original.Nodes.First());
+        clone.Nodes.Last().Should().NotBeSameAs(original.Nodes.Last());
+        original.Name.Should().Be("div");
+        original.Attr("class").Should().Be("original");
+        ((HElement)original.Nodes.First()).Name.Should().Be("span");
+        ((HText)((HElement)original.Nodes.First()).Children[0]).Content.Should().Be("original");
+        ((HComment)original.Nodes.Last()).Text.Should().Be("original");
+        original.Children.Should().HaveCount(3);
+    }
+
+    [TestMethod]
     public void AddClass_Works()
     {
         var element = new HElement("a");

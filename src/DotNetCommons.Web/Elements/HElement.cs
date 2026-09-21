@@ -18,6 +18,14 @@ public class HElement : HNode
         Name = name;
     }
 
+    public override HNode Clone()
+    {
+        return new HElement(Name!)
+        {
+            Children = Children.Select(x => x.Clone()).ToList()
+        };
+    }
+
     // --- Class ---
 
     private HAttribute? GetClassAttribute(bool create)

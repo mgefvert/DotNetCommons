@@ -25,6 +25,24 @@ public class HAttributeTests
     }
 
     [TestMethod]
+    public void Clone_DeepCopiesValueAndChildren()
+    {
+        var original = new HAttribute("data-value", "original");
+        original.Children.Add(HText.Raw("original child"));
+
+        var clone = (HAttribute)original.Clone();
+        clone.Value = "clone";
+        ((HText)clone.Children[0]).Content = "clone child";
+        clone.Children.Add(HText.Raw("new child"));
+
+        clone.Should().NotBeSameAs(original);
+        clone.Children[0].Should().NotBeSameAs(original.Children[0]);
+        original.Value.Should().Be("original");
+        ((HText)original.Children[0]).Content.Should().Be("original child");
+        original.Children.Should().ContainSingle();
+    }
+
+    [TestMethod]
     public void Render_WithNullValue_RendersNameOnly()
     {
         var attribute = new HAttribute("required");

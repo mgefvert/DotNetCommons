@@ -21,6 +21,16 @@ public class HText : HNode
     {
     }
 
+    public override HNode Clone()
+    {
+        return new HText
+        {
+            Content  = Content,
+            Type     = Type,
+            Children = Children.Select(x => x.Clone()).ToList()
+        };
+    }
+
     public static HText Escape(string? text) => new() { Content = text, Type = TextType.Escape };
     public static HText Raw(string? text)    => new() { Content = text, Type = TextType.RawHtml };
     public static HText Style(string? text)  => new() { Content = text, Type = TextType.Style };
