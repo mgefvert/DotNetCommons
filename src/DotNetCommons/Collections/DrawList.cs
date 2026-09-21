@@ -25,6 +25,11 @@ public class DrawList<T>
         Seed(source);
     }
 
+    public void Clear()
+    {
+        Seed([]);
+    }
+
     /// <summary>
     /// The number of items available in the source list.
     /// </summary>
