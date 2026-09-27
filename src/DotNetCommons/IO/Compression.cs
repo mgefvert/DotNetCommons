@@ -7,7 +7,7 @@ namespace DotNetCommons.IO;
 
 public static class Compression
 {
-    /// Compress a byte buffer using the Deflate algorithm.
+    /// Compress a byte buffer using the specified algorithm.
     public static byte[] Compress(byte[] data, CompressionMethod method = CompressionMethod.Deflate,
         CompressionLevel level = CompressionLevel.Optimal)
     {
@@ -19,14 +19,14 @@ public static class Compression
         return compressedStream.ToArray();
     }
 
-    /// Compress a string using the Deflate algorithm.
+    /// Compress a string using the specified algorithm.
     public static byte[] CompressString(string data, CompressionMethod method = CompressionMethod.Deflate,
         CompressionLevel level = CompressionLevel.Optimal, Encoding? encoding = null)
     {
         return Compress((encoding ?? Encoding.UTF8).GetBytes(data), method, level);
     }
 
-    /// Decompress a byte buffer using the Deflate algorithm.
+    /// Decompress a byte buffer using the specified algorithm.
     public static byte[] Decompress(byte[] compressedData, CompressionMethod method = CompressionMethod.Deflate)
     {
         using var compressedStream = new MemoryStream(compressedData);
@@ -38,7 +38,7 @@ public static class Compression
         return plaintextStream.ToArray();
     }
 
-    /// Decompress a string using the Deflate algorithm.
+    /// Decompress a string using the specified algorithm.
     public static string DecompressString(byte[] compressedData,
         CompressionMethod method = CompressionMethod.Deflate, Encoding? encoding = null)
     {
