@@ -203,14 +203,8 @@
   .hidden {
     display: none;
   }
-  .h-100 {
-    height: calc(var(--spacing) * 100);
-  }
   .h-auto {
     height: auto;
-  }
-  .w-100 {
-    width: calc(var(--spacing) * 100);
   }
   .w-full {
     width: 100%;

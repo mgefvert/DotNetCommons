@@ -7,14 +7,16 @@
         <line x1="@tickMark.X1" y1="@tickMark.Y1" x2="@tickMark.X2" y2="@tickMark.Y2" stroke="currentColor" stroke-opacity="0.5" stroke-width="0.5" stroke-linecap="butt" />
     }
 
-    @if (ValueSweep > 0)
+    @foreach (var segment in ValueSegments)
     {
-        <path d="@CreateArcPath(ArcStartAngle, ValueSweep, 1)" fill="none" stroke="@Color" stroke-width="1.5" stroke-linecap="butt" />
+        <path d="@segment.Path" fill="none" stroke="@segment.Color" stroke-width="1.5" stroke-linecap="butt" />
     }
 </svg>
 
 @code {
     private const double Radius = 50;
+    private const int GradientSegmentCount = 100;
+    private const double SegmentOverlapDegrees = 0.5;
 
     [Parameter] public double Minimum { get; set; } = 0;
     [Parameter] public double Maximum { get; set; } = 100;
@@ -23,7 +25,8 @@
     [Parameter] public double OpeningDegrees { get; set; } = 90;
     [Parameter] public GaugeOpeningPosition OpeningPosition { get; set; } = GaugeOpeningPosition.Bottom;
     [Parameter] public double GuideThickness { get; set; } = 0.4;
-    [Parameter] public string Color { get; set; } = "#16c7d5";
+    [Parameter] public string StartColor { get; set; } = "#16c7d5";
+    [Parameter] public string EndColor { get; set; } = "#22c55e";
 
     private double EffectiveOpeningDegrees => double.IsFinite(OpeningDegrees)
         ? Math.Clamp(OpeningDegrees, 0, 360)
@@ -39,12 +42,34 @@
 
     private double ArcStartAngle => OpeningCenterAngle + EffectiveOpeningDegrees / 2;
     private double ArcSweep => 360 - EffectiveOpeningDegrees;
-    private double ValueSweep => ArcSweep * ValueFraction;
     private double ValueFraction => HasValidRange && double.IsFinite(Value)
         ? Math.Clamp((Value - Minimum) / (Maximum - Minimum), 0, 1)
         : 0;
     private bool HasValidRange => double.IsFinite(Minimum) && double.IsFinite(Maximum) && Maximum > Minimum;
     private string GuideStrokeWidth => FormatNumber(GuideThickness);
+
+    private IEnumerable<ArcSegment> ValueSegments
+    {
+        get
+        {
+            var segmentCount = (int)Math.Ceiling(ValueFraction * GradientSegmentCount);
+            for (var index = 0; index < segmentCount; index++)
+            {
+                var startFraction = (double)index / GradientSegmentCount;
+                var endFraction = Math.Min((double)(index + 1) / GradientSegmentCount, ValueFraction);
+                var startAngle = ArcStartAngle + ArcSweep * startFraction;
+                var endAngle = ArcStartAngle + ArcSweep * endFraction;
+                var overlap = index > 0 ? SegmentOverlapDegrees : 0;
+                if (endFraction < ValueFraction)
+                    endAngle += SegmentOverlapDegrees;
+
+                var midpoint = (startFraction + endFraction) / 2;
+                yield return new ArcSegment(
+                    CreateArcPath(startAngle - overlap, endAngle - startAngle + overlap, 1),
+                    CreateGradientColor(midpoint));
+            }
+        }
+    }
 
     private string ViewBox
     {
@@ -106,6 +131,12 @@
         return $"M {FormatNumber(start.X)} {FormatNumber(start.Y)} A {FormatNumber(r)} {FormatNumber(r)} 0 {largeArc} 1 {FormatNumber(end.X)} {FormatNumber(end.Y)}";
     }
 
+    private string CreateGradientColor(double fraction)
+    {
+        var startColorPercent = (1 - fraction) * 100;
+        return $"color-mix(in srgb, {StartColor} {FormatNumber(startColorPercent)}%, {EndColor})";
+    }
+
     private bool IsAngleOnArc(double angle)
     {
         if (ArcSweep >= 360)
@@ -123,5 +154,6 @@
 
     private static string FormatNumber(double number) => number.ToString("0.###", CultureInfo.InvariantCulture);
 
+    private readonly record struct ArcSegment(string Path, string Color);
     private readonly record struct TickMark(string X1, string Y1, string X2, string Y2);
 }

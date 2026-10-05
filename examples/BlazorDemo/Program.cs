@@ -1,19 +1,30 @@
 using BlazorDemo.Components;
 using DotNetCommons.Logging;
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Logging.AddCommonConsole();
+namespace BlazorDemo;
 
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+internal static class Program
+{
+    internal static bool IsDevelopment { get; private set; }
 
-builder.Services.AddAntiforgery();
+    private static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Logging.AddCommonConsole();
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents();
 
-var app = builder.Build();
+        IsDevelopment = builder.Environment.IsDevelopment();
 
-app.UseAntiforgery();
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+        builder.Services.AddAntiforgery();
 
-app.Run();
+        var app = builder.Build();
+
+        app.UseAntiforgery();
+        app.MapStaticAssets();
+        app.MapRazorComponents<App>()
+            .AddInteractiveServerRenderMode();
+
+        app.Run();
+    }
+}
