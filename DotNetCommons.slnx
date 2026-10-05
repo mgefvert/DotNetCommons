@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/examples/">
+    <Project Path="examples/BlazorDemo/BlazorDemo.csproj" />
     <Project Path="examples/DatabaseSeeder/DatabaseSeeder.csproj" />
     <Project Path="examples/Fleet/Fleet.csproj" />
   </Folder>
