@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+h1:focus { outline: 0; }
+
+* { font-family: "Exo 2", sans-serif; }
+
+:root {
+    color-scheme: light;
+    --page-background: #ffffff;
+    --page-foreground: #202124;
+    --control-background: #f3f4f6;
+    --control-hover-background: #e6e8eb;
+    --control-border: #c7cbd1;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --page-background: #17191d;
+    --page-foreground: #f1f3f5;
+    --control-background: #282c33;
+    --control-hover-background: #363b44;
+    --control-border: #515864;
+}
+
+body {
+    margin: 0;
+    background: var(--page-background);
+    color: var(--page-foreground);
+    transition: background-color 150ms ease, color 150ms ease;
+}

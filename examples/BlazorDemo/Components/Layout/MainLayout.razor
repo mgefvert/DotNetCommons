@@ -1,20 +1,21 @@
 ﻿@inherits LayoutComponentBase
 @inject IJSRuntime JS
 
-<header class="app-header">
-    <button class="theme-toggle" type="button" aria-pressed="@_isDarkMode" @onclick="ToggleDarkMode">
+<header class="flex justify-end px-[clamp(1rem,4vw,3rem)] py-4">
+    <button class="rounded-md border border-control-border bg-control-background px-4 py-2 font-sans text-page-foreground transition-colors hover:bg-control-hover-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-page-foreground"
+            type="button" aria-pressed="@_isDarkMode" @onclick="ToggleDarkMode">
         Dark mode: @(_isDarkMode ? "On" : "Off")
     </button>
 </header>
 
-<main>
+<main class="px-[clamp(1rem,4vw,3rem)] py-4">
     @Body
 </main>
 
-<div id="blazor-error-ui" data-nosnippet>
+<div id="blazor-error-ui" data-nosnippet class="fixed bottom-0 left-0 z-[1000] hidden box-border w-full bg-yellow-100 px-5 py-3 text-gray-900 shadow-[0_-1px_2px_rgba(0,0,0,0.2)] [color-scheme:light_only]">
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    <span class="dismiss absolute right-3 top-2 cursor-pointer">🗙</span>
 </div>
 
 @code {
