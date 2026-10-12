@@ -1,0 +1,23 @@
+@namespace DotNetCommons.Blazor.Components
+@inherits ComponentBase
+@inject AppIconProvider Icons
+
+<span class="@_iconCss" role="@(Title is null ? null : "img")" aria-label="@Title">
+    @Icons.Get(Name)
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public AppControlMode Mode { get; set; } = AppControlMode.Standard;
+    [Parameter] public string? IconCss { get; set; }
+
+    private readonly CssClassOverrides _iconCss = new();
+
+    protected override void OnParametersSet()
+    {
+        _iconCss.Defaults  = AppTheme.Icon;
+        _iconCss.Overrides = IconCss;
+        _iconCss.State     = Mode == AppControlMode.Compact ? AppTheme.CompactIcon : AppTheme.StandardIcon;
+    }
+}

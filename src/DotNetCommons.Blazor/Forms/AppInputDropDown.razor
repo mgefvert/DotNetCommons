@@ -1,0 +1,33 @@
+@typeparam TValue
+@inherits AppInputBase<TValue>
+
+<AppField Id="@EffectiveId" Title="@Title" Description="@Description" ContainerCss="@ContainerCss" LabelCss="@LabelCss" DescriptionCss="@DescriptionCss" Mode="@Mode">
+    <select @attributes="AdditionalAttributes" id="@EffectiveId" class="@_inputCss" value="@SelectedIndex"
+            disabled="@Disabled" required="@Required"
+            aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")" @onchange="OnChangeAsync">
+        <option value="" disabled="@Required">@Placeholder</option>
+        @for (var i = 0; i < Options.Count; i++)
+        {
+            <option value="@i">@Options[i].Label</option>
+        }
+    </select>
+</AppField>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<AppOption<TValue>> Options { get; set; } = [];
+
+    private string SelectedIndex
+    {
+        get
+        {
+            for (var i = 0; i < Options.Count; i++)
+                if (EqualityComparer<TValue>.Default.Equals(Options[i].Value, Value)) return i.ToString();
+            return "";
+        }
+    }
+
+    private Task OnChangeAsync(ChangeEventArgs e) =>
+        int.TryParse(e.Value?.ToString(), out var index) && index >= 0 && index < Options.Count
+            ? SetValueAsync(Options[index].Value)
+            : SetValueAsync(default!);
+}

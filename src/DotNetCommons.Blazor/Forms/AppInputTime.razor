@@ -1,0 +1,19 @@
+@inherits AppInputBase<TimeOnly?>
+@using System.Globalization
+
+<AppField Id="@EffectiveId" Title="@Title" Description="@Description" ContainerCss="@ContainerCss" LabelCss="@LabelCss" DescriptionCss="@DescriptionCss" Mode="@Mode">
+    <input @attributes="AdditionalAttributes" id="@EffectiveId" type="time" class="@_inputCss"
+           value="@(Value?.ToString("HH:mm", CultureInfo.InvariantCulture) ?? "")" placeholder="@Placeholder"
+           disabled="@Disabled" required="@Required"
+           aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")" @onchange="OnChanged" />
+</AppField>
+
+@code {
+    private Task OnChanged(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(raw)) return SetValueAsync(null);
+        return TimeOnly.TryParseExact(raw, ["HH:mm", "HH:mm:ss"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var value)
+            ? SetValueAsync(value) : Task.CompletedTask;
+    }
+}

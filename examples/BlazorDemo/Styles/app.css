@@ -1,4 +1,12 @@
 @import 'tailwindcss';
+@source '../../../src/DotNetCommons.Blazor';
+
+@theme inline {
+    --color-page-foreground: var(--page-foreground);
+    --color-control-background: var(--control-background);
+    --color-control-hover-background: var(--control-hover-background);
+    --color-control-border: var(--control-border);
+}
 
 h1:focus { outline: 0; }
 

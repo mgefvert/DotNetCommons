@@ -1,6 +1,6 @@
-﻿using DotNetCommons.Collections;
+﻿using DotNetCommons.Base;
 
-namespace DotNetCommonTests.Collections;
+namespace DotNetCommonsTests.Base;
 
 [TestClass]
 public class CssClassListTests

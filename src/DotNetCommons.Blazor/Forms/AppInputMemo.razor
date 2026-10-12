@@ -1,0 +1,12 @@
+@inherits AppInputBase<string?>
+
+<AppField Id="@EffectiveId" Title="@Title" Description="@Description" ContainerCss="@ContainerCss" LabelCss="@LabelCss" DescriptionCss="@DescriptionCss" Mode="@Mode">
+    <textarea @attributes="AdditionalAttributes" id="@EffectiveId" class="@_inputCss" rows="@Rows"
+              placeholder="@Placeholder" disabled="@Disabled" required="@Required"
+              aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")"
+              @oninput="e => SetValueAsync(e.Value?.ToString())">@Value</textarea>
+</AppField>
+
+@code {
+    [Parameter] public int Rows { get; set; } = 4;
+}

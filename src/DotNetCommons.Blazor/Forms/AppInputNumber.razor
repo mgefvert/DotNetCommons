@@ -1,0 +1,15 @@
+@inherits AppInputBase<decimal?>
+
+<AppField Id="@EffectiveId" Title="@Title" Description="@Description" ContainerCss="@ContainerCss" LabelCss="@LabelCss" DescriptionCss="@DescriptionCss" Mode="@Mode">
+    <div class="relative">
+        @if (Prefix is not null)
+        {
+            <span class="@_prefixCss">@Prefix</span>
+        }
+        <input @attributes="AdditionalAttributes" id="@EffectiveId" type="number"
+               class="@_inputCss"
+               value="@FormattedValue" placeholder="@Placeholder" min="@Min" max="@Max" step="@Step"
+               disabled="@Disabled" required="@Required" inputmode="decimal"
+               aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")" @onchange="OnChangeAsync" />
+    </div>
+</AppField>

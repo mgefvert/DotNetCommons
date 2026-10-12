@@ -1,0 +1,29 @@
+@typeparam TValue
+@inherits AppInputBase<TValue>
+
+<fieldset @attributes="AdditionalAttributes" class="@_containerCss"
+    disabled="@Disabled" aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <legend class="@_labelCss">@Title</legend>
+    }
+    <div class="@_choiceGroupCss">
+        @for (var i = 0; i < Options.Count; i++)
+        {
+            var index = i;
+            <label class="@_choiceCss">
+                <input type="radio" name="@EffectiveId" value="@index" checked="@(EqualityComparer<TValue>.Default.Equals(Options[index].Value, Value))"
+                       required="@Required" class="@_checkableCss" @onchange="() => SetValueAsync(Options[index].Value)" />
+                <span>@Options[index].Label</span>
+            </label>
+        }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p id="@($"{EffectiveId}-description")" class="@_descriptionCss">@Description</p>
+    }
+</fieldset>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<AppOption<TValue>> Options { get; set; } = [];
+}

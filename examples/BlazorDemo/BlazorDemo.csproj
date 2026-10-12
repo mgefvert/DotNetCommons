@@ -8,7 +8,24 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\src\DotNetCommons.Blazor\DotNetCommons.Blazor.csproj" />
       <ProjectReference Include="..\..\src\DotNetCommons\DotNetCommons.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Controls\AppButton.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppField.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppIcon.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputCheckBox.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputCheckBoxes.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputDate.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputDropDown.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputMemo.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputNumber.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputRadioButtons.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputRange.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputText.razor" />
+      <_ContentIncludedByDefault Remove="Components\Controls\AppInputTime.razor" />
     </ItemGroup>
 
     <Target Name="BuildTailwindCss" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">

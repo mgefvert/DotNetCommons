@@ -1,0 +1,7 @@
+@inherits AppInputBase<string?>
+
+<AppField Id="@EffectiveId" Title="@Title" Description="@Description" ContainerCss="@ContainerCss" LabelCss="@LabelCss" DescriptionCss="@DescriptionCss" Mode="@Mode">
+    <input @attributes="AdditionalAttributes" id="@EffectiveId" type="@InputType" class="@_inputCss"
+           value="@Value" placeholder="@Placeholder" autocomplete="@AutoComplete" disabled="@Disabled" required="@Required"
+           aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")" @oninput="OnInputAsync" />
+</AppField>

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace DotNetCommons.Collections;
+namespace DotNetCommons.Base;
 
 public class CssClassList
 {
@@ -26,7 +26,7 @@ public class CssClassList
     public static string Combine(bool tailwind, params string?[] classes)
     {
         var result = new CssClassList { TailwindLogic = tailwind };
-        result.Add(classes.NotNulls());
+        result.Add(classes.Where(x => x != null).Cast<string>());
         return result.Text;
     }
 
@@ -44,7 +44,9 @@ public class CssClassList
         Add(classes);
     }
 
-    private string[] MakeList(string? classes) => classes.IsEmpty() ? [] : classes.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+    private string[] MakeList(string? classes) => string.IsNullOrEmpty(classes)
+        ? []
+        : classes.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
 
     private string[] MakeList(IEnumerable<string>? classes) => classes?.SelectMany(MakeList).Distinct().ToArray() ?? [];
 
@@ -84,13 +86,13 @@ public class CssClassList
 
     public bool Contains(string? classes)
     {
-        return !classes.IsEmpty() && _classes.IsSupersetOf(MakeList(classes));
+        return !string.IsNullOrEmpty(classes) && _classes.IsSupersetOf(MakeList(classes));
     }
 
     public bool Contains(IEnumerable<string> classes)
     {
         var list = MakeList(classes);
-        return list.IsAtLeastOne() && _classes.IsSupersetOf(list);
+        return list.Length >= 1 && _classes.IsSupersetOf(list);
     }
 
     public CssClassList Remove(string? classes)
@@ -123,26 +125,18 @@ public class CssClassList
 
     public CssClassList Toggle(string? classes)
     {
-        var list = MakeList(classes);
-        var (removes, adds) = list.Toss(_classes.Contains);
-
-        foreach (var c in adds)
-            AddClass(c);
-        foreach (var c in removes)
-            _classes.Remove(c);
+        foreach (var x in MakeList(classes))
+            if (!_classes.Add(x))
+                _classes.Remove(x);
 
         return this;
     }
 
     public CssClassList Toggle(IEnumerable<string> classes)
     {
-        var list = MakeList(classes);
-        var (removes, adds) = list.Toss(_classes.Contains);
-
-        foreach (var c in adds)
-            AddClass(c);
-        foreach (var c in removes)
-            _classes.Remove(c);
+        foreach (var x in MakeList(classes))
+            if (!_classes.Add(x))
+                _classes.Remove(x);
 
         return this;
     }

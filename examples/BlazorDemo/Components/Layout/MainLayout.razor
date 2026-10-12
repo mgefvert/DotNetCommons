@@ -1,7 +1,11 @@
 ﻿@inherits LayoutComponentBase
 @inject IJSRuntime JS
 
-<header class="flex justify-end px-[clamp(1rem,4vw,3rem)] py-4">
+<header class="flex items-center justify-between gap-4 px-[clamp(1rem,4vw,3rem)] py-4">
+    <nav class="flex items-center gap-4 text-sm font-semibold" aria-label="Demo pages">
+        <NavLink href="/">Home</NavLink>
+        <NavLink href="/controls">Controls</NavLink>
+    </nav>
     <button class="rounded-md border border-control-border bg-control-background px-4 py-2 font-sans text-page-foreground transition-colors hover:bg-control-hover-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-page-foreground"
             type="button" aria-pressed="@_isDarkMode" @onclick="ToggleDarkMode">
         Dark mode: @(_isDarkMode ? "On" : "Off")

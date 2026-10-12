@@ -1,0 +1,10 @@
+@inherits AppInputBase<bool>
+
+<AppField Id="@EffectiveId" Title="@Title" Description="@Description" ContainerCss="@ContainerCss" LabelCss="@LabelCss" DescriptionCss="@DescriptionCss" Mode="@Mode">
+    <label class="@_choiceCss">
+        <input @attributes="AdditionalAttributes" id="@EffectiveId" type="checkbox" checked="@Value" disabled="@Disabled" required="@Required"
+               class="@_checkableCss" aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")"
+               @onchange="e => SetValueAsync(e.Value is true)" />
+        <span>@(Placeholder ?? "Yes")</span>
+    </label>
+</AppField>

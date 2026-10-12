@@ -1,4 +1,5 @@
 using BlazorDemo.Components;
+using DotNetCommons.Blazor.Components;
 using DotNetCommons.Logging;
 
 namespace BlazorDemo;
@@ -17,6 +18,7 @@ internal static class Program
         IsDevelopment = builder.Environment.IsDevelopment();
 
         builder.Services.AddAntiforgery();
+        builder.Services.AddSingleton(new AppIconProvider(Path.Combine(builder.Environment.WebRootPath, "icons")));
 
         var app = builder.Build();
 
