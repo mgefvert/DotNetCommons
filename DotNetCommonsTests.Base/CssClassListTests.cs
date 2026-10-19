@@ -42,13 +42,25 @@ public class CssClassListTests
     }
 
     [TestMethod]
-    public void Toggle_WithTailwindLogic_ReplacesConflictingSuffixes()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Toggle_WithTailwindLogic_ReplacesConflictingSuffixes(bool useEnumerable)
     {
         var classList = new CssClassList("size-5") { TailwindLogic = true };
 
-        classList.Toggle("size-3");
+        if (useEnumerable)
+            classList.Toggle(new[] { "size-3" });
+        else
+            classList.Toggle("size-3");
 
         Assert.AreEqual("size-3", classList.Text);
+
+        if (useEnumerable)
+            classList.Toggle(new[] { "size-3" });
+        else
+            classList.Toggle("size-3");
+
+        Assert.AreEqual("", classList.Text);
     }
 
     [TestMethod]

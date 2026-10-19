@@ -126,8 +126,10 @@ public class CssClassList
     public CssClassList Toggle(string? classes)
     {
         foreach (var x in MakeList(classes))
-            if (!_classes.Add(x))
-                _classes.Remove(x);
+        {
+            if (!_classes.Remove(x))
+                AddClass(x);
+        }
 
         return this;
     }
@@ -135,8 +137,8 @@ public class CssClassList
     public CssClassList Toggle(IEnumerable<string> classes)
     {
         foreach (var x in MakeList(classes))
-            if (!_classes.Add(x))
-                _classes.Remove(x);
+            if (!_classes.Remove(x))
+                AddClass(x);
 
         return this;
     }
