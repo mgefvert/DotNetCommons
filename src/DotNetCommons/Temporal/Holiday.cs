@@ -43,20 +43,32 @@ public abstract class Holiday
 
         definition = definition.Trim('[', ']');
         var items = definition.Split(',').TrimAndFilter().ToArray();
-        if (items.Length < 2)
+        if (items.Length < 3)
             throw new InvalidOperationException($"Holiday definition {definition} is invalid.");
 
         var type = RegisteredTypes.GetValueOrDefault(items[0]);
         if (type == null)
             throw new ArgumentException($"Holiday type '{items[0]}' has not been registered.");
 
+        var holidayType = Enum.Parse<HolidayType>(items[2], true);
+        var firstArgument = 3;
+        // Older text definitions wrote flag names separated by commas.
+        while (firstArgument < items.Length && !int.TryParse(items[firstArgument], out _) &&
+               Enum.TryParse<HolidayType>(items[firstArgument], true, out var flag) && Enum.IsDefined(flag))
+        {
+            holidayType |= flag;
+            firstArgument++;
+        }
+
         var args = new List<object>
         {
             items[1],
-            (HolidayType)int.Parse(items[2])
+            holidayType
         };
 
-        args.AddRange(items.Skip(3).Select(int.Parse).Cast<object>());
+        args.AddRange(items.Skip(firstArgument).Select(item => int.TryParse(item, out var value)
+            ? value
+            : (int)Enum.Parse<DayOfWeek>(item, true)).Cast<object>());
 
         try
         {
@@ -148,25 +160,83 @@ public abstract class Holiday
     }
 
     /// <summary>
-    /// Determine whether the given date falls on this holiday.
+    /// Determine whether the given date falls on this holiday. Occurrences calculated for the
+    /// adjacent years are also checked to account for dates shifted across a year boundary.
     /// </summary>
     /// <param name="date">Date to test.</param>
     /// <param name="applyObservedRule">Whether to apply observation rules or not.</param>
     /// <returns>True if the date is the holiday for that year.</returns>
     public bool IsHoliday(DateTime date, bool applyObservedRule)
     {
-        return date.Date == CalculateDate(date.Year, applyObservedRule);
+        var day = date.Date;
+        if (day == CalculateDate(date.Year, applyObservedRule))
+            return true;
+
+        if ((!applyObservedRule || ObservedRule == null) && IsBoundedToYear())
+            return false;
+
+        return (date.Year > 1 && TryCalculateAdjacentDate(date.Year - 1, applyObservedRule, out var previous) && day == previous)
+               || (date.Year < 9999 && TryCalculateAdjacentDate(date.Year + 1, applyObservedRule, out var next) && day == next);
     }
 
+    private bool TryCalculateAdjacentDate(int year, bool applyObservedRule, out DateTime date)
+    {
+        if (!HasOccurrenceInYear(this, year))
+        {
+            date = default;
+            return false;
+        }
+
+        date = CalculateDate(year, applyObservedRule);
+        return true;
+    }
+
+    private static bool HasOccurrenceInYear(Holiday holiday, int year)
+    {
+        if (holiday.GetType() == typeof(DateBasedHoliday) && holiday is DateBasedHoliday { Month: 2, Day: 29 })
+            return DateTime.IsLeapYear(year);
+
+        if (holiday.GetType() == typeof(BetweenDaysHoliday) && holiday is BetweenDaysHoliday between)
+        {
+            var start = new DateTime(year, between.MinMonth, between.MinDay);
+            var end = new DateTime(year, between.MaxMonth, between.MaxDay);
+            var daysUntilMatch = ((int)between.DayOfWeek - (int)start.DayOfWeek + 7) % 7;
+            return (end - start).TotalDays >= daysUntilMatch;
+        }
+
+        return holiday.GetType() != typeof(RelativeHoliday) || holiday is not RelativeHoliday relative ||
+               HasOccurrenceInYear(relative.OriginalHoliday, year);
+    }
+
+    private bool IsBoundedToYear() => GetType() == typeof(DateBasedHoliday) || GetType() == typeof(BetweenDaysHoliday);
+
     /// <summary>
-    /// When the next holiday occurs.
+    /// When the next holiday occurs, considering occurrences calculated for the adjacent years.
     /// </summary>
     public DateTime NextDate(TimeProvider? clock = null)
     {
         var today = (clock ?? TimeProvider.System).Today;
 
-        var result = CalculateDate(today.Year, true);
-        return result >= today ? result : CalculateDate(today.Year + 1, true);
+        if (ObservedRule == null && IsBoundedToYear())
+        {
+            var current = CalculateDate(today.Year, true);
+            return current >= today ? current : CalculateDate(today.Year + 1, true);
+        }
+
+        DateTime? next = null;
+        for (var year = Math.Max(1, today.Year - 1); year <= Math.Min(9999, today.Year + 1); year++)
+        {
+            DateTime candidate;
+            if (year == today.Year)
+                candidate = CalculateDate(year, true);
+            else if (!TryCalculateAdjacentDate(year, true, out candidate))
+                continue;
+
+            if (candidate >= today && (next == null || candidate < next.Value))
+                next = candidate;
+        }
+
+        return next ?? throw new InvalidOperationException("No future holiday date is available.");
     }
 
     /// <summary>

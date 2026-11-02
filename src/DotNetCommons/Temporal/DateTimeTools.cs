@@ -76,7 +76,7 @@ public static class DateTimeTools
     /// </summary>
     public static DateTimeOffset MinDate(DateTimeOffset datetime1, DateTimeOffset datetime2)
     {
-        return datetime1.Ticks < datetime2.Ticks ? datetime1 : datetime2;
+        return datetime1 < datetime2 ? datetime1 : datetime2;
     }
 
     /// <summary>
@@ -110,7 +110,7 @@ public static class DateTimeTools
     /// </summary>
     public static DateTimeOffset MaxDate(DateTimeOffset datetime1, DateTimeOffset datetime2)
     {
-        return datetime1.Ticks > datetime2.Ticks ? datetime1 : datetime2;
+        return datetime1 > datetime2 ? datetime1 : datetime2;
     }
 
     /// <summary>
@@ -146,6 +146,10 @@ public static class DateTimeTools
             return TimeZoneInfo.FindSystemTimeZoneById(id);
         }
         catch (InvalidTimeZoneException)
+        {
+            return null;
+        }
+        catch (TimeZoneNotFoundException)
         {
             return null;
         }

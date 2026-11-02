@@ -32,7 +32,7 @@ public class LastDayHoliday : Holiday
         Offset = offset;
     }
 
-    public override string TextDefinition() => $"[last,{Name},{Type},{Month},{DayOfWeek}{(Offset == 0 ? "" : "," + Offset)}]";
+    public override string TextDefinition() => $"[last,{Name},{(int)Type},{Month},{(int)DayOfWeek}{(Offset == 0 ? "" : "," + Offset)}]";
 
     protected internal override DateTime InternalCalculateDate(int year)
     {

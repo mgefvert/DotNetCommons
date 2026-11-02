@@ -48,11 +48,14 @@ public static class UnitedStatesHolidays
             ChristmasDay    = new DateBasedHoliday("Christmas Day", HolidayType.Holiday, 12, 25)
         ];
 
+        NewYearsDay.ObservedRule     = FederalObservedRules;
         MlkBirthday.ObservedRule     = FederalObservedRules;
         PresidentsDay.ObservedRule   = FederalObservedRules;
         MemorialDay.ObservedRule     = FederalObservedRules;
+        Juneteenth.ObservedRule      = FederalObservedRules;
         IndependenceDay.ObservedRule = FederalObservedRules;
         LaborDay.ObservedRule        = FederalObservedRules;
         VeteransDay.ObservedRule     = FederalObservedRules;
+        ChristmasDay.ObservedRule    = FederalObservedRules;
     }
 }

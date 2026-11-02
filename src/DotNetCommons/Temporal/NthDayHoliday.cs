@@ -37,7 +37,7 @@ public class NthDayHoliday : Holiday
             throw new ArgumentOutOfRangeException(nameof(occurrence), "Occurrence must in the range of [1..5].");
     }
 
-    public override string TextDefinition() => $"[nth,{Name},{Type},{Month},{Occurrence},{DayOfWeek}{(Offset == 0 ? "" : "," + Offset)}]";
+    public override string TextDefinition() => $"[nth,{Name},{(int)Type},{Month},{Occurrence},{(int)DayOfWeek}{(Offset == 0 ? "" : "," + Offset)}]";
 
     protected internal override DateTime InternalCalculateDate(int year)
     {

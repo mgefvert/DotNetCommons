@@ -37,7 +37,7 @@ public class BetweenDaysHoliday : Holiday
         }
     }
 
-    public override string TextDefinition() => $"[between,{Name},{Type},{MinMonth},{MinDay},{MaxMonth},{MaxDay},{DayOfWeek}]";
+    public override string TextDefinition() => $"[between,{Name},{(int)Type},{MinMonth},{MinDay},{MaxMonth},{MaxDay},{(int)DayOfWeek}]";
 
     protected internal override DateTime InternalCalculateDate(int year)
     {

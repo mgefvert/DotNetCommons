@@ -207,7 +207,7 @@ public class DateRange
         return boundingMode switch
         {
             DateRangeBound.CompletelyInside => range.InRange(Start) && range.InRange(End),
-            DateRangeBound.PartiallyInside => range.InRange(Start) || range.InRange(End),
+            DateRangeBound.PartiallyInside => Start <= range.End && End >= range.Start,
             DateRangeBound.StartInside => range.InRange(Start),
             DateRangeBound.EndInside => range.InRange(End),
             _ => false
@@ -239,7 +239,7 @@ public class DateRange
     {
         AssertDateRangeTypeIsSet();
 
-        var start = GetNextStartDate(Type, Start, -1);
+        var start = GetNextStartDate(Type, GetStartDate(Type, Start), -1);
         return new DateRange
         {
             Start = start,
