@@ -522,10 +522,13 @@ public class CommandActionRegistry
         {
             var services = new ServiceCollection();
             configureServices?.Invoke(services);
+            var provider = services.BuildServiceProvider();
 
-            return await new CommandActionRegistry(services.BuildServiceProvider())
-                .RegisterAssemblies(Assembly.GetCallingAssembly())
-                .Execute(args);
+            var assembly = Assembly.GetEntryAssembly() ?? throw new InvalidOperationException("Entry assembly not found.");
+
+            var registry = new CommandActionRegistry(provider);
+            registry.RegisterAssemblies(assembly);
+            return await registry.Execute(args);
         }
         catch (Exception ex)
         {
