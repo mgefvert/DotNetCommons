@@ -516,6 +516,26 @@ public class CommandActionRegistry
         return RegisterAssemblies(Assembly.GetCallingAssembly());
     }
 
+    public static async Task<int> RunAsync(string[] args, Action<IServiceCollection>? configureServices = null)
+    {
+        try
+        {
+            var services = new ServiceCollection();
+            configureServices?.Invoke(services);
+
+            return await new CommandActionRegistry(services.BuildServiceProvider())
+                .RegisterAssemblies(Assembly.GetCallingAssembly())
+                .Execute(args);
+        }
+        catch (Exception ex)
+        {
+            using (new SetConsoleColor(ConsoleColor.Red))
+                Console.WriteLine(ex.GetDetailedInformation(false));
+
+            return 1;
+        }
+    }
+
     /// <summary>
     /// Schedules a command action for execution with the specified priority, error handling behavior, command type,
     /// and command-line arguments.
