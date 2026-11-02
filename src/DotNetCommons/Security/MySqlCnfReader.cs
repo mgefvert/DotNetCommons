@@ -25,7 +25,7 @@ public class MySqlCnfReader
         if (!File.Exists(fileName))
             return false;
 
-        using var fs = new FileStream(fileName, FileMode.Open);
+        using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         Parameters? p = null;
         foreach (var line in ReadEncryptedLines(fs))

@@ -38,6 +38,7 @@ The public API is broad and mature. Prefer an existing helper over adding a near
 - Date/time code mixes `DateTime`, `DateTimeOffset`, `DateOnly`, and `TimeProvider`; preserve kind/UTC semantics explicitly.
 - `Sys.Spawn` owns process lifetime and redirected streams; use its async/cancellation paths for long-running processes.
 - `CryptV1` is retained for compatibility. Prefer `CryptV2` for new encrypted payloads.
+- `MySqlCnfReader` opens login files for read access with read sharing, so read-only secret mounts and concurrent readers are supported.
 
 ## Current state and verification
 
