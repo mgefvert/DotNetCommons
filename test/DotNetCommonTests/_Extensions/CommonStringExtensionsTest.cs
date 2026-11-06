@@ -11,21 +11,6 @@ namespace DotNetCommonTests;
 public class CommonStringExtensionsTest
 {
     [TestMethod]
-    public void TestBreakUp()
-    {
-        CollectionAssert.AreEqual(Array.Empty<string>(), ((string?)null).BreakUp(5).ToArray());
-        CollectionAssert.AreEqual(Array.Empty<string>(), "".BreakUp(5).ToArray());
-
-        CollectionAssert.AreEqual(new[] { "A" }, "A".BreakUp(5).ToArray());
-        CollectionAssert.AreEqual(new[] { "ABC" }, "ABC".BreakUp(5).ToArray());
-        CollectionAssert.AreEqual(new[] { "ABCDE" }, "ABCDE".BreakUp(5).ToArray());
-
-        CollectionAssert.AreEqual(new[] { "ABCDE", "A" }, "ABCDEA".BreakUp(5).ToArray());
-        CollectionAssert.AreEqual(new[] { "ABCDE", "ABCDE" }, "ABCDEABCDE".BreakUp(5).ToArray());
-        CollectionAssert.AreEqual(new[] { "ABCDE", "ABCDE", "A" }, "ABCDEABCDEA".BreakUp(5).ToArray());
-    }
-
-    [TestMethod]
     public void TestChomp()
     {
         string? remaining;

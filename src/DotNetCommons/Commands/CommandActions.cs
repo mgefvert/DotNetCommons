@@ -5,6 +5,12 @@
 /// and sets up a default argument instance.
 public abstract class CommandAction
 {
+    /// Suffixes that are ignored when determining the name of the command action.
+    public static readonly string[] NameIgnoredSuffixes = ["CommandAction", "Command", "Args"];
+
+    /// Gets a name for the command action. For instance, `ImportFileCommand` would become `ImportFile`, `MyJobArgs` would become `MyJob`.
+    protected string JobName => GetName(GetType().Name);
+
     /// The command action registry associated with the current command action. This property
     /// allows interaction with the system of registering, resolving, and executing commands.
     public CommandActionRegistry Registry { get; set; } = null!;
@@ -52,6 +58,18 @@ public abstract class CommandAction
     public virtual int Execute()
     {
         return 0;
+    }
+
+    private static string GetName(string name)
+    {
+        foreach (var s in NameIgnoredSuffixes)
+            if (name.EndsWith(s))
+            {
+                name = name[..^s.Length];
+                return name;
+            }
+
+        return name;
     }
 }
 

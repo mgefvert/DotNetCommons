@@ -19,16 +19,16 @@ public class CommandActionRegistry
     public const int ExitCodeSuccess = 0;
 
     /// Represents the exit code indicating that no jobs were scheduled for execution.
-    public const int ExitCodeNoJobsScheduled = -1;
+    public const int ExitCodeNoJobsScheduled = 255;
 
     /// Represents the exit code indicating a fatal error occurred during the execution of a command.
-    public const int ExitCodeFatalError = -2;
+    public const int ExitCodeFatalError = 254;
 
     /// Represents the exit code indicating that an operation was canceled before completion.
-    public const int ExitCodeOperationCanceled = -3;
+    public const int ExitCodeOperationCanceled = 253;
 
     /// Represents the exit code indicating that one or more operations failed during the scheduler run.
-    public const int ExitCodeOneOrMoreFailed = -4;
+    public const int ExitCodeOneOrMoreFailed = 252;
 
     /// Specifies the priority level for the first command scheduled with the Execute method.
     public const int FirstPriority = 10;
@@ -50,8 +50,10 @@ public class CommandActionRegistry
     private Action<BeforeActionArgs>? _beforeActionCallback;
     private Action<Invocation>? _beforeInvocation;
     private Action<BeforeHelpArgs>? _beforeHelpCallback;
+    private Action<List<string>>? _preprocessCallback;
     private Type? _defaultCommand;
-    private readonly ConcurrentDictionary<string, Type> _commandRegistry = [];
+    private readonly ConcurrentDictionary<string, Type> _commandRegistry = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, AliasRegistration> _aliasRegistry = new(StringComparer.OrdinalIgnoreCase);
     private readonly IServiceProvider _serviceProvider;
     private readonly ICommandLineParser _commandLineParser;
     private readonly ILogger<CommandActionRegistry>? _logger;
@@ -60,6 +62,8 @@ public class CommandActionRegistry
     private bool _schedulerRunning;
     private int _ctrlBreakPressed;
     private CancellationTokenSource? _cancelSource;
+
+    private record AliasRegistration(Type Command, CommandActionAliasAttribute Attribute);
 
     /// Provides a registry for managing the registration, scheduling, and execution of command actions.
     /// Uses the DotNetCommons command line parser to parse arguments on the command line.
@@ -123,6 +127,13 @@ public class CommandActionRegistry
         return this;
     }
 
+    /// Sets a callback to be executed before a command action is performed, providing information about the action.
+    public CommandActionRegistry PreprocessArgs(Action<List<string>> action)
+    {
+        _preprocessCallback = action;
+        return this;
+    }
+
     private void CtrlCHandler(object? sender, ConsoleCancelEventArgs args)
     {
         _ctrlBreakPressed++;
@@ -153,6 +164,17 @@ public class CommandActionRegistry
         Console.WriteLine(route);
         Console.WriteLine(new string('=', route.Length));
 
+        int width;
+        try
+        {
+            width = Console.WindowWidth;
+        }
+        catch
+        {
+            // There's no console :(
+            width = 80;
+        }
+
         if (optionType != null)
         {
             Console.WriteLine();
@@ -162,7 +184,7 @@ public class CommandActionRegistry
         if (attr.HelpText.IsAtLeastOne())
         {
             foreach (var p in attr.HelpText.WithIndex())
-            foreach (var line in TextTools.WordWrap(p.Item, Console.WindowWidth, p.IsFirst ? 0 : -2))
+            foreach (var line in TextTools.WordWrap(p.Item, width, p.IsFirst ? 0 : -2))
                 Console.WriteLine(line);
         }
 
@@ -204,12 +226,26 @@ public class CommandActionRegistry
     /// prints them on the screen, and provides a suitable return code. It also provides a CTRL-C handler that signals the job to cancel
     /// the current operation.
     /// </remarks>
-    public async Task<int> Execute(string[] args)
+    public async Task<int> Execute(IEnumerable<string> args)
     {
         if (_commandRegistry.IsEmpty())
             throw new CommandActionResolveException("No command actions are defined.");
 
-        var route = Resolve(args);
+        var arglist = args.ToList();
+        _preprocessCallback?.Invoke(arglist);
+
+        var route = ResolveRoute(arglist);
+
+        if (route.alias is { Deprecated: true } alias)
+        {
+            var canonical = route.commands.Single().GetCustomAttribute<CommandActionAttribute>()!;
+            var aliasName = GetRouteName(alias.Route);
+            var canonicalName = GetRouteName(canonical.Route);
+            if (_logger != null)
+                _logger.LogWarning("Deprecated command name '{Alias}'; use '{Command}'.", aliasName, canonicalName);
+            else
+                Console.Error.WriteLine($"Warning: Deprecated command name '{aliasName}'; use '{canonicalName}'.");
+        }
 
         if (route.help)
         {
@@ -388,7 +424,7 @@ public class CommandActionRegistry
     {
         return string.Join(' ', route
             .Where(r => r.IsSet())
-            .Select(r => r.ToLower()));
+            .Select(r => r.ToLowerInvariant()));
     }
 
     /// Constructs a route path by joining the elements of the provided collection with pipes, e.g. ["set", "value"] => "|set|value|".
@@ -396,7 +432,7 @@ public class CommandActionRegistry
     {
         var result = '|' + string.Join('|', route
                              .Where(r => r.IsSet())
-                             .Select(r => r.ToLower()))
+                             .Select(r => r.ToLowerInvariant()))
                          + '|';
 
         while (result.Contains("||"))
@@ -423,7 +459,14 @@ public class CommandActionRegistry
     /// and returns the matching command types along with any remaining arguments.
     /// </summary>
     /// <param name="args">An array of arguments provided for command resolution.</param>
-    public (Type[] commands, bool help, bool routeWasEmpty, string[] remaining) Resolve(string[] args)
+    public (Type[] commands, bool help, bool routeWasEmpty, string[] remaining) Resolve(ICollection<string> args)
+    {
+        var result = ResolveRoute(args);
+        return (result.commands, result.help, result.routeWasEmpty, result.remaining);
+    }
+
+    private (Type[] commands, bool help, bool routeWasEmpty, string[] remaining, CommandActionAliasAttribute? alias)
+        ResolveRoute(ICollection<string> args)
     {
         if (_commandRegistry.IsEmpty())
             throw new CommandActionResolveException("No command actions are defined.");
@@ -444,26 +487,46 @@ public class CommandActionRegistry
             help = true;
         }
 
-        if (route.IsEmpty() && _defaultCommand != null)
-            return ([_defaultCommand], false, false, remaining);
+        if (!help && route.IsEmpty() && _defaultCommand != null)
+            return ([_defaultCommand], false, false, remaining, null);
 
         var search = GetRoutePath(route);
+
+        // Hidden aliases only match complete routes, so they do not affect command-group discovery.
+        if (_aliasRegistry.TryGetValue(search, out var alias))
+            return ([alias.Command], help, false, remaining, alias.Attribute);
+
         var types = _commandRegistry
-            .Where(x => x.Key.StartsWith(search, StringComparison.CurrentCultureIgnoreCase))
+            .Where(x => x.Key.StartsWith(search, StringComparison.OrdinalIgnoreCase))
             .Select(x => x.Value)
             .ToArray();
 
-        return (types, help, route.IsEmpty(), remaining);
+        return (types, help, route.IsEmpty(), remaining, null);
     }
 
-    private void Register(Type commandClass, string[] route)
+    private void Register(Type commandClass, CommandActionAttribute attribute)
+    {
+        RegisterRoute(commandClass, attribute.Route);
+        foreach (var alias in commandClass.GetCustomAttributes<CommandActionAliasAttribute>())
+            RegisterRoute(commandClass, alias.Route, alias);
+    }
+
+    private void RegisterRoute(Type commandClass, string[] route, CommandActionAliasAttribute? alias = null)
     {
         var path = GetRoutePath(route);
-        if (path.IsEmpty())
+        if (path == "|")
             throw new CommandActionInitializationException(commandClass, "CommandAction must provide a valid route.");
 
-        if (!_commandRegistry.TryAdd(path, commandClass))
-            throw new CommandActionInitializationException(commandClass, "A command with the same route is already defined.");
+        if (_commandRegistry.ContainsKey(path) || _aliasRegistry.ContainsKey(path))
+            throw new CommandActionInitializationException(commandClass,
+                "A command with the same route is already defined.");
+
+        var added = alias == null
+            ? _commandRegistry.TryAdd(path, commandClass)
+            : _aliasRegistry.TryAdd(path, new AliasRegistration(commandClass, alias));
+        if (!added)
+            throw new CommandActionInitializationException(commandClass,
+                "A command with the same route is already defined.");
     }
 
     /// <summary>
@@ -483,7 +546,7 @@ public class CommandActionRegistry
             {
                 var attr = commandClass.GetCustomAttribute<CommandActionAttribute>();
                 if (attr != null)
-                    Register(commandClass, attr.Route);
+                    Register(commandClass, attr);
             }
         }
 
@@ -503,7 +566,7 @@ public class CommandActionRegistry
             if (attr == null)
                 throw new ArgumentException($"Class {type.Name} must be decorated with [CommandAction]");
 
-            Register(type, attr.Route);
+            Register(type, attr);
         }
 
         ValidateRoutes();
@@ -667,11 +730,15 @@ public class CommandActionRegistry
 
     private void ValidateRoutes()
     {
-        foreach (var (route, command) in _commandRegistry)
+        var routes = _commandRegistry
+            .Concat(_aliasRegistry.Select(x => new KeyValuePair<string, Type>(x.Key, x.Value.Command)))
+            .ToDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (route, command) in routes)
         {
             foreach (var parentRoute in GetParentRoutePaths(route))
             {
-                if (!_commandRegistry.TryGetValue(parentRoute, out var parentCommand))
+                if (!routes.TryGetValue(parentRoute, out var parentCommand))
                     continue;
 
                 throw new CommandActionResolveException(
