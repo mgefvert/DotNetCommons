@@ -43,6 +43,25 @@ public class DateTimeToolsTest
     }
 
     [TestMethod]
+    public void HasFifthSundayTests()
+    {
+        // A full Gregorian calendar cycle covers all month layouts and century leap-year rules.
+        for (var year = 2000; year < 2400; year++)
+        {
+            for (var month = 1; month <= 12; month++)
+            {
+                var expected = Enumerable.Range(1, DateTime.DaysInMonth(year, month))
+                    .Where(day => new DateTime(year, month, day).DayOfWeek == DayOfWeek.Sunday)
+                    .Skip(4)
+                    .FirstOrDefault();
+
+                Assert.AreEqual(expected, DateTimeTools.HasFifthSunday(year, month),
+                    $"Incorrect fifth Sunday for {year}-{month:D2}.");
+            }
+        }
+    }
+
+    [TestMethod]
     public void MinMax_HandlePairsNullsAndEmptySequences()
     {
         var early = new DateTime(2024, 1, 1);

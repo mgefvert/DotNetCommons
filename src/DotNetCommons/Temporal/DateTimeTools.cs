@@ -7,6 +7,17 @@ namespace DotNetCommons.Temporal;
 /// </summary>
 public static class DateTimeTools
 {
+    private static readonly ulong[] FifthSundayMagic =
+    [
+        0x0000821040C42081UL,
+        0x000020C420410830UL,
+        0x00000C4203108310UL,
+        0x0000821041083102UL,
+        0x000020C420410830UL,
+        0x00000C4204108310UL,
+        0x0000C42082083103UL
+    ];
+
     /// <summary>
     /// Generates a sequence of DateTime values starting at a specified value,
     /// and creating subsequent values using the provided function until a specified end value is reached or exceeded.
@@ -61,6 +72,19 @@ public static class DateTimeTools
     public static DateTime? ForceKind(this DateTime? date, DateTimeKind kind)
     {
         return date != null ? new DateTime(date.Value.Ticks, kind) : null;
+    }
+
+    /// <summary>
+    /// Determine if the given year and month has a fifth Sunday.
+    /// </summary>
+    /// <returns>The day of month for the fifth Sunday, 0 otherwise.</returns>
+    public static int HasFifthSunday(int year, int month)
+    {
+        var layout = (DateTime.IsLeapYear(year) ? 7 : 0) + (int)new DateOnly(year, 1, 1).DayOfWeek;
+        var shift  = (layout & 1) * 24 + (month - 1) * 2;
+        var value  = (int)((FifthSundayMagic[layout >> 1] >> shift) & 3);
+
+        return value == 0 ? 0 : value + 28;
     }
 
     /// <summary>
