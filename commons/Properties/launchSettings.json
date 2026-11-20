@@ -13,6 +13,10 @@
       "commandName": "Project",
       "commandLineArgs": "test ip -c root.local"
     },
+    "lookup ip": {
+      "commandName": "Project",
+      "commandLineArgs": "lookup ip -c root.local -m city 193.39.184.12 193.39.184.14 195.140.214.28"
+    },
     "dev clean": {
       "commandName": "Project",
       "commandLineArgs": "dev clean -d ..\\..\\..\\..\\examples"

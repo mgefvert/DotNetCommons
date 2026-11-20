@@ -16,7 +16,7 @@
     <Project Path="src/DotNetCommons/DotNetCommons.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="DotNetCommonsTests.Base/DotNetCommonsTests.Base.csproj" />
+    <Project Path="test/DotNetCommonTests.Base/DotNetCommonTests.Base.csproj" />
     <Project Path="test/DotNetCommonTests.EF/DotNetCommonTests.EF.csproj" />
     <Project Path="test/DotNetCommonTests.Services/DotNetCommonTests.Services.csproj" />
     <Project Path="test/DotNetCommonTests.Web/DotNetCommonTests.Web.csproj" />

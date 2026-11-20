@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\DotNetCommons.Base\DotNetCommons.Base.csproj" />
+      <ProjectReference Include="..\..\src\DotNetCommons.Base\DotNetCommons.Base.csproj" />
     </ItemGroup>
 
 </Project>
