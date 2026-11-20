@@ -7,6 +7,11 @@ namespace DotNetCommons.Commands;
 /// </summary>
 public class DotNetCommonsCommandLineParser : ICommandLineParser
 {
+    private static readonly CommandLineSettings Settings = new()
+    {
+        DisplayHelpOnEmpty = false
+    };
+
     public void DisplayHelpFor(TextWriter output, Type optionType)
     {
         output.WriteLine(CommandLine.GetFormattedHelpText(optionType));
@@ -14,7 +19,6 @@ public class DotNetCommonsCommandLineParser : ICommandLineParser
 
     public object Parse(Type optionType, string[] args)
     {
-        CommandLine.DisplayHelpOnEmpty = false;
-        return CommandLine.Parse(optionType, args);
+        return CommandLine.Parse(optionType, Settings, args);
     }
 }

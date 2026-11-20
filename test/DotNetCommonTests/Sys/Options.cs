@@ -39,3 +39,43 @@ public class OptionsRequired
     public string? Password { get; set; }
 }
 
+public enum OptionMode
+{
+    Abc = 1,
+    Xyz = 2,
+    ReadOnly = 3
+}
+
+public class EnumOptions
+{
+    [CommandLineOption("mode")]
+    public OptionMode Mode { get; set; }
+
+    [CommandLineOption("optional-mode")]
+    public OptionMode? OptionalMode { get; set; }
+
+    [CommandLineOption("modes")]
+    public List<OptionMode> Modes { get; } = new();
+}
+
+public class PositionalOptions
+{
+    [CommandLinePosition(2)]
+    public string? Destination { get; set; }
+
+    [CommandLinePosition(1), Required]
+    public string Source { get; set; } = null!;
+
+    [CommandLineRemaining]
+    public List<string> Extras { get; } = new();
+}
+
+public class RequiredValueOptions
+{
+    [CommandLineOption("mode"), Required]
+    public OptionMode Mode { get; set; } = OptionMode.Abc;
+
+    [CommandLineOption("count"), Required]
+    public int Count { get; set; } = 1;
+}
+
