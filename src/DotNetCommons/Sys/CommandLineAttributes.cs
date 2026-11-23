@@ -38,6 +38,15 @@ public class CommandLineOptionAttribute : Attribute
 }
 
 /// <summary>
+/// Set a Boolean property to true when a standalone "-" appears before the end-of-options marker.
+/// The command uses this flag to decide whether to read standard input.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property)]
+public class CommandLineStdInAttribute : Attribute
+{
+}
+
+/// <summary>
 /// Define an option representing a position on the command line, e.g. CommandLinePosition(2) would
 /// capture the second textual element after the program name. Thus "program one two" would have "two"
 /// as the second element.

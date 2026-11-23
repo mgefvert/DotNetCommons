@@ -35,7 +35,7 @@ public static class CommandLine
         var result = new StringBuilder();
 
         var help = GetHelpText(type);
-        if (help.Count == 0)
+        if (help.All(x => x.Option == "-"))
         {
             var positional = GetDefinitionList(type)
                 .Where(x => x.Position > 0 || x.Remainder)
@@ -52,7 +52,11 @@ public static class CommandLine
                 result.AppendLine(definition.Required ? $"  <{name}>" : $"  [{name}]");
             }
 
-            return result.ToString();
+            if (help.Count == 0)
+                return result.ToString();
+
+            if (positional.Count > 0)
+                result.AppendLine();
         }
 
         var keyLength = help.Max(x => x.Option.Length);
@@ -61,6 +65,8 @@ public static class CommandLine
         try
         {
             consoleWidth = Console.WindowWidth;
+            if (consoleWidth <= 0)
+                consoleWidth = 80;
         }
         catch (Exception)
         {
@@ -183,6 +189,18 @@ public static class CommandLine
                     definition.ShortOptions = option.ShortOptions;
                     definition.LongOptions = option.LongOptions;
                     definition.Description = option.Description;
+                }
+
+                if (property.IsDefined(typeof(CommandLineStdInAttribute)))
+                {
+                    if (!definition.BooleanValue || property.SetMethod?.IsPublic != true || property.GetIndexParameters().Length != 0)
+                        throw new InvalidOperationException($"{nameof(CommandLineStdInAttribute)} requires a writable Boolean property: {property.Name}.");
+
+                    if (result.Any(x => x.StdIn))
+                        throw new InvalidOperationException($"Only one property can use {nameof(CommandLineStdInAttribute)}.");
+
+                    definition.StdIn = true;
+                    definition.Description ??= "Read from standard input.";
                 }
 
                 var position = property.GetCustomAttribute<CommandLinePositionAttribute>();

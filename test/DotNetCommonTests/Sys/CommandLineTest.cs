@@ -58,9 +58,47 @@ public class CommandLineTest
     }
 
     [TestMethod]
+    public void TestStdInFlag()
+    {
+        var options = CommandLine.Parse<StdInOptions>("-", "output.txt");
+
+        Assert.IsTrue(options.ReadFromStdIn);
+        Assert.AreEqual("output.txt", options.Output);
+    }
+
+    [TestMethod]
+    public void TestHyphenWithoutStdInFlag()
+    {
+        var exception = Assert.ThrowsExactly<CommandLineParameterException>(() => CommandLine.Parse<Options>("-"));
+
+        Assert.AreEqual("-", exception.Parameter);
+        Assert.AreEqual(CommandLineParameterError.UndefinedParameter, exception.Error);
+    }
+
+    [TestMethod]
+    public void TestHyphenAfterEndOfOptions()
+    {
+        var options = CommandLine.Parse<StdInOptions>("--", "-");
+
+        Assert.IsFalse(options.ReadFromStdIn);
+        Assert.AreEqual("-", options.Output);
+        Assert.AreEqual("-", CommandLine.Parse<Options>("--", "-").Param1);
+    }
+
+    [TestMethod]
+    public void TestStdInHelp()
+    {
+        var help = CommandLine.GetFormattedHelpText(typeof(StdInOptions));
+
+        StringAssert.Contains(help, "[Output]");
+        StringAssert.Contains(help, "-   Read from standard input.");
+    }
+
+    [TestMethod]
     [DataRow("/tmp/input")]
     [DataRow("--encrypt")]
     [DataRow("--")]
+    [DataRow("-")]
     public void TestRequiredValuesThatLookLikeOptions(string value)
     {
         var options = CommandLine.Parse<Options>("--user", value, "-P", "-5", "--zip");
@@ -157,5 +195,14 @@ public class CommandLineTest
         Assert.AreEqual(CommandLineParameterError.InvalidValue, exception.Error);
         StringAssert.Contains(exception.Message, $"'{value}'");
         StringAssert.Contains(exception.Message, "Abc, Xyz, ReadOnly");
+    }
+
+    public class StdInOptions
+    {
+        [CommandLineStdIn]
+        public bool ReadFromStdIn { get; set; }
+
+        [CommandLinePosition(1)]
+        public string? Output { get; set; }
     }
 }

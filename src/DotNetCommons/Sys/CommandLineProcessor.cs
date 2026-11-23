@@ -44,6 +44,14 @@ internal class CommandLineProcessor
                 continue;
             }
 
+            if (parseOptions && arg == "-")
+            {
+                var definition = Definitions.FirstOrDefault(x => x.StdIn)
+                    ?? throw new CommandLineParameterException(arg, CommandLineParameterError.UndefinedParameter);
+                SetParameter(definition, true);
+                continue;
+            }
+
             var type = parseOptions ? FindOptionType(ref arg) : OptionType.None;
 
             if (type == OptionType.None)

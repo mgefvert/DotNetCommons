@@ -10,11 +10,14 @@ public class LookupIpCommand : CommandAction<LookupIpCommand.LookupIpArgs>
 {
     public class LookupIpArgs : ConnectionArgs
     {
-        [CommandLineOption('m', "mode")]
+        [CommandLineOption('m', "mode", "country or city.")]
         public string? Mode { get; set; } = "country";
 
         [CommandLineRemaining]
         public List<string> IPs { get; set; } = [];
+
+        [CommandLineStdIn]
+        public bool ReadFromStdIn { get; set; }
     }
 
     private readonly ISqlDataService _service;
@@ -26,6 +29,12 @@ public class LookupIpCommand : CommandAction<LookupIpCommand.LookupIpArgs>
 
     public override async Task<int> ExecuteAsync(CancellationToken ct)
     {
+        if (Args.ReadFromStdIn)
+        {
+            Args.IPs.AddRange(Console.In.ReadToEnd()
+                .Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries));
+        }
+
         foreach (var ip in Args.IPs)
         {
             var address = IPAddress.Parse(ip);

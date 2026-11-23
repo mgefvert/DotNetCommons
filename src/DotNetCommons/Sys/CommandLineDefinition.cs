@@ -17,6 +17,7 @@ public class CommandLineDefinition
 
     internal bool Remainder { get; set; }
     internal int Position { get; set; }
+    internal bool StdIn { get; set; }
 
     public CommandLineDefinition(PropertyInfo property)
     {
@@ -24,14 +25,17 @@ public class CommandLineDefinition
         BooleanValue = property.PropertyType == typeof(bool);
     }
 
-    internal bool HasInfo => AnyShortOptions() || AnyLongOptions() || Position != -1 || Remainder || Description != null;
-    internal bool IsAttribute => AnyShortOptions() || AnyLongOptions();
+    internal bool HasInfo => IsAttribute || Position != -1 || Remainder || Description != null;
+    internal bool IsAttribute => AnyShortOptions() || AnyLongOptions() || StdIn;
 
     public string OptionString
     {
         get
         {
             var result = new List<string>();
+
+            if (StdIn)
+                result.Add("-");
 
             if (AnyShortOptions())
                 result.Add("-" + ShortOptions!.First());
