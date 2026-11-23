@@ -12,7 +12,7 @@ public class EasterHoliday : Holiday
         Offset = offset;
     }
 
-    public override string TextDefinition() => $"[easter,{Name},{Type}{(Offset == 0 ? "" : "," + Offset)}]";
+    public override string TextDefinition() => $"[easter,{Name},{(int)Type}{(Offset == 0 ? "" : "," + Offset)}]";
 
     protected internal override DateTime InternalCalculateDate(int year)
     {

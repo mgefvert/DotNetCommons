@@ -1,0 +1,1 @@
+﻿Note: All these icons are from https://heroicons.com/, in SVG format. Copy and paste the SVG definitions in here.

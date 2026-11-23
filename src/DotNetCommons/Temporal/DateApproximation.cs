@@ -28,7 +28,7 @@ public record DateApproximation : IComparable<DateApproximation>, IComparable
     public static DateApproximation FromString(string date)
     {
         var parts = date.Split('-');
-        if (parts.Length > 2)
+        if (parts.Length > 3)
             throw new ArgumentException($"Invalid date '{date}'");
 
         return new DateApproximation(

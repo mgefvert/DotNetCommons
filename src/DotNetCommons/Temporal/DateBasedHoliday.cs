@@ -15,7 +15,7 @@ public class DateBasedHoliday : Holiday
         Day = day;
     }
 
-    public override string TextDefinition() => $"[date,{Name},{Type},{Month},{Day}]";
+    public override string TextDefinition() => $"[date,{Name},{(int)Type},{Month},{Day}]";
 
     protected internal override DateTime InternalCalculateDate(int year) => new(year, Month, Day);
 }

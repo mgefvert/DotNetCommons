@@ -14,15 +14,7 @@ namespace DotNetCommons.Sys;
 /// </summary>
 public static class CommandLine
 {
-    /// <summary>
-    /// Handle -aop as -a, -o, and -p.
-    /// </summary>
-    public static bool MultipleShortOptions { get; set; } = true;
-
-    /// <summary>
-    /// If no parameters are submitted at all, display help.
-    /// </summary>
-    public static bool DisplayHelpOnEmpty { get; set; } = true;
+    private static readonly CommandLineSettings DefaultSettings = new();
 
     public static List<CommandLineDefinition> GetParameters(Type type)
     {
@@ -43,12 +35,38 @@ public static class CommandLine
         var result = new StringBuilder();
 
         var help = GetHelpText(type);
+        if (help.All(x => x.Option == "-"))
+        {
+            var positional = GetDefinitionList(type)
+                .Where(x => x.Position > 0 || x.Remainder)
+                .OrderBy(x => x.Remainder)
+                .ThenBy(x => x.Position)
+                .ToList();
+
+            if (positional.Count > 0)
+                result.AppendLine("Positional arguments:");
+
+            foreach (var definition in positional)
+            {
+                var name = definition.Property.Name + (definition.Remainder ? "..." : "");
+                result.AppendLine(definition.Required ? $"  <{name}>" : $"  [{name}]");
+            }
+
+            if (help.Count == 0)
+                return result.ToString();
+
+            if (positional.Count > 0)
+                result.AppendLine();
+        }
+
         var keyLength = help.Max(x => x.Option.Length);
 
         int consoleWidth;
         try
         {
             consoleWidth = Console.WindowWidth;
+            if (consoleWidth <= 0)
+                consoleWidth = 80;
         }
         catch (Exception)
         {
@@ -106,7 +124,15 @@ public static class CommandLine
     /// </summary>
     public static T Parse<T>() where T : class, new()
     {
-        return Parse<T>(Environment.GetCommandLineArgs().Skip(1).ToArray());
+        return Parse<T>(DefaultSettings);
+    }
+
+    /// <summary>
+    /// Parse the current process arguments using the specified settings.
+    /// </summary>
+    public static T Parse<T>(CommandLineSettings settings) where T : class, new()
+    {
+        return Parse<T>(settings, Environment.GetCommandLineArgs().Skip(1).ToArray());
     }
 
     /// <summary>
@@ -118,14 +144,31 @@ public static class CommandLine
     }
 
     /// <summary>
+    /// Parse an explicit argument list using the specified settings.
+    /// </summary>
+    public static T Parse<T>(CommandLineSettings settings, params string[] args) where T : class, new()
+    {
+        return (T)Parse(typeof(T), settings, args);
+    }
+
+    /// <summary>
     /// Parse specific command line arguments as a given object.
     /// </summary>
     public static object Parse(Type resultType, params string[] args)
     {
-        if (args.Length == 0 && DisplayHelpOnEmpty)
+        return Parse(resultType, DefaultSettings, args);
+    }
+
+    /// <summary>
+    /// Parse an explicit argument list using the specified settings.
+    /// </summary>
+    public static object Parse(Type resultType, CommandLineSettings settings, params string[] args)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        if (args.Length == 0 && settings.DisplayHelpOnEmpty)
             throw new CommandLineDisplayHelpException(resultType);
 
-        var processor = new CommandLineProcessor(resultType, args.ToList(), GetDefinitionList(resultType));
+        var processor = new CommandLineProcessor(resultType, args.ToList(), GetDefinitionList(resultType), settings.MultipleShortOptions);
         processor.Process();
         processor.Validate();
         return processor.Result;
@@ -146,6 +189,18 @@ public static class CommandLine
                     definition.ShortOptions = option.ShortOptions;
                     definition.LongOptions = option.LongOptions;
                     definition.Description = option.Description;
+                }
+
+                if (property.IsDefined(typeof(CommandLineStdInAttribute)))
+                {
+                    if (!definition.BooleanValue || property.SetMethod?.IsPublic != true || property.GetIndexParameters().Length != 0)
+                        throw new InvalidOperationException($"{nameof(CommandLineStdInAttribute)} requires a writable Boolean property: {property.Name}.");
+
+                    if (result.Any(x => x.StdIn))
+                        throw new InvalidOperationException($"Only one property can use {nameof(CommandLineStdInAttribute)}.");
+
+                    definition.StdIn = true;
+                    definition.Description ??= "Read from standard input.";
                 }
 
                 var position = property.GetCustomAttribute<CommandLinePositionAttribute>();

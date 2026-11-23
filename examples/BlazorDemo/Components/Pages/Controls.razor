@@ -1,0 +1,129 @@
+@page "/controls"
+@using DotNetCommons.Blazor.Components
+@using DotNetCommons.Blazor.Forms
+
+<PageTitle>Control library</PageTitle>
+
+<div class="mx-auto max-w-6xl space-y-10 pb-16">
+    <header class="space-y-3">
+        <p class="text-sm font-semibold uppercase tracking-widest text-blue-600">Blazor controls</p>
+        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Build a form that feels at home everywhere</h1>
+        <p class="max-w-2xl text-sm leading-6 opacity-70">Every field has a title, a hint, a typed value, and a compact option. Resize the page to see the form grid adapt.</p>
+    </header>
+
+    <section class="space-y-5" aria-labelledby="gallery-heading">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+                <h2 id="gallery-heading" class="text-2xl font-semibold">Control gallery</h2>
+                <p class="mt-1 text-sm opacity-70">Try the live inputs and compare the two sizes.</p>
+            </div>
+            <AppButton Color="AppButtonColor.Secondary" Mode="AppControlMode.Compact" OnClick="Reset"><AppIcon Name="x-mark" /> Reset demo</AppButton>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <AppInputText Title="Text" Placeholder="Your name" Description="A regular text field." @bind-Value="name" />
+            <AppInputEmail Title="Email" Placeholder="name@example.com" Description="Uses the browser's email keyboard and validation." @bind-Value="email" />
+            <AppInputPhone Title="Phone" Placeholder="(555) 010-1234" Description="Optimized for phone entry." @bind-Value="phone" />
+            <AppInputMemo Title="Memo" Placeholder="Tell us more..." Description="For a longer answer." Rows="3" @bind-Value="memo" />
+            <AppInputNumber Title="Number" Placeholder="0" Description="A decimal value." Min="0" Step="0.5m" @bind-Value="quantity" />
+            <AppInputCurrency Title="Currency" Placeholder="0.00" Description="A decimal amount with a currency symbol." Step="0.01m" @bind-Value="price" />
+            <AppInputDate Title="Date" Description="Choose a calendar day." @bind-Value="date" />
+            <AppInputDateTime Title="Date and time" Description="Choose a local date and time." @bind-Value="appointment" />
+            <AppInputTime Title="Time" Description="Choose a time of day." @bind-Value="time" />
+            <AppInputRange Title="Range" Description="Drag to adjust the value." Min="0" Max="100" Step="5" @bind-Value="progress" />
+            <AppInputDropDown TValue="string" Title="Drop-down" Placeholder="Select a team" Description="Options can map to typed values." Options="teams" @bind-Value="team" />
+            <AppInputRadioButtons TValue="string" Title="Radio buttons" Description="Pick one delivery speed." Options="speeds" @bind-Value="speed" />
+            <AppInputCheckBox Title="Check box" Placeholder="Send me updates" Description="A boolean value." @bind-Value="updates" />
+            <AppInputCheckBoxes TValue="string" Title="Check boxes" Placeholder="Choose any that apply"
+                                Description="Several values can be selected side by side." Options="interests" @bind-Value="selectedInterests" />
+            <AppInputText Title="Compact text" Placeholder="Less padding" Description="Fits dense layouts." Mode="AppControlMode.Compact" LabelCss="tracking-wide" InputCss="font-medium" @bind-Value="compactText" />
+            <AppInputDropDown TValue="string" Title="Compact drop-down" Placeholder="Select a team" Description="The same typed option list." Mode="AppControlMode.Compact" Options="teams" @bind-Value="compactTeam" />
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 border-t border-control-border pt-5">
+            <AppButton OnClick="ShowClicked"><AppIcon Name="check" /> Primary</AppButton>
+            <AppButton Color="AppButtonColor.Secondary" Mode="AppControlMode.Compact" ButtonCss="tracking-wide" OnClick="ShowClicked"><AppIcon Name="cog-8-tooth" /> Secondary</AppButton>
+            <AppButton Color="AppButtonColor.Warning" OnClick="ShowClicked"><AppIcon Name="trash" /> Warning</AppButton>
+            @if (clicked) { <span class="text-sm opacity-70" role="status">Button clicked.</span> }
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 border-t border-control-border pt-5" aria-label="Available icons">
+            @foreach (var icon in Icons.Names)
+            {
+                <span class="inline-flex items-center gap-1.5 text-xs opacity-75" title="@icon"><AppIcon Name="@icon" />@icon</span>
+            }
+        </div>
+    </section>
+
+    <section class="rounded-2xl border border-control-border bg-control-background p-4 shadow-sm sm:p-7" aria-labelledby="form-heading">
+        <div class="mb-6">
+            <h2 id="form-heading" class="text-2xl font-semibold">Composite form</h2>
+            <p class="mt-1 text-sm opacity-70">One column on phones, two on tablets, three on wider screens.</p>
+        </div>
+        <form class="space-y-6" @onsubmit="Submit" @onsubmit:preventDefault>
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                <AppInputText Title="Full name" Placeholder="Morgan Lee" Description="Your display name." Required="true" @bind-Value="formName" />
+                <AppInputEmail Title="Work email" Placeholder="morgan@example.com" Description="Where we can reach you." Required="true" @bind-Value="formEmail" />
+                <AppInputPhone Title="Phone" Placeholder="(555) 010-1234" Description="Optional." @bind-Value="formPhone" />
+                <AppInputDate Title="Start date" Description="Preferred first day." @bind-Value="formDate" />
+                <AppInputDropDown TValue="string" Title="Team" Placeholder="Choose a team" Description="Which group are you joining?" Required="true" Options="teams" @bind-Value="formTeam" />
+                <AppInputCurrency Title="Budget" Placeholder="0.00" Description="Estimated monthly amount." Step="0.01m" @bind-Value="formBudget" />
+                <AppInputMemo ContainerCss="md:col-span-2 xl:col-span-3" Title="Notes" Placeholder="Anything else we should know?" Description="This field spans the full grid." Rows="3" @bind-Value="formNotes" />
+                <AppInputCheckBox ContainerCss="md:col-span-2 xl:col-span-3" Title="Updates" Placeholder="Email me occasional updates" Description="You can change this later." @bind-Value="formUpdates" />
+                <AppInputCheckBoxes TValue="string" ContainerCss="md:col-span-2 xl:col-span-3" Title="Interests" Placeholder="Choose any that apply"
+                                    Description="Select one or more areas." Options="interests" @bind-Value="formInterests" />
+            </div>
+            <div class="flex flex-wrap items-center gap-3 border-t border-control-border pt-5">
+                <AppButton Type="AppButtonType.Submit"><AppIcon Name="check" /> Submit form</AppButton>
+                @if (submitted) { <span class="text-sm text-green-700" role="status">Form submitted for @formName.</span> }
+            </div>
+        </form>
+    </section>
+</div>
+
+@code {
+    [Inject] private AppIconProvider Icons { get; set; } = default!;
+
+    private static readonly IReadOnlyList<AppOption<string>> teams =
+    [
+        new("design", "Design"), new("engineering", "Engineering"), new("operations", "Operations")
+    ];
+    private static readonly IReadOnlyList<AppOption<string>> speeds =
+    [
+        new("standard", "Standard"), new("express", "Express"), new("overnight", "Overnight")
+    ];
+    private static readonly IReadOnlyList<AppOption<string>> interests =
+    [
+        new("design", "Design"), new("code", "Code"), new("research", "Research")
+    ];
+
+    private string? name, email, phone, memo, compactText;
+    private decimal? quantity, price;
+    private DateTime? date, appointment;
+    private TimeOnly? time;
+    private decimal progress = 35;
+    private string team = "", speed = "standard", compactTeam = "";
+    private bool updates, clicked, submitted;
+    private IReadOnlyList<string> selectedInterests = [];
+    private string? formName, formEmail, formPhone, formNotes;
+    private DateTime? formDate;
+    private decimal? formBudget;
+    private string formTeam = "";
+    private bool formUpdates;
+    private IReadOnlyList<string> formInterests = [];
+
+    private void ShowClicked() => clicked = true;
+    private void Submit() => submitted = true;
+    private void Reset()
+    {
+        name = email = phone = memo = compactText = null;
+        quantity = price = null;
+        date = appointment = null;
+        time = null;
+        progress = 35;
+        team = compactTeam = "";
+        speed = "standard";
+        updates = clicked = false;
+        selectedInterests = [];
+    }
+}

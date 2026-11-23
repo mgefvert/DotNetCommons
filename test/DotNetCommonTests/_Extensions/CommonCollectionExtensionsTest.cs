@@ -456,6 +456,39 @@ public class CommonCollectionExtensionsTest
         Assert.AreEqual("1,2,3,4,5", string.Join(",", list));
     }
 
+    [TestMethod]
+    public void TestToss2()
+    {
+        var source = new[] { 1, 2, 3, 4, 5, 6, 7 };
+
+        var (even, odd) = source.Toss(x => x % 2 == 0);
+        Assert.AreEqual("2,4,6", string.Join(",", even));
+        Assert.AreEqual("1,3,5,7", string.Join(",", odd));
+    }
+
+    [TestMethod]
+    public void TestToss3()
+    {
+        var source = new[] { 1, 2, 3, 4, 5, 6, 7 };
+
+        var (rem0, rem1, rem2) = source.Toss(x => x % 3 == 0, x => x % 3 == 1);
+        Assert.AreEqual("3,6", string.Join(",", rem0));
+        Assert.AreEqual("1,4,7", string.Join(",", rem1));
+        Assert.AreEqual("2,5", string.Join(",", rem2));
+    }
+
+    [TestMethod]
+    public void TestToss4()
+    {
+        var source = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+        var (rem0, rem1, rem2, rem3) = source.Toss(x => x % 4 == 0, x => x % 4 == 1, x => x % 4 == 2);
+        Assert.AreEqual("4,8", string.Join(",", rem0));
+        Assert.AreEqual("1,5,9", string.Join(",", rem1));
+        Assert.AreEqual("2,6", string.Join(",", rem2));
+        Assert.AreEqual("3,7", string.Join(",", rem3));
+    }
+
     public class TreeNode
     {
         public string Name { get; }

@@ -26,7 +26,8 @@ public enum CommandLineParameterError
 {
     UndefinedParameter,
     ValueRequired,
-    BooleanParameterDoesNotTakeValue
+    BooleanParameterDoesNotTakeValue,
+    InvalidValue
 }
 
 public class CommandLineParameterException : CommandLineException
@@ -35,7 +36,12 @@ public class CommandLineParameterException : CommandLineException
     public CommandLineParameterError Error { get; }
 
     public CommandLineParameterException(string parameter, CommandLineParameterError error)
-        : base(GetMessage(error) + ": " + parameter)
+        : this(parameter, error, GetMessage(error) + ": " + parameter)
+    {
+    }
+
+    internal CommandLineParameterException(string parameter, CommandLineParameterError error, string message)
+        : base(message)
     {
         Parameter = parameter;
         Error = error;
@@ -48,6 +54,7 @@ public class CommandLineParameterException : CommandLineException
             CommandLineParameterError.BooleanParameterDoesNotTakeValue => "Parameter does not take a value",
             CommandLineParameterError.UndefinedParameter => "Undefined parameter",
             CommandLineParameterError.ValueRequired => "Parameter requires a value",
+            CommandLineParameterError.InvalidValue => "Invalid parameter value",
             _ => "Error"
         };
     }

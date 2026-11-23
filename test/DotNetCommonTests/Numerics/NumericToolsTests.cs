@@ -7,14 +7,32 @@ namespace DotNetCommonTests.Numerics;
 public class NumericToolsTests
 {
     [TestMethod]
+    public void FindFactors_Tests()
+    {
+        12.FindFactors().Should().BeEquivalentTo([2, 3, 4, 6]);
+        36.FindFactors().Should().BeEquivalentTo([2, 3, 4, 6, 9, 12, 18]);
+        13.FindFactors().Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(0)]
+    [DataRow(-1)]
+    [DataRow(int.MinValue)]
+    public void FindFactors_ReturnsNoFactorsForNumbersAtOrBelowOne(int number)
+    {
+        number.FindFactors().Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void ToDelimitedSequence_Works()
     {
-        NumericTools.ToDelimitedSequence(new[] { 1 }).Should().Be("1");
-        NumericTools.ToDelimitedSequence(Array.Empty<int>()).Should().Be("");
-        NumericTools.ToDelimitedSequence(new[] { 1, 3 }).Should().Be("1 and 3");
-        NumericTools.ToDelimitedSequence(new[] { 10, 11, 12 }).Should().Be("10-12");
-        NumericTools.ToDelimitedSequence(new[] { 10, 11, 12, 13, 16, 17 }).Should().Be("10-13 and 16-17");
-        NumericTools.ToDelimitedSequence(new[] { 3, 9, 4, 5, 10, 15, 19, 23, 22, 21 })
+        NumericTools.ToDelimitedSequence([1]).Should().Be("1");
+        NumericTools.ToDelimitedSequence([]).Should().Be("");
+        NumericTools.ToDelimitedSequence([1, 3]).Should().Be("1 and 3");
+        NumericTools.ToDelimitedSequence([10, 11, 12]).Should().Be("10-12");
+        NumericTools.ToDelimitedSequence([10, 11, 12, 13, 16, 17]).Should().Be("10-13 and 16-17");
+        NumericTools.ToDelimitedSequence([3, 9, 4, 5, 10, 15, 19, 23, 22, 21])
             .Should().Be("3-5, 9-10, 15, 19 and 21-23");
     }
 

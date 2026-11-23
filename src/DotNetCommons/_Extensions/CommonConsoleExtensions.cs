@@ -19,7 +19,7 @@ public static class ConsoleExtensions
     {
         try
         {
-            var _ = Console.KeyAvailable;
+            _ = Console.KeyAvailable;
             return true;
         }
         catch (Exception)

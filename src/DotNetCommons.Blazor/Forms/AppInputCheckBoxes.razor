@@ -1,0 +1,62 @@
+@typeparam TValue
+@inherits AppInputBase<IReadOnlyList<TValue>>
+
+<fieldset @attributes="AdditionalAttributes" id="@EffectiveId"
+          class="@_containerCss"
+          disabled="@Disabled" aria-required="@Required"
+          aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <legend class="@_labelCss">@Title</legend>
+    }
+    @if (!string.IsNullOrWhiteSpace(Placeholder))
+    {
+        <p class="@_placeholderCss">@Placeholder</p>
+    }
+    <div class="@_choiceGroupCss">
+        @for (var i = 0; i < Options.Count; i++)
+        {
+            var option = Options[i];
+            var index = i;
+            <label class="@_choiceCss">
+                <input type="checkbox" name="@EffectiveId" value="@index"
+                       checked="@IsSelected(option.Value)" required="@(Required && !HasSelection && index == 0)"
+                       class="@_checkableCss"
+                       @onchange="e => ToggleAsync(option.Value, e.Value is true)" />
+                <span>@option.Label</span>
+            </label>
+        }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p id="@($"{EffectiveId}-description")" class="@_descriptionCss">@Description</p>
+    }
+</fieldset>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<AppOption<TValue>> Options { get; set; } = [];
+    [Parameter] public string? PlaceholderCss { get; set; }
+
+    private readonly CssClassOverrides _placeholderCss = new();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _placeholderCss.Defaults = AppTheme.CheckBoxesPlaceholder;
+        _placeholderCss.Overrides = PlaceholderCss;
+    }
+
+    private bool HasSelection => Options.Any(option => IsSelected(option.Value));
+
+    private bool IsSelected(TValue candidate) =>
+        Value?.Any(value => EqualityComparer<TValue>.Default.Equals(value, candidate)) ?? false;
+
+    private Task ToggleAsync(TValue optionValue, bool isChecked)
+    {
+        var selected = Value?.ToList() ?? [];
+        selected.RemoveAll(value => EqualityComparer<TValue>.Default.Equals(value, optionValue));
+        if (isChecked)
+            selected.Add(optionValue);
+        return SetValueAsync(selected);
+    }
+}

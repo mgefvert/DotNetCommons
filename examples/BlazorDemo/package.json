@@ -1,0 +1,12 @@
+{
+  "name": "blazordemo-assets",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./Styles/app.css -o ./wwwroot/app.css",
+    "watch:css": "tailwindcss -i ./Styles/app.css -o ./wwwroot/app.css --watch"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

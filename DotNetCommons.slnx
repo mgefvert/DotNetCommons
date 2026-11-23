@@ -1,9 +1,12 @@
 <Solution>
   <Folder Name="/examples/">
+    <Project Path="examples/BlazorDemo/BlazorDemo.csproj" />
     <Project Path="examples/DatabaseSeeder/DatabaseSeeder.csproj" />
     <Project Path="examples/Fleet/Fleet.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/DotNetCommons.Base/DotNetCommons.Base.csproj" />
+    <Project Path="src/DotNetCommons.Blazor/DotNetCommons.Blazor.csproj" />
     <Project Path="src/DotNetCommons.EF/DotNetCommons.EF.csproj" />
     <Project Path="src/DotNetCommons.PlaywrightTesting/DotNetCommons.PlaywrightTesting.csproj" />
     <Project Path="src/DotNetCommons.Services/DotNetCommons.Services.csproj" />
@@ -13,6 +16,7 @@
     <Project Path="src/DotNetCommons/DotNetCommons.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="test/DotNetCommonTests.Base/DotNetCommonTests.Base.csproj" />
     <Project Path="test/DotNetCommonTests.EF/DotNetCommonTests.EF.csproj" />
     <Project Path="test/DotNetCommonTests.Services/DotNetCommonTests.Services.csproj" />
     <Project Path="test/DotNetCommonTests.Web/DotNetCommonTests.Web.csproj" />

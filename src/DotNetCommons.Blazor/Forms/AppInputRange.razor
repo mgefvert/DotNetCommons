@@ -1,0 +1,42 @@
+@inherits AppInputBase<decimal>
+@using System.Globalization
+
+<AppField Id="@EffectiveId" Title="@Title" Description="@Description" ContainerCss="@ContainerCss" LabelCss="@LabelCss" DescriptionCss="@DescriptionCss" Mode="@Mode">
+    <div class="@_rangeContainerCss">
+        <input @attributes="AdditionalAttributes" id="@EffectiveId" type="range" class="@_rangeCss"
+               value="@Value.ToString(CultureInfo.InvariantCulture)" min="@Min" max="@Max" step="@Step"
+               disabled="@Disabled" aria-valuetext="@Value.ToString(CultureInfo.CurrentCulture)"
+               aria-describedby="@(Description is null ? null : $"{EffectiveId}-description")" @oninput="OnInputAsync" />
+        <output for="@EffectiveId" class="@_outputCss">@Value</output>
+    </div>
+</AppField>
+
+@code {
+    [Parameter] public decimal Min { get; set; } = 0;
+    [Parameter] public decimal Max { get; set; } = 100;
+    [Parameter] public decimal Step { get; set; } = 1;
+    [Parameter] public string? RangeContainerCss { get; set; }
+    [Parameter] public string? RangeCss { get; set; }
+    [Parameter] public string? OutputCss { get; set; }
+
+    private readonly CssClassOverrides _rangeContainerCss = new();
+    private readonly CssClassOverrides _rangeCss = new();
+    private readonly CssClassOverrides _outputCss = new();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _rangeContainerCss.Defaults = AppTheme.RangeContainer;
+        _rangeContainerCss.Overrides = RangeContainerCss;
+        _rangeContainerCss.State = Mode == AppControlMode.Compact ? AppTheme.CompactRangeContainer : AppTheme.StandardRangeContainer;
+        _rangeCss.Defaults = AppTheme.Range;
+        _rangeCss.Overrides = RangeCss;
+        _rangeCss.State = Mode == AppControlMode.Compact ? AppTheme.CompactRange : AppTheme.StandardRange;
+        _outputCss.Defaults = AppTheme.RangeOutput;
+        _outputCss.Overrides = OutputCss;
+    }
+
+    private Task OnInputAsync(ChangeEventArgs e) =>
+        decimal.TryParse(e.Value?.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var value)
+            ? SetValueAsync(value) : Task.CompletedTask;
+}

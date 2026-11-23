@@ -1,0 +1,46 @@
+@using DotNetCommons.Base
+@using DotNetCommons.Blazor.Forms
+@namespace DotNetCommons.Blazor.Components
+@inherits ComponentBase
+
+<div class="@_containerCss">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <label for="@Id" class="@_labelCss">@Title</label>
+    }
+    @ChildContent
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p id="@DescriptionId" class="@_descriptionCss">@Description</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public AppControlMode Mode { get; set; } = AppControlMode.Standard;
+    [Parameter] public string? ContainerCss { get; set; }
+    [Parameter] public string? DescriptionCss { get; set; }
+    [Parameter] public string? LabelCss { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string DescriptionId => $"{Id}-description";
+    private readonly CssClassOverrides _containerCss = new();
+    private readonly CssClassOverrides _descriptionCss = new();
+    private readonly CssClassOverrides _labelCss = new();
+
+    protected override void OnParametersSet()
+    {
+        _containerCss.Defaults   = AppTheme.Container;
+        _descriptionCss.Defaults = AppTheme.Description;
+        _labelCss.Defaults       = AppTheme.Label;
+
+        _containerCss.Overrides   = ContainerCss;
+        _descriptionCss.Overrides = DescriptionCss;
+        _labelCss.Overrides       = LabelCss;
+
+        _containerCss.State = Mode == AppControlMode.Compact ? AppTheme.CompactContainer : AppTheme.StandardContainer;
+        _labelCss.State     = Mode == AppControlMode.Compact ? AppTheme.CompactLabel : AppTheme.StandardLabel;
+    }
+}

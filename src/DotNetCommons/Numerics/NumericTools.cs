@@ -1,5 +1,8 @@
 ﻿namespace DotNetCommons.Numerics;
 
+/// <summary>
+/// Provides utility methods for working with numeric values.
+/// </summary>
 public static class NumericTools
 {
     /// <summary>
@@ -9,6 +12,9 @@ public static class NumericTools
     /// <returns>An enumerable collection of factors of the input number.</returns>
     public static IEnumerable<int> FindFactors(this int number)
     {
+        if (number <= 1)
+            yield break;
+
         var root = (int)Math.Sqrt(number);
 
         for (var i = 2; i <= root; i++)
@@ -17,7 +23,7 @@ public static class NumericTools
                 continue;
 
             yield return i;
-            if (i != root)
+            if (i * i != number)
                 yield return number / i;
         }
     }

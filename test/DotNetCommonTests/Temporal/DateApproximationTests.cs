@@ -15,8 +15,43 @@ public class DateApproximationTests
     [TestMethod]
     public void Constructor_DateTime_Works()
     {
-        var appx = new DateApproximation(new DateOnly(2023, 6, 15));
+        var appx = new DateApproximation(new DateTime(2023, 6, 15, 14, 30, 0));
         Assert.AreEqual("2023-06-15", appx.ToYMDString());
+    }
+
+    [TestMethod]
+    public void FromString_ParsesPartialAndCompleteDates()
+    {
+        Assert.AreEqual(new DateApproximation(), DateApproximation.FromString("0000"));
+        Assert.AreEqual(new DateApproximation(2024), DateApproximation.FromString("2024"));
+        Assert.AreEqual(new DateApproximation(2024, 2), DateApproximation.FromString("2024-02"));
+        Assert.AreEqual(new DateApproximation(2024, 2, 29), DateApproximation.FromString("2024-02-29"));
+        Assert.ThrowsExactly<ArgumentException>(() => DateApproximation.FromString("2024-02-29-01"));
+    }
+
+    [TestMethod]
+    public void Constructor_RejectsInvalidComponents()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new DateApproximation(2024, 0, 1));
+        Assert.ThrowsExactly<ArgumentException>(() => new DateApproximation(0, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new DateApproximation(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new DateApproximation(2024, 13));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new DateApproximation(2023, 2, 29));
+        Assert.AreEqual("2024-02-29", new DateApproximation(2024, 2, 29).ToYMDString());
+    }
+
+    [TestMethod]
+    public void Comparison_OrdersUnknownAndKnownComponents()
+    {
+        var dates = new[] { new DateApproximation(2024, 2, 1), new DateApproximation(),
+            new DateApproximation(2024, 1), new DateApproximation(2024), new DateApproximation(2023, 12, 31) };
+        Array.Sort(dates);
+        CollectionAssert.AreEqual(new[] { "0000-00-00", "2023-12-31", "2024-00-00", "2024-01-00", "2024-02-01" },
+            dates.Select(d => d.ToYMDString()).ToArray());
+        Assert.IsTrue(dates[0].CompareTo(null) > 0);
+        Assert.ThrowsExactly<ArgumentException>(() => ((IComparable)dates[0]).CompareTo("2024"));
+        Assert.AreEqual("2024", dates[4].ToYString());
+        Assert.AreEqual("2024-02", dates[4].ToYMString());
     }
 
     [TestMethod]
