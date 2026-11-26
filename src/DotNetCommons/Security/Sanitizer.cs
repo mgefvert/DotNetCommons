@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Net.Mail;
 using System.Text;
 
@@ -16,6 +17,12 @@ public static class Sanitizer
         "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
         "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
     }.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly ImmutableHashSet<string> AdditionalDosDeviceNames = new[]
+    {
+        "CONIN$", "CONOUT$", "COM0", "LPT0",
+        "COM\u00B9", "COM\u00B2", "COM\u00B3", "LPT\u00B9", "LPT\u00B2", "LPT\u00B3"
+    }.ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
     /// Validates and normalizes an email address. If the input is invalid or empty, null is returned.
     public static string? EmailAddress(string emailAddress)
@@ -138,6 +145,41 @@ public static class Sanitizer
             throw new ArgumentException($"File name is reserved ({result}).", nameof(fileName));
 
         return result;
+    }
+
+    /// <summary>
+    /// Escapes a single name for use as a filename on Windows and Unix.
+    /// </summary>
+    /// <remarks>
+    /// Uses percent escapes for invalid characters, literal percent signs, trailing spaces and periods,
+    /// and the first letter of a reserved DOS device name. The result preserves case, Unicode, and
+    /// the identity of distinct inputs under ordinal comparison. Callers must account for filesystem
+    /// length limits and any case folding or Unicode normalization performed by the filesystem.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The input is empty or contains malformed UTF-16.</exception>
+    /// <exception cref="ArgumentNullException">The input is null.</exception>
+    public static string EscapeFileName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        _ = StrictUtf8.GetByteCount(name);
+
+        var extensionIndex = name.IndexOf('.');
+        var stem = (extensionIndex < 0 ? name : name[..extensionIndex]).TrimEnd(' ');
+        var isDevice = ReservedFileNames.Contains(stem) || AdditionalDosDeviceNames.Contains(stem);
+        var trailingStart = name.AsSpan().TrimEnd(" .").Length;
+
+        var buffer = new StringBuilder(name.Length);
+        for (var i = 0; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (c < ' ' || c is '"' or '<' or '>' or ':' or '/' or '\\' or '|' or '?' or '*' or '%' or '\u007f' ||
+                i >= trailingStart || (i == 0 && isDevice))
+                buffer.Append('%').Append(((int)c).ToString("X2", CultureInfo.InvariantCulture));
+            else
+                buffer.Append(c);
+        }
+
+        return buffer.ToString();
     }
 
     /// <summary>
